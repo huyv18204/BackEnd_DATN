@@ -10,6 +10,8 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
+        'slug',
+        'material',
         "sku",
         "name",
         "thumbnail",
@@ -30,7 +32,7 @@ class Product extends Model
 
     public function product_category()
     {
-        return $this->belongsTo(ProductCategory::class);
+        return $this->belongsTo(Category::class);
     }
 
     public function product_variants()
@@ -38,9 +40,5 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class);
     }
 
-    public function product_galleries()
-    {
-        return $this->hasMany(ProductGallery::class);
-    }
 
 }

@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer('stock')->default(0);
             $table->string("variants_image",255)->nullable();
             $table->unique(['product_id','product_size_id', "product_color_id"],'product_variant_unique');
+            $table->boolean("is_active")->default(true);
             $table->timestamps();
         });
     }

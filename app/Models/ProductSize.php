@@ -10,8 +10,13 @@ class ProductSize extends Model
     use HasFactory;
 
     protected $fillable = [
-        'size'
+        'size',
+        'is_active'
     ];
+    protected $casts = [
+        'is_active' => "boolean",
+    ];
+
     public function product_variants()
     {
         return $this->hasMany(ProductVariant::class);

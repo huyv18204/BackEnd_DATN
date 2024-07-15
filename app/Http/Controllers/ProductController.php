@@ -13,6 +13,7 @@ class ProductController extends Controller
     {
         $categoryId = $request->query('categoryId');
         $name = $request->query('name');
+//        $name = $request->query('name');
         $minPrice = $request->query('minPrice');
         $maxPrice = $request->query('maxPrice');
         $sort = $request->query('sort', 'ASC');

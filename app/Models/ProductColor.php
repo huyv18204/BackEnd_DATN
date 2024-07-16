@@ -11,6 +11,10 @@ class ProductColor extends Model
 
     protected $fillable = [
         "color",
+        "is_active"
+    ];
+    protected $casts = [
+        'is_active' => "boolean",
     ];
 
     public function product_variants()

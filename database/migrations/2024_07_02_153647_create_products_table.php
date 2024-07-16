@@ -13,6 +13,8 @@ return new class extends Migration {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string("sku", 10)->unique();
+            $table->string("slug",255)->unique();
+            $table->string("material",255)->nullable();
             $table->string("name", 55);
             $table->string("thumbnail", 255);
             $table->text("short_description")->nullable();
@@ -20,9 +22,9 @@ return new class extends Migration {
             $table->unsignedBigInteger("view")->default(0);
             $table->decimal('regular_price', 8, 0);
             $table->decimal('reduced_price', 8, 0)->nullable();
-            $table->foreignIdFor(\App\Models\ProductCategory::class);
+            $table->foreignIdFor(\App\Models\Category::class);
             $table->integer("stock")->default(0);
-            $table->boolean("is_active")->default(false);
+            $table->boolean("is_active")->default(true);
             $table->timestamps();
         });
     }

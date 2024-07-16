@@ -17,6 +17,10 @@ class ProductVariant extends Model
         'reduced_price',
         'stock',
         'variants_image',
+        'is_active'
+    ];
+    protected $casts = [
+        'is_active' => "boolean",
     ];
 
     public function product()

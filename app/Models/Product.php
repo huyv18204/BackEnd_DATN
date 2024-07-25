@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
     use HasFactory;
-
+    use SoftDeletes;
     protected $fillable = [
         'slug',
         'material',
@@ -20,8 +21,7 @@ class Product extends Model
         "view",
         "regular_price",
         "reduced_price",
-        "stock",
-        "product_category_id",
+        "category_id",
         "is_active"
 
     ];
@@ -37,7 +37,7 @@ class Product extends Model
 
     public function product_variants()
     {
-        return $this->hasMany(ProductVariant::class);
+        return $this->hasMany(ProductAtt::class);
     }
 
 

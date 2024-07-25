@@ -14,20 +14,19 @@ class FakeDataSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('categories')->insert([
-            ['name' => 'Quần Nam'],
-            ['name' => 'Quần Nữ'],
-            ['name' => 'Quần Trẻ em'],
-            ['name' => 'Áo Nam'],
-            ['name' => 'Áo Nữ'],
-            ['name' => 'Áo Trẻ em'],
-        ]);
+        for($i = 1; $i <= 10; $i++){
+            $name = fake()->text;
+            DB::table('categories')->insert([
+                'name' => $name,
+                'slug' =>Str::slug($name . '-' . $i),
+            ]);
+        }
 
 
         $colors = ['Red', 'Blue', 'Green', 'Yellow', 'Black', 'White'];
 
         foreach ($colors as $color) {
-            DB::table('product_colors')->insert([
+            DB::table('colors')->insert([
                 'color' => $color,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -37,7 +36,7 @@ class FakeDataSeeder extends Seeder
         $sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
         foreach ($sizes as $size) {
-            DB::table('product_sizes')->insert([
+            DB::table('sizes')->insert([
                 'size' => $size,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -65,20 +64,18 @@ class FakeDataSeeder extends Seeder
         }
 
         $products = DB::table('products')->get();
-        $sizes = DB::table('product_sizes')->get();
-        $colors = DB::table('product_colors')->get();
+        $sizes = DB::table('sizes')->get();
+        $colors = DB::table('colors')->get();
 
         foreach ($products as $product) {
             foreach ($sizes as $size) {
                 foreach ($colors as $color) {
-                    DB::table('product_variants')->insert([
+                    DB::table('product_atts')->insert([
                         'product_id' => $product->id,
-                        'product_size_id' => $size->id,
-                        'product_color_id' => $color->id,
-                        "regular_price" => rand(30000, 1000000),
-                        "reduced_price" => rand(30000, 1000000),
-                        'stock' => rand(1, 10),
-                        'variants_image' => fake()->imageUrl(30, 30),
+                        'size_id' => $size->id,
+                        'color_id' => $color->id,
+                        'stock_quantity' => rand(1, 10),
+                        'image' => fake()->imageUrl(30, 30),
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);

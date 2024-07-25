@@ -25,6 +25,7 @@ return new class extends Migration {
             $table->foreignIdFor(\App\Models\Category::class);
             $table->integer("stock")->default(0);
             $table->boolean("is_active")->default(true);
+            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
     }

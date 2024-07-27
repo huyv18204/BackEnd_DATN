@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ColorController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SizeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -47,5 +49,26 @@ Route::prefix("v1")->group(function () {
         Route::post('/', [ProductAttController::class, 'store']);
         Route::put('/{id}', [ProductAttController::class, 'update']);
         Route::delete('/{id}', [ProductAttController::class, 'destroy']);
+    });
+
+
+    Route::prefix("colors")->group(function () {
+        Route::put('/{id}/restore', [ColorController::class, 'restore']);
+        Route::get('/trash', [ColorController::class, 'trash']);
+        Route::get("/", [ColorController::class, 'index']);
+        Route::post("/", [ColorController::class, 'store']);
+        Route::put("/{id}", [ColorController::class, 'update']);
+        Route::get("/{id}", [ColorController::class, 'show']);
+        Route::delete("/{id}", [ColorController::class, 'destroy']);
+    });
+
+    Route::prefix("sizes")->group(function () {
+        Route::put('/{id}/restore', [SizeController::class, 'restore']);
+        Route::get('/trash', [SizeController::class, 'trash']);
+        Route::get("/", [SizeController::class, 'index']);
+        Route::post("/", [SizeController::class, 'store']);
+        Route::put("/{id}", [SizeController::class, 'update']);
+        Route::get("/{id}", [SizeController::class, 'show']);
+        Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 });

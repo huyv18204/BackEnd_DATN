@@ -13,7 +13,15 @@ class ProductAttController extends Controller
         $size = $request->query('size', 5);
         $search['size_id'] = $request->sizeId;
         $search['color_id'] = $request->colorId;
-        $query = ProductAtt::query()->where('product_id', $product_id);
+        $query = ProductAtt::query()->with([
+            'size' => function ($query) {
+                $query->select('id', 'name')->withTrashed();
+            },
+            'color' => function ($query) {
+                $query->select('id', 'name')->withTrashed();
+            }
+        ])->where('product_id', $product_id);
+
         foreach ($search as $key => $value) {
             if ($value) {
                 $query->where($key, $value);
@@ -84,7 +92,7 @@ class ProductAttController extends Controller
         ]);
     }
 
-    public function destroy(int $product_id , int $id)
+    public function destroy(int $product_id, int $id)
     {
         $productAtt = ProductAtt::query()->find($id);
         if (!$productAtt) {

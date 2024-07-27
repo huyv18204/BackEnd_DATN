@@ -11,7 +11,7 @@ class Size extends Model
     use HasFactory;
     use SoftDeletes;
     protected $fillable = [
-        'size',
+        'name',
         'is_active'
     ];
     protected $casts = [

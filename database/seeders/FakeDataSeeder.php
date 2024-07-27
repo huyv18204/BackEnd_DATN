@@ -27,7 +27,7 @@ class FakeDataSeeder extends Seeder
 
         foreach ($colors as $color) {
             DB::table('colors')->insert([
-                'color' => $color,
+                'name' => $color,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -37,7 +37,7 @@ class FakeDataSeeder extends Seeder
 
         foreach ($sizes as $size) {
             DB::table('sizes')->insert([
-                'size' => $size,
+                'name' => $size,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -18,7 +18,7 @@ class Size extends Model
         'is_active' => "boolean",
     ];
 
-    public function product_variants()
+    public function product_atts()
     {
         return $this->hasMany(ProductAtt::class);
     }

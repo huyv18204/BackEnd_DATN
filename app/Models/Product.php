@@ -30,12 +30,12 @@ class Product extends Model
         'is_active' => "boolean",
     ];
 
-    public function product_category()
+    public function category()
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function product_variants()
+    public function product_atts()
     {
         return $this->hasMany(ProductAtt::class);
     }

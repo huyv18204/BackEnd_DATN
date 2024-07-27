@@ -10,8 +10,9 @@ class Color extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
     protected $fillable = [
-        "color",
+        "name",
         "is_active"
     ];
     protected $casts = [

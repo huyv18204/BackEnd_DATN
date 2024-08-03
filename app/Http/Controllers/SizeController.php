@@ -9,7 +9,7 @@ class SizeController extends Controller
 {
     public function index(Request $request)
     {
-        $size = $request->query('size', 5);
+        $size = $request->query('size');
         $name = $request->query('name');
         $sort = $request->query('sort', "ASC");
         $sizes = Size::query();
@@ -17,7 +17,13 @@ class SizeController extends Controller
             $sizes->where('name', $name);
         };
         $sizes->orderBy('id', $sort);
-        $data = $sizes->paginate($size);
+
+        if ($size) {
+            $data = $sizes->paginate($size);
+        } else {
+            $data = $sizes->get();
+        }
+
         return response()->json($data);
     }
 
@@ -72,17 +78,33 @@ class SizeController extends Controller
     }
 
 
-    public function trash(){
-        $trash = Size::onlyTrashed()->get();
+    public function trash(Request $request)
+    {
+        $size = $request->query('size');
+        $name = $request->query('name');
+        $sort = $request->query('sort', "ASC");
+        $sizes = Size::onlyTrashed();
+        if ($name) {
+            $sizes->where('name', $name);
+        };
+        $sizes->orderBy('id', $sort);
+
+        if ($size) {
+            $trash = $sizes->paginate($size);
+        } else {
+            $trash = $sizes->get();
+        }
+
         return response()->json($trash);
     }
 
-    public function restore($id){
+    public function restore($id)
+    {
         $size = Size::withTrashed()->find($id);
-        if(!$size){
-            return response()->json(["error"=> "Size không tồn tại"]);
+        if (!$size) {
+            return response()->json(["error" => "Size không tồn tại"]);
         }
         $size->restore();
-        return response()->json(["message"=> "Khôi phục thành công"]);
+        return response()->json(["message" => "Khôi phục thành công"]);
     }
 }

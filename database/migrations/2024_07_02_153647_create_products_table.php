@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->string("sku", 10)->unique();
+            $table->string("sku", 55)->unique();
             $table->string("slug",255)->unique();
             $table->string("material",255)->nullable();
             $table->string("name", 55);
@@ -22,7 +22,7 @@ return new class extends Migration {
             $table->unsignedBigInteger("view")->default(0);
             $table->decimal('regular_price', 8, 0);
             $table->decimal('reduced_price', 8, 0)->nullable();
-            $table->foreignIdFor(\App\Models\Category::class);
+            $table->foreignIdFor(\App\Models\Category::class)->constrained();
             $table->boolean("is_active")->default(true);
             $table->timestamp('deleted_at')->nullable();
             $table->timestamps();

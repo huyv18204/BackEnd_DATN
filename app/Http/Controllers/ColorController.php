@@ -9,7 +9,7 @@ class ColorController extends Controller
 {
     public function index(Request $request)
     {
-        $size = $request->query('size', 5);
+        $size = $request->query('size');
         $name = $request->query('name');
         $sort = $request->query('sort', "ASC");
         $colors = Color::query();
@@ -17,8 +17,12 @@ class ColorController extends Controller
             $colors->where('name', $name);
         };
         $colors->orderBy('id', $sort);
-        $data = $colors->paginate($size);
-        return response()->json($data);
+        if($size){
+            $colors = $colors->paginate($size);
+        }else{
+            $colors = $colors->get();
+        }
+        return response()->json($colors);
     }
 
     public function store(Request $request)
@@ -72,8 +76,21 @@ class ColorController extends Controller
     }
 
 
-    public function trash(){
-        $trash = Color::onlyTrashed()->get();
+    public function trash(Request $request)
+    {
+        $size = $request->query('size');
+        $name = $request->query('name');
+        $sort = $request->query('sort', "ASC");
+        $colors = Color::onlyTrashed();
+        if ($name) {
+            $colors->where('name', $name);
+        };
+        $colors->orderBy('id', $sort);
+        if($size){
+            $trash = $colors->paginate($size);
+        }else{
+            $trash = $colors->get();
+        }
         return response()->json($trash);
     }
 

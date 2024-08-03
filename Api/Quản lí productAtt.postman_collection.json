@@ -1,0 +1,301 @@
+{
+	"info": {
+		"_postman_id": "1a785c24-9734-46ec-a15a-ad74206d87c2",
+		"name": "Quản lí productAtt",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30503417",
+		"_collection_link": "https://dant88.postman.co/workspace/DANT-Workspace~c2b37beb-57f0-4874-8cc1-aa67423f8dfa/collection/30503417-1a785c24-9734-46ec-a15a-ad74206d87c2?action=share&source=collection_link&creator=30503417"
+	},
+	"item": [
+		{
+			"name": "Danh sách biến thể",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vdGVzdC5ob3N0L2FwaS9sb2dpbiIsImlhdCI6MTcxNzQwNzgxMSwiZXhwIjoxNzE3NDExNDExLCJuYmYiOjE3MTc0MDc4MTEsImp0aSI6Im9lcWhkQVpTeFpkb1JPS3IiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.pP3GKs292k9fNA6iTJ8sHUHSfZfzL2A5eY5uDHCPfdU",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts?colorId=1&sizeId=1&page=1&size=5",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"1",
+						"productAtts"
+					],
+					"query": [
+						{
+							"key": "colorId",
+							"value": "1"
+						},
+						{
+							"key": "sizeId",
+							"value": "1"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "size",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy 1 biến thể",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vdGVzdC5ob3N0L2FwaS9sb2dpbiIsImlhdCI6MTcxNzQwNzgxMSwiZXhwIjoxNzE3NDExNDExLCJuYmYiOjE3MTc0MDc4MTEsImp0aSI6Im9lcWhkQVpTeFpkb1JPS3IiLCJzdWIiOiIxIiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyJ9.pP3GKs292k9fNA6iTJ8sHUHSfZfzL2A5eY5uDHCPfdU",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts/1/size/1/show",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"1",
+						"productAtts",
+						"1",
+						"size",
+						"1",
+						"show"
+					],
+					"query": [
+						{
+							"key": "colorId",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "sizeId",
+							"value": "2",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Thêm biến thể",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vand0Lmhvc3QvYXBpL2xvZ2luIiwiaWF0IjoxNzE3NDAxMDU4LCJleHAiOjE3MTc0MDQ2NTgsIm5iZiI6MTcxNzQwMTA1OCwianRpIjoiUnRwa245Y2hLSWZBSm5kYiIsInN1YiI6IjE2IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyIsImVtYWlsIjoiaG9uZ3F1YW4yNjIwMDFAZ21haWwuY29tIn0.WL3m8yH-hV78tEc4lQPvXX7EDbY0vtODueFFoBpzQLk",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\r\n    {\r\n        \"size_id\": 1,\r\n        \"color_id\": 1,\r\n        \"stock_quantity\": 10,\r\n        \"image\": \"abc.jpg\"\r\n    },\r\n    {\r\n        \"size_id\": 2,\r\n        \"color_id\": 1,\r\n        \"stock_quantity\": 10,\r\n        \"image\": \"abc.jpg\"\r\n    }\r\n]\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"1",
+						"productAtts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cập nhật biến thể",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vand0Lmhvc3QvYXBpL2xvZ2luIiwiaWF0IjoxNzE2Mjk5NjYxLCJleHAiOjE3MTYzMDMyNjEsIm5iZiI6MTcxNjI5OTY2MSwianRpIjoidHJReWVRcFZSOE1KSng4ViIsInN1YiI6IjE0IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyIsImVtYWlsIjoiaG9uZ3F1YW4yNjIwMDFAZ21haWwuY29tIn0.pegjB9_qM4QXy5jZFUR25N68cs6DIU-uSVmen3IMySA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n        \"stock_quantity\": 12,\r\n        \"image\": \"abcz.jpg\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts/1/size/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"1",
+						"productAtts",
+						"1",
+						"size",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Xoá biến thể",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vand0Lmhvc3QvYXBpL2xvZ2luIiwiaWF0IjoxNzE2Mjk5NjYxLCJleHAiOjE3MTYzMDMyNjEsIm5iZiI6MTcxNjI5OTY2MSwianRpIjoidHJReWVRcFZSOE1KSng4ViIsInN1YiI6IjE0IiwicHJ2IjoiMjNiZDVjODk0OWY2MDBhZGIzOWU3MDFjNDAwODcyZGI3YTU5NzZmNyIsImVtYWlsIjoiaG9uZ3F1YW4yNjIwMDFAZ21haWwuY29tIn0.pegjB9_qM4QXy5jZFUR25N68cs6DIU-uSVmen3IMySA",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts/1/size/1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"1",
+						"productAtts",
+						"1",
+						"size",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

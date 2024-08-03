@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string("name")->unique();
+            $table->string('sku',55);
             $table->string('slug',255)->unique();
             $table->boolean("is_active")->default(true);
             $table->timestamp('deleted_at')->nullable();

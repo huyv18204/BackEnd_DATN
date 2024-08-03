@@ -10,6 +10,7 @@ class Size extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    protected $hidden = ['pivot'];
     protected $fillable = [
         'name',
         'is_active'
@@ -20,6 +21,6 @@ class Size extends Model
 
     public function product_atts()
     {
-        return $this->hasMany(ProductAtt::class);
+        return $this->belongsToMany(ProductAtt::class,'product_att_size');
     }
 }

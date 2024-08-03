@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -16,6 +17,7 @@ class ProductController extends Controller
         $minPrice = $request->query('minPrice');
         $maxPrice = $request->query('maxPrice');
         $sort = $request->query('sort', 'ASC');
+        $size = $request->query("size");
         $products = Product::query()
             ->with([
                 'category' => function ($query) {
@@ -34,8 +36,12 @@ class ProductController extends Controller
             $products->where('regular_price', '<=', $maxPrice);
         }
         $products->orderBy('id', $sort);
-        $products = $products->paginate(5);
 
+        if ($size) {
+            $products = $products->paginate($size);
+        } else {
+            $products = $products->get();
+        }
         return response()->json($products);
     }
 
@@ -48,20 +54,49 @@ class ProductController extends Controller
             'long_description' => 'nullable|string',
             'regular_price' => 'required|numeric|min:0',
             'reduced_price' => 'nullable|numeric|min:0',
-            'thumbnail' => 'required|string|max:255'
+            'thumbnail' => 'required|string|max:255',
+            'material' => 'string|max:255'
         ]);
+        $category = DB::table('categories')->where('id', $data['category_id'])->first();
+        $currentDay = date('d');
+        $currentMonth = date('m');
+        $skuPrev = DB::table('products')->where("sku", "LIKE", $category->sku . $currentDay . $currentMonth . "%")->orderByDesc('id')->first();
+        if ($skuPrev) {
+            $parts = explode('-', $skuPrev->sku);
+            $lastPart = (int)end($parts) + 1;
+            $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);;
+        } else {
+            $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . "001";
+        }
 
-        $data['sku'] = strtoupper(Str::random(8));
         $data['slug'] = Str::slug($request->name . "-" . $data['sku']);
         $response = Product::query()->create($data);
         if ($response) {
-            return response()->json("Thêm thành công");
+            return response()->json([
+                "message" => "Thêm thành công",
+                "data" => $response
+            ]);
         } else {
             return response()->json("Thêm thất bại", 400);
         }
     }
 
-    public function show($slug)
+    public function show($id)
+    {
+        $product = Product::query()
+            ->with([
+                'category' => function ($query) {
+                    $query->select('id', 'name')->withTrashed();
+                }])
+            ->find($id);
+
+        if (!$product) {
+            return response()->json(['error' => "Sản phẩm không tồn tại"]);
+        }
+        return response()->json($product);
+    }
+
+    public function getBySlug($slug)
     {
         $product = Product::query()
             ->with([
@@ -85,7 +120,8 @@ class ProductController extends Controller
             'long_description' => 'nullable|string',
             'regular_price' => 'required|numeric|min:0',
             'reduced_price' => 'nullable|numeric|min:0',
-            'thumbnail' => 'required|string|max:255'
+            'thumbnail' => 'required|string|max:255',
+            'material' => 'string|max:255'
         ]);
         $product = Product::query()->find($id);
         if (!$product) {
@@ -115,9 +151,39 @@ class ProductController extends Controller
 
     }
 
-    public function trash()
+    public function trash(Request $request)
     {
-        $trash = Product::onlyTrashed()->get();
+        $categoryId = $request->query('categoryId');
+        $name = $request->query('name');
+        $minPrice = $request->query('minPrice');
+        $maxPrice = $request->query('maxPrice');
+        $sort = $request->query('sort', 'ASC');
+        $size = $request->query("size");
+        $products = Product::onlyTrashed()
+            ->with([
+                'category' => function ($query) {
+                    $query->select('id', 'name')->withTrashed();
+                }]);
+        if ($categoryId) {
+            $products->where('category_id', $categoryId);
+        }
+        if ($name) {
+            $products->where('name', 'like', '%' . $name . '%');
+        }
+        if ($minPrice) {
+            $products->where('regular_price', '>=', $minPrice);
+        }
+        if ($maxPrice) {
+            $products->where('regular_price', '<=', $maxPrice);
+        }
+        $products->orderBy('id', $sort);
+
+        if ($size) {
+            $trash = $products->paginate($size);
+        } else {
+            $trash = $products->get();
+        }
+
         return response()->json($trash);
     }
 

@@ -11,7 +11,7 @@ class CategoryController extends Controller
     public function index(Request $request)
     {
         $sort = $request->input('sort', 'ASC');
-        $size = $request->query('size', 5);
+        $size = $request->query('size');
         $query = Category::query();
         $search['name'] = $request->name;
         $search['id'] = $request->id;
@@ -20,7 +20,12 @@ class CategoryController extends Controller
                 $query->where($key, $value);
             }
         }
-        $categories = $query->orderBy('id', $sort)->paginate($size);
+        $query->orderBy('id', $sort);
+        if ($size) {
+            $categories = $query->paginate($size);
+        } else {
+            $categories = $query->get();
+        }
         return response()->json($categories);
     }
 
@@ -31,10 +36,14 @@ class CategoryController extends Controller
                 'name' => 'required|min:6|max:100|unique:categories,name',
             ]
         );
-
         $category['slug'] = Str::slug($request->name);
+        $words = explode(' ', $category['name']);
+        $initials = '';
+        foreach ($words as $word) {
+            $initials .= mb_substr($word, 0, 1);
+        }
+        $category['sku'] = $initials;
         $response = Category::query()->create($category);
-
         if (!$response) {
             return response()->json([
                 'error' => 'Thêm thất bại'
@@ -61,6 +70,12 @@ class CategoryController extends Controller
 
         if ($category->name != $request->name) {
             $data['slug'] = Str::slug($request->name);
+            $words = explode(' ', $category->name);
+            $initials = '';
+            foreach ($words as $word) {
+                $initials .= mb_substr($word, 0, 1);
+            }
+            $data['sku'] = $initials;
         }
 
         $response = $category->update($data);
@@ -94,7 +109,19 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function show($slug)
+    public function show($id)
+    {
+        $category = Category::query()->find($id);
+
+        if (!$category) {
+            return response()->json([
+                'message' => 'Danh mục không tồn tại'
+            ]);
+        }
+        return response()->json($category);
+    }
+
+    public function getBySlug($slug)
     {
         $category = Category::query()->where('slug', $slug)->first();
 
@@ -106,18 +133,35 @@ class CategoryController extends Controller
         return response()->json($category);
     }
 
-    public function trash(){
-        $trash = Category::onlyTrashed()->get();
+    public function trash(Request $request)
+    {
+        $sort = $request->input('sort', 'ASC');
+        $size = $request->query('size');
+        $query = Category::onlyTrashed();
+        $search['name'] = $request->name;
+        $search['id'] = $request->id;
+        foreach ($search as $key => $value) {
+            if ($value) {
+                $query->where($key, $value);
+            }
+        }
+        $query->orderBy('id', $sort);
+        if ($size) {
+            $trash = $query->paginate($size);
+        } else {
+            $trash = $query->get();
+        }
         return response()->json($trash);
     }
 
-    public function restore($id){
+    public function restore($id)
+    {
         $category = Category::withTrashed()->find($id);
-        if(!$category){
-            return response()->json(["error"=> "Danh mục không tồn tại"]);
+        if (!$category) {
+            return response()->json(["error" => "Danh mục không tồn tại"]);
         }
         $category->restore();
-        return response()->json(["message"=> "Khôi phục thành công"]);
+        return response()->json(["message" => "Khôi phục thành công"]);
     }
 
 }

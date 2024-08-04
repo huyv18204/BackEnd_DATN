@@ -42,7 +42,13 @@ class CategoryController extends Controller
         foreach ($words as $word) {
             $initials .= mb_substr($word, 0, 1);
         }
-        $category['sku'] = $initials;
+        $skuUnique = $initials;
+        $count = 1;
+        while (Category::where('sku', $skuUnique)->exists()) {
+            $skuUnique = $initials . '-' . $count;
+            $count++;
+        }
+        $category['sku'] = $skuUnique;
         $response = Category::query()->create($category);
         if (!$response) {
             return response()->json([
@@ -56,43 +62,46 @@ class CategoryController extends Controller
 
     public function update(Request $request, int $id)
     {
-        $category = Category::query()->find($id);
+        $category = Category::find($id);
         if (!$category) {
-            return response()->json(
-                [
-                    'error' => 'Danh mục không tồn tại'
-                ]
-            );
+            return response()->json([
+                'error' => 'Danh mục không tồn tại'
+            ], 404);
         }
         $data = $request->validate([
-            'name' => 'required|min:6|max:100|unique:categories,name,' . $id
+            'name' => 'required|min:6|max:100|unique:categories,name,' . $id,
         ]);
 
-        if ($category->name != $request->name) {
+        if ($category->name !== $request->name) {
             $data['slug'] = Str::slug($request->name);
-            $words = explode(' ', $category->name);
+
+            $words = explode(' ', $request->name);
             $initials = '';
             foreach ($words as $word) {
                 $initials .= mb_substr($word, 0, 1);
             }
-            $data['sku'] = $initials;
+            $skuUnique = $initials;
+            $count = 1;
+            while (Category::where('sku', $skuUnique)->where('id', '!=', $id)->exists()) {
+                $skuUnique = $initials . '-' . $count;
+                $count++;
+            }
+            $data['sku'] = $skuUnique;
         }
 
         $response = $category->update($data);
 
         if (!$response) {
-            return response()->json(
-                [
-                    'error' => 'Cập nhật thất bại'
-                ]
-            );
+            return response()->json([
+                'error' => 'Cập nhật thất bại'
+            ], 500);
         }
-        return response()->json(
-            [
-                'message' => 'Cập nhật thành công'
-            ]
-        );
+
+        return response()->json([
+            'message' => 'Cập nhật thành công'
+        ], 200);
     }
+
 
     public function destroy(int $id)
     {
@@ -163,6 +172,4 @@ class CategoryController extends Controller
         $category->restore();
         return response()->json(["message" => "Khôi phục thành công"]);
     }
-
 }
-

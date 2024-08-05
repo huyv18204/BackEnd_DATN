@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\ConvertDatetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,8 +17,11 @@ class ProductAtt extends Model
         'image',
         'is_active'
     ];
+
     protected $casts = [
         'is_active' => "boolean",
+        'created_at' => ConvertDatetime::class,
+        'updated_at' => ConvertDatetime::class,
     ];
 
     public function product()
@@ -32,6 +36,6 @@ class ProductAtt extends Model
 
     public function sizes()
     {
-        return $this->belongsToMany(Size::class, 'product_att_size', 'product_att_id','size_id');
+        return $this->belongsToMany(Size::class, 'product_att_size', 'product_att_id', 'size_id');
     }
 }

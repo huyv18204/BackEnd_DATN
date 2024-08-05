@@ -22,7 +22,8 @@ class ProductController extends Controller
             ->with([
                 'category' => function ($query) {
                     $query->select('id', 'name')->withTrashed();
-                }]);
+                }
+            ]);
         if ($categoryId) {
             $products->where('category_id', $categoryId);
         }
@@ -56,6 +57,15 @@ class ProductController extends Controller
             'reduced_price' => 'nullable|numeric|min:0',
             'thumbnail' => 'required|string|max:255',
             'material' => 'string|max:255'
+        ], [], [
+            'category_id' => 'Id danh mục',
+            'name' => 'Tên sản phẩm',
+            'short_description' => 'Mô tả ngắn',
+            'long_description' => 'Mô tả dài',
+            'regular_price' => 'Giá',
+            'reduced_price' => 'Giá khuyến mại',
+            'thumbnail' => 'Ảnh sản phẩm',
+            'material' => 'chất liệu',
         ]);
         $category = DB::table('categories')->where('id', $data['category_id'])->first();
         $currentDay = date('d');
@@ -87,7 +97,8 @@ class ProductController extends Controller
             ->with([
                 'category' => function ($query) {
                     $query->select('id', 'name')->withTrashed();
-                }])
+                }
+            ])
             ->find($id);
 
         if (!$product) {
@@ -102,7 +113,8 @@ class ProductController extends Controller
             ->with([
                 'category' => function ($query) {
                     $query->select('id', 'name')->withTrashed();
-                }])
+                }
+            ])
             ->where('slug', $slug)->first();
 
         if (!$product) {
@@ -122,6 +134,15 @@ class ProductController extends Controller
             'reduced_price' => 'nullable|numeric|min:0',
             'thumbnail' => 'required|string|max:255',
             'material' => 'string|max:255'
+        ], [], [
+            'category_id' => 'Id danh mục',
+            'name' => 'Tên sản phẩm',
+            'short_description' => 'Mô tả ngắn',
+            'long_description' => 'Mô tả dài',
+            'regular_price' => 'Giá',
+            'reduced_price' => 'Giá khuyến mại',
+            'thumbnail' => 'Ảnh sản phẩm',
+            'material' => 'chất liệu',
         ]);
         $product = Product::query()->find($id);
         if (!$product) {
@@ -135,9 +156,7 @@ class ProductController extends Controller
             return response()->json("Cập nhật thành công");
         } else {
             return response()->json("Cập nhật thất bại");
-
         }
-
     }
 
     public function destroy($id)
@@ -148,7 +167,6 @@ class ProductController extends Controller
         }
         $product->delete();
         return response()->json("Xoá thành công");
-
     }
 
     public function trash(Request $request)
@@ -163,7 +181,8 @@ class ProductController extends Controller
             ->with([
                 'category' => function ($query) {
                     $query->select('id', 'name')->withTrashed();
-                }]);
+                }
+            ]);
         if ($categoryId) {
             $products->where('category_id', $categoryId);
         }

@@ -12,157 +12,139 @@ class CategoryController extends Controller
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
+        $searchParams = $request->only(['name', 'id']);
+
         $query = Category::query();
-        $search['name'] = $request->name;
-        $search['id'] = $request->id;
-        foreach ($search as $key => $value) {
+
+        foreach ($searchParams as $key => $value) {
             if ($value) {
-                $query->where($key, $value);
+                $query->where($key, 'LIKE', "%{$value}%");
             }
         }
+
         $query->orderBy('id', $sort);
-        if ($size) {
-            $categories = $query->paginate($size);
-        } else {
-            $categories = $query->get();
-        }
+        $categories = $size ? $query->paginate($size) : $query->get();
         return response()->json($categories);
     }
 
     public function store(Request $request)
     {
-        $category = $request->validate(
-            [
-                'name' => 'required|min:6|max:100|unique:categories,name',
-            ]
-        );
-        $category['slug'] = Str::slug($request->name);
-        $words = explode(' ', $category['name']);
-        $initials = '';
-        foreach ($words as $word) {
-            $initials .= mb_substr($word, 0, 1);
-        }
-        $category['sku'] = $initials;
-        $response = Category::query()->create($category);
-        if (!$response) {
-            return response()->json([
-                'error' => 'Thêm thất bại'
-            ]);
-        }
-        return response()->json([
-            'message' => 'Thêm mới thành công'
+        $data = $request->validate([
+            'name' => 'required|min:6|max:100|unique:categories,name',
+        ], [], [
+            'name' => 'tên danh mục'
         ]);
+
+        $data['slug'] = Str::slug($request->name);
+
+        $initials = implode('', array_map(fn ($word) => mb_substr($word, 0, 1), explode(' ', $request->name)));
+        $data['sku'] = $initials;
+        $count = 1;
+        while (Category::where('sku', $data['sku'])->exists()) {
+            $data['sku'] = "{$initials}-{$count}";
+            $count++;
+        }
+
+        $category = Category::create($data);
+
+        return response()->json([
+            $category ? 'message' : 'error' => $category ? 'Thêm mới thành công' : 'Thêm thất bại'
+        ], $category ? 200 : 500);
     }
 
     public function update(Request $request, int $id)
     {
-        $category = Category::query()->find($id);
+        $category = Category::find($id);
+
         if (!$category) {
-            return response()->json(
-                [
-                    'error' => 'Danh mục không tồn tại'
-                ]
-            );
+            return response()->json(['error' => 'Danh mục không tồn tại'], 404);
         }
+
         $data = $request->validate([
-            'name' => 'required|min:6|max:100|unique:categories,name,' . $id
+            'name' => 'required|min:6|max:100|unique:categories,name,' . $id,
+        ], [], [
+            'name' => 'Tên Danh mục'
         ]);
 
         if ($category->name != $request->name) {
             $data['slug'] = Str::slug($request->name);
-            $words = explode(' ', $category->name);
-            $initials = '';
-            foreach ($words as $word) {
-                $initials .= mb_substr($word, 0, 1);
-            }
-            $data['sku'] = $initials;
         }
 
         $response = $category->update($data);
 
-        if (!$response) {
-            return response()->json(
-                [
-                    'error' => 'Cập nhật thất bại'
-                ]
-            );
-        }
-        return response()->json(
-            [
-                'message' => 'Cập nhật thành công'
-            ]
-        );
+        return response()->json([
+            $response ? 'message' : 'error' => $response ? 'Cập nhật danh mục thành công' : 'Cập nhật danh mục thất bại'
+        ], $response ? 200 : 500);
     }
 
     public function destroy(int $id)
     {
-        $category = Category::query()->find($id);
+        $category = Category::find($id);
 
         if (!$category) {
-            return response()->json([
-                'message' => 'Danh mục không tồn tại'
-            ]);
+            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
         }
+
         $category->delete();
-        return response()->json([
-            'message' => 'Xóa thành công'
-        ]);
+
+        return response()->json(['message' => 'Xóa thành công'], 200);
     }
 
-    public function show($id)
+    public function show(int $id)
     {
-        $category = Category::query()->find($id);
+        $category = Category::find($id);
 
         if (!$category) {
-            return response()->json([
-                'message' => 'Danh mục không tồn tại'
-            ]);
+            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
         }
-        return response()->json($category);
+
+        return response()->json($category, 200);
     }
 
-    public function getBySlug($slug)
+    public function getBySlug(string $slug)
     {
-        $category = Category::query()->where('slug', $slug)->first();
+        $category = Category::where('slug', $slug)->first();
 
         if (!$category) {
-            return response()->json([
-                'message' => 'Danh mục không tồn tại'
-            ]);
+            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
         }
-        return response()->json($category);
+
+        return response()->json($category, 200);
     }
 
     public function trash(Request $request)
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
+        $searchParams = $request->only(['name', 'id']);
+
         $query = Category::onlyTrashed();
-        $search['name'] = $request->name;
-        $search['id'] = $request->id;
-        foreach ($search as $key => $value) {
+
+        foreach ($searchParams as $key => $value) {
             if ($value) {
-                $query->where($key, $value);
+                $query->where($key, 'LIKE', "%{$value}%");
             }
         }
+
         $query->orderBy('id', $sort);
-        if ($size) {
-            $trash = $query->paginate($size);
-        } else {
-            $trash = $query->get();
-        }
-        return response()->json($trash);
+        $trash = $size ? $query->paginate($size) : $query->get();
+        return response()->json($trash, 200);
     }
 
-    public function restore($id)
+    public function restore(int $id)
     {
         $category = Category::withTrashed()->find($id);
+
         if (!$category) {
-            return response()->json(["error" => "Danh mục không tồn tại"]);
+            return response()->json(['error' => 'Danh mục không tồn tại'], 404);
         }
+
+        if (!$category->trashed()) {
+            return response()->json(['error' => 'Danh mục chưa bị xóa'], 400);
+        }
+
         $category->restore();
-        return response()->json(["message" => "Khôi phục thành công"]);
+
+        return response()->json(['message' => 'Khôi phục thành công'], 200);
     }
-
 }
-

@@ -12,7 +12,7 @@ class CategoryController extends Controller
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
-        $searchParams = $request->only(['name', 'id']);
+        $searchParams = $request->only(['id', 'name']);
 
         $query = Category::query();
 
@@ -79,44 +79,35 @@ class CategoryController extends Controller
 
     public function destroy(int $id)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
-            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
+        if ($category = Category::find($id)) {
+            $category->delete();
+            return response()->json(['message' => 'Xóa danh mục thành công'], 200);
         }
 
-        $category->delete();
-
-        return response()->json(['message' => 'Xóa thành công'], 200);
+        return response()->json(['message' => 'Danh mục không tồn tại'], 404);
     }
 
     public function show(int $id)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
-            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
+        if ($category = Category::find($id)) {
+            return response()->json($category, 200);
         }
-
-        return response()->json($category, 200);
+        return response()->json(['message' => 'Danh mục không tồn tại'], 404);
     }
 
     public function getBySlug(string $slug)
     {
-        $category = Category::where('slug', $slug)->first();
-
-        if (!$category) {
-            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
+        if ($category = Category::where('slug', $slug)->first()) {
+            return response()->json($category, 200);
         }
-
-        return response()->json($category, 200);
+        return response()->json(['message' => 'Danh mục không tồn tại'], 404);
     }
 
     public function trash(Request $request)
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
-        $searchParams = $request->only(['name', 'id']);
+        $searchParams = $request->only(['id', 'name']);
 
         $query = Category::onlyTrashed();
 
@@ -133,18 +124,11 @@ class CategoryController extends Controller
 
     public function restore(int $id)
     {
-        $category = Category::withTrashed()->find($id);
-
-        if (!$category) {
-            return response()->json(['error' => 'Danh mục không tồn tại'], 404);
+        if ($category = Category::withTrashed()->find($id)) {
+            $category->restore();
+            return response()->json(['message' => 'Khôi phục thành công'], 200);
         }
 
-        if (!$category->trashed()) {
-            return response()->json(['error' => 'Danh mục chưa bị xóa'], 400);
-        }
-
-        $category->restore();
-
-        return response()->json(['message' => 'Khôi phục thành công'], 200);
+        return response()->json(['error' => 'Danh mục không tồn tại'], 404);
     }
 }

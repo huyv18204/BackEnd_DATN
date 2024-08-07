@@ -35,6 +35,7 @@ Route::prefix("v1")->group(function () {
         Route::get('/{id}/show', [CategoryController::class, 'show']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
+
     Route::prefix("products")->group(function () {
         Route::put('/{id}/restore', [ProductController::class, 'restore']);
         Route::get("/", [ProductController::class, 'index']);
@@ -44,14 +45,13 @@ Route::prefix("v1")->group(function () {
         Route::get("/{slug}", [ProductController::class, 'getBySlug']);
         Route::get("/{id}/show", [ProductController::class, 'show']);
         Route::delete("/{id}", [ProductController::class, 'destroy']);
-
     });
     Route::prefix('products/{product_id}/productAtts')->group(function () {
         Route::get('/', [ProductAttController::class, 'index']);
         Route::post('/', [ProductAttController::class, 'store']);
-        Route::put('/{id}/size/{size_id}', [ProductAttController::class, 'update']);
-        Route::delete('/{id}/size/{size_id}', [ProductAttController::class, 'destroy']);
-        Route::get("/{id}/size/{size_id}/show", [ProductAttController::class, 'show']);
+        Route::put('/{id}', [ProductAttController::class, 'update']);
+        Route::delete('/{id}', [ProductAttController::class, 'destroy']);
+        Route::get("/{id}/show", [ProductAttController::class, 'show']);
     });
 
 

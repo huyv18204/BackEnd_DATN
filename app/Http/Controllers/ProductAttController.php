@@ -2,237 +2,114 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\ProductAtt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ProductAttController extends Controller
 {
-    public function index(Request $request, $product_id)
+    public function index(Request $request, int $product_id)
     {
         $size = $request->query('size');
-        $sizeId = $request->query('sizeId');
-        $colorId = $request->query('colorId');
+        $query = ProductAtt::query()->where('product_id', $product_id);
 
-
-        $query = DB::table('product_att_size')
-            ->join('product_atts', 'product_att_size.product_att_id', '=', 'product_atts.id')
-            ->join('sizes', 'product_att_size.size_id', '=', 'sizes.id')
-            ->join('colors', 'product_atts.color_id', '=', 'colors.id')
-            ->where('product_atts.product_id', $product_id)
-            ->select(
-
-                'sizes.name as size_name',
-                'colors.name as color_name', 'product_atts.*', 'product_att_size.stock_quantity');
-
-        if ($colorId) {
-            $query->where('product_atts.color_id', $colorId);
-        }
-        if ($sizeId) {
-            $query->where('product_att_size.size_id', $colorId);
+        $searchParams = $request->only(['color_id', 'size_id']);
+        foreach ($searchParams as $key => $value) {
+            if (!empty($value)) {
+                $query->where($key, $value);
+            }
         }
 
-        if ($size) {
-            $productVariants = $query->paginate($size);
-        } else {
-            $productVariants = $query->get();
-        }
+        $query->orderByDesc('id');
 
-        return response()->json($productVariants);
+        $productAtts = $size ? $query->paginate($size) : $query->get();
 
+        return response()->json($productAtts);
     }
 
     public function store(Request $request, int $product_id)
     {
-        DB::beginTransaction();
+        $data = $request->validate([
+            '*.size_id' => 'required|integer|exists:sizes,id',
+            '*.color_id' => 'required|integer|exists:colors,id',
+            '*.stock_quantity' => 'required|integer|min:0',
+            '*.image' => 'nullable|string|max:255',
+        ], [], [
+            '*.size_id' => 'Kích thước',
+            '*.color_id' => 'Màu sắc',
+            '*.stock_quantity' => 'Số lượng',
+            '*.image' => 'Ảnh biến thể',
+        ]);
+
+        if (empty($data)) {
+            return response()->json(['message' => 'Không có dữ liệu biến thể'], 400);
+        }
 
         try {
-            $variants = $request->validate([
-                '*' => 'required|array',
-                '*.size_id' => 'required|exists:sizes,id',
-                '*.color_id' => 'required|exists:colors,id',
-                '*.stock_quantity' => 'required|integer|min:0',
-                '*.image' => 'nullable|string|max:255',
-            ]);
+            DB::beginTransaction();
 
-            $errors = [];
-
-            foreach ($variants as $variant) {
-                $variant['product_id'] = $product_id;
-                $existingVariantSize = ProductAtt::query()
-                    ->where('color_id', $variant['color_id'])
-                    ->where('product_id', $product_id)
-                    ->whereHas('sizes', function ($query) use ($variant) {
-                        $query->where('sizes.id', $variant['size_id']);
-                    })
-                    ->first();
-
-
-                $existingVariant = ProductAtt::query()
-                    ->where('color_id', $variant['color_id'])
-                    ->where('product_id', $product_id)
-                    ->first();
-
-                if ($existingVariantSize) {
-                    $errors[] = [
-                        'message' => 'Size và color đã tồn tại'
-                    ];
-                } else {
-                    if (empty($existingVariant)) {
-                        $responseProductAtt = ProductAtt::query()->create([
-                            "product_id" => $variant['product_id'],
-                            "color_id" => $variant['color_id'],
-                            "image" => $variant['image']
-                        ]);
-
-                        $responseProductAttSize = DB::table('product_att_size')->insert([
-                            "product_att_id" => $responseProductAtt->id,
-                            "size_id" => $variant['size_id'],
-                            "stock_quantity" => $variant['stock_quantity'],
-                        ]);
-
-                        if (!$responseProductAtt || !$responseProductAttSize) {
-                            DB::rollBack();
-                            return response()->json([
-                                'message' => 'Thêm thất bại',
-                            ], 500);
-                        }
-                    } else {
-                        $responseProductAttSize = DB::table('product_att_size')->insert([
-                            "product_att_id" => $existingVariant->id,
-                            "size_id" => $variant['size_id'],
-                            "stock_quantity" => $variant['stock_quantity'],
-                        ]);
-                        if (!$responseProductAttSize) {
-                            DB::rollBack();
-                            return response()->json([
-                                'message' => 'Thêm thất bại',
-                            ], 500);
-                        }
-                    }
-                }
-            }
-
-            if (count($errors) > 0) {
-                DB::rollBack();
-                return response()->json([
-                    'message' => 'Một số biến thể không được thêm thành công',
-                    'errors' => $errors
-                ], 422);
+            foreach ($data as $item) {
+                ProductAtt::create([
+                    'product_id' => $product_id,
+                    'size_id' => $item['size_id'],
+                    'color_id' => $item['color_id'],
+                    'stock_quantity' => $item['stock_quantity'],
+                    'image' => $item['image'] ?? null,
+                ]);
             }
 
             DB::commit();
-            return response()->json([
-                'message' => 'Thêm mới thành công',
-            ], 201);
-
-        } catch (\Exception $e) {
+            return response()->json(['message' => 'Thêm mới biến thể thành công']);
+        } catch (\Illuminate\Database\QueryException $exception) {
             DB::rollBack();
-            return response()->json([
-                'message' => 'Có lỗi xảy ra',
-                'error' => $e->getMessage()
-            ], 500);
+
+            if ($exception->errorInfo[1] == 1062) {
+                return response()->json(['message' => 'Kích thước và màu sắc đã tồn tại'], 409);
+            }
+            return response()->json(['message' => 'Thêm mới thất bại'], 400);
         }
     }
 
 
-    public function update(Request $request, int $product_id, int $id, int $size_id)
+    public function update(Request $request, int $product_id, int $product_att_id)
     {
-        DB::beginTransaction();
-        try {
-            $productAtt = ProductAtt::query()->with('sizes')->where([
-                ['id', $id],
-                ['product_id', $product_id]
-            ])->first();
+        $data = $request->only(['stock_quantity', 'image']);
 
-            if (empty($productAtt) || empty($productAtt->sizes[0]->id)) {
-                DB::rollBack();
-                return response()->json(['error' => "Biến thể không tồn tại"]);
-            }
+        $product_att = ProductAtt::find($product_att_id);
 
-            $data = $request->validate([
-                'stock_quantity' => 'required|integer|min:0',
-                'image' => 'nullable|string|max:255',
-            ]);
-
-            $productAtt->update([
-                "image" => $data['image']
-            ]);
-            DB::table('product_att_size')->where([
-                ['product_att_id', $id],
-                ['size_id', $size_id],
-            ])->update([
-                "stock_quantity" => $data['stock_quantity']
-            ]);
-            DB::commit();
-            return response()->json([
-                'message' => 'Cập nhật thành công',
-            ]);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Có lỗi xảy ra',
-                'error' => $e->getMessage()
-            ], 500);
+        if (!$product_att) {
+            return response()->json(['message' => 'Biến thể không tồn tại'], 404);
         }
-    }
 
-    public function destroy(int $product_id, int $id, int $size_id)
-    {
-        DB::beginTransaction();
-        try {
-            $productAtt = ProductAtt::query()->with('sizes')->where([
-                ['id', $id],
-                ['product_id', $product_id]
-            ])->first();
-
-            if (empty($productAtt) || empty($productAtt->sizes[0]->id)) {
-                DB::rollBack();
-                return response()->json(['error' => "Biến thể không tồn tại"]);
-            }
-            $countRecord = DB::table('product_att_size')->where('product_att_id', $id)->count();
-            if ($countRecord == 1) {
-                $productAtt->delete();
-                DB::table('product_att_size')->where([
-                    ['product_att_id', $id],
-                    ['size_id', $size_id]
-                ])->delete();
-            } else {
-                DB::table('product_att_size')->where([
-                    ['product_att_id', $id],
-                    ['size_id', $size_id]
-                ])->delete();
-            }
-            DB::commit();
-            return response()->json(['message' => 'Xoá thành công']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
-            ], 500);
+        if ($product_att->update(
+            [
+                'id' => $product_att_id,
+                'stock_quantity' => $data['stock_quantity'],
+                'image' => $data['image'] ?? null,
+            ]
+        )) {
+            return response()->json(['message' => 'Cập nhật biến thể thành công'], 200);
         }
+        return response()->json(['message' => 'Cập nhật biến thể thất bại'], 400);
     }
 
 
-    public function show(int $product_id, int $id, int $size_id)
+    public function destroy(int $product_id, int $product_att_id)
     {
-        $productAtt = ProductAtt::query()->with([
-            'sizes' => function ($query) use ($size_id) {
-                $query->select('id', 'name')->where("id", $size_id)->withTrashed();
-            },
-            'color' => function ($query) {
-                $query->select('id', 'name')->withTrashed();
-            }
-        ])->where([
-            ['id', $id],
-            ['product_id', $product_id]
-        ])->first();
-
-        if (empty($productAtt) || empty($productAtt->sizes[0]->id)) {
-            return response()->json(['error' => "Biến thể không tồn tại"]);
+        if ($product_att = ProductAtt::query()->find($product_att_id)) {
+            $product_att->delete();
+            return response()->json(['message' => 'Xóa biến thể thành công'], 200);
         }
+        return response()->json(['message' => 'Biến thể không tồn tại'], 404);
+    }
 
-        return response()->json($productAtt);
+
+    public function show(int $product_id, int $product_att_id)
+    {
+        if ($productAtt = ProductAtt::query()->find($product_att_id)) {
+            return response()->json($productAtt, 200);
+        }
+        return response()->json(['message' => 'Biến thể không tồn tại'], 404);
     }
 }
-

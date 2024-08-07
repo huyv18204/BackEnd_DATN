@@ -12,6 +12,10 @@ class ProductAttController extends Controller
     public function index(Request $request, int $product_id)
     {
         $size = $request->query('size');
+        $productAtt = ProductAtt::query()->where('product_id', $product_id)->first();
+        if (!$productAtt) {
+            return response()->json(['message' => "Biến thể không tồn tại"], 404);
+        }
         $query = ProductAtt::query()->where('product_id', $product_id);
 
         $searchParams = $request->only(['color_id', 'size_id']);

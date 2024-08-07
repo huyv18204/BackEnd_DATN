@@ -1,0 +1,228 @@
+{
+	"info": {
+		"_postman_id": "191fccb7-d201-4ea8-87ca-550cffe15989",
+		"name": "Quản lí danh mục",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "33653984"
+	},
+	"item": [
+		{
+			"name": "Danh sách danh mục",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": ""
+					}
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/categories?sort=DESC&size=5&page=1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"categories"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "DESC"
+						},
+						{
+							"key": "name",
+							"value": "hu hu hu",
+							"disabled": true
+						},
+						{
+							"key": "size",
+							"value": "5"
+						},
+						{
+							"key": "page",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Danh mục bị xoá",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": {
+						"token": ""
+					}
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/categories/trash?sort=DESC&name=hu hu hu&size=2&page=2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"categories",
+						"trash"
+					],
+					"query": [
+						{
+							"key": "sort",
+							"value": "DESC"
+						},
+						{
+							"key": "name",
+							"value": "hu hu hu"
+						},
+						{
+							"key": "size",
+							"value": "2"
+						},
+						{
+							"key": "page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Thêm danh mục",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"Quốc Huy\",\r\n    \"sku\": \"JB\",\r\n    \"slug\": \"\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/api/v1/categories"
+			},
+			"response": []
+		},
+		{
+			"name": "Cập nhật danh mục",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\" : \"Con cac\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://127.0.0.1:8000/api/v1/categories/11"
+			},
+			"response": []
+		},
+		{
+			"name": "Xoá danh mục",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": "http://127.0.0.1:8000/api/v1/categories/8"
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy 1 danh mục theo id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://127.0.0.1:8000/api/v1/categories/1/show"
+			},
+			"response": []
+		},
+		{
+			"name": "Khôi phục danh mục đã xoá",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": "http://127.0.0.1:8000/api/v1/categories/1/restore"
+			},
+			"response": []
+		},
+		{
+			"name": "Lấy 1 danh mục theo slug",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://127.0.0.1:8000/api/v1/categories/huy-huuy"
+			},
+			"response": []
+		}
+	]
+}

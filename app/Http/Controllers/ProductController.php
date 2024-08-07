@@ -49,6 +49,7 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
+        $data = $request->validate(['name' => 'required|unique:products,name'], [], ['name' => 'Tên sản phẩm']);
         $data = $request->except(['productatt']);
         $category = Category::findOrFail($data['category_id']);
         $currentDay = date('d');
@@ -68,7 +69,6 @@ class ProductController extends Controller
 
         $data['slug'] = Str::slug($request->name . "-" . $data['sku']);
         $product_atts = $request->product_att;
-        // $product_atts = $request->input('product_att', []);
 
         try {
             DB::beginTransaction();
@@ -136,6 +136,11 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        $data = $request->validate(
+            ['name' => 'required|unique:products,name,' . $id],
+            [],
+            ['name' => 'Tên sản phẩm']
+        );
         $data = $request->all();
         $product = Product::query()->find($id);
         if (!$product) {

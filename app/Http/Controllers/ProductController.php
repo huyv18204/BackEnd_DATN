@@ -153,14 +153,20 @@ class ProductController extends Controller
         $message = $response ? 'Cập nhật sản phẩm thành công' : 'Cập nhật sản phẩm thất bại';
         return response()->json(["message" => $message]);
     }
-
     public function getProductAtts(int $id)
     {
-        if ($product = Product::query()->with('product_atts')->find($id)) {
+        $product = Product::with(['product_atts.size:name,id', 'product_atts.color:name,id'])->find($id);
+        if ($product) {
+            $product->product_atts->makeHidden(['size_id', 'color_id']);
             return response()->json($product, 200);
         }
-        return response()->json(['message' => 'sản phẩm không tồn tại'], 404);
+
+        return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
     }
+
+
+
+
 
     public function destroy($id)
     {

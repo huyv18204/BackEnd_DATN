@@ -24,7 +24,6 @@ class Product extends Model
         "reduced_price",
         "category_id",
         "is_active"
-
     ];
 
     protected $casts = [

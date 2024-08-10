@@ -16,7 +16,6 @@ class FakeDataSeeder extends Seeder
     {
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        DB::table('product_att_size')->truncate();
         DB::table('product_atts')->truncate();
         DB::table('colors')->truncate();
         DB::table('sizes')->truncate();
@@ -25,7 +24,7 @@ class FakeDataSeeder extends Seeder
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
 
-        for($i = 1; $i <= 10; $i++){
+        for ($i = 1; $i <= 10; $i++) {
             $name = fake()->name();
 
             $words = explode(' ', $name);
@@ -35,7 +34,7 @@ class FakeDataSeeder extends Seeder
             }
             DB::table('categories')->insert([
                 'name' => $name,
-                'slug' =>Str::slug($name),
+                'slug' => Str::slug($name),
                 'sku' => strtoupper($initials)
             ]);
         }
@@ -62,24 +61,24 @@ class FakeDataSeeder extends Seeder
 
         for ($i = 1; $i <= 10; $i++) {
             $categoryId = rand(1, $countCategories);
-            $category = DB::table('categories')->where('id',$categoryId)->first();
+            $category = DB::table('categories')->where('id', $categoryId)->first();
             $currentDay = date('d');
             $currentMonth = date('m');
-            $DayAndMonth = $category->sku.$currentDay.$currentMonth;
+            $DayAndMonth = $category->sku . $currentDay . $currentMonth;
 
-            $stt = DB::table('products')->where("sku", "LIKE", $DayAndMonth."%")->orderByDesc('id')->first();
+            $stt = DB::table('products')->where("sku", "LIKE", $DayAndMonth . "%")->orderByDesc('id')->first();
 
-            if($stt){
+            if ($stt) {
                 $parts = explode('-', $stt->sku);
-                $lastPart =(int)end($parts) + 1;
-                $sku = $category->sku.$currentDay.$currentMonth.'-'.str_pad($lastPart, 3, '0', STR_PAD_LEFT);;
-            }else{
-                $sku = $category->sku.$currentDay.$currentMonth.'-'. "001";
+                $lastPart = (int)end($parts) + 1;
+                $sku = $category->sku . $currentDay . $currentMonth . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);;
+            } else {
+                $sku = $category->sku . $currentDay . $currentMonth . '-' . "001";
             }
             $name = fake()->name() . $i;
             DB::table('products')->insert([
                 "slug" => Str::slug($name . '-' . $sku),
-                "material"=> "Vai",
+                "material" => "Vai",
                 "sku" => $sku,
                 'name' => $name,
                 "thumbnail" => fake()->imageUrl(30, 30),
@@ -98,27 +97,18 @@ class FakeDataSeeder extends Seeder
         $colors = DB::table('colors')->get();
 
         foreach ($products as $product) {
+            foreach ($sizes as $size) {
                 foreach ($colors as $color) {
                     DB::table('product_atts')->insert([
                         'product_id' => $product->id,
+                        'size_id' => $size->id,
                         'color_id' => $color->id,
                         'image' => fake()->imageUrl(30, 30),
+                        'stock_quantity' => rand(1, 10),
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
                 }
-
-        }
-
-        $productAtts = DB::table('product_atts')->get();
-        foreach ($productAtts as $productAtt){
-            foreach ($sizes as $size) {
-                DB::table('product_att_size')->insert([
-                   'product_att_id' => $productAtt->id,
-                    'size_id' => $size->id,
-                    'stock_quantity' => rand(1, 10),
-                ]);
-
             }
         }
     }

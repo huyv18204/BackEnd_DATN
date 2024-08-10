@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "6473b08e-b896-45c5-96f8-3726ba760715",
+		"_postman_id": "5acb854d-29f4-440a-90e5-184040f5976f",
 		"name": "Quản lí products",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "30503417",
-		"_collection_link": "https://dant88.postman.co/workspace/DANT-Workspace~c2b37beb-57f0-4874-8cc1-aa67423f8dfa/collection/30503417-6473b08e-b896-45c5-96f8-3726ba760715?action=share&source=collection_link&creator=30503417"
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "33653984"
 	},
 	"item": [
 		{
@@ -81,29 +80,14 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"material\": \"Cotton\",\n    \"name\": \"product test\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"regular_price\": 312,\n    \"reduced_price\": 799,\n    \"category_id\": 1\n}\n",
+					"raw": "{\n    \"material\": \"Cotton\",\n    \"name\": \"product test\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"regular_price\": 312,\n    \"reduced_price\": 799,\n    \"category_id\": 1,\n    \"product_att\": [\n        {\n            \"color_id\": 1,\n            \"size_id\": 2,\n            \"image\": 123,\n            \"stock_quantity\": 200\n        },\n        {\n            \"color_id\": 1,\n            \"size_id\": 2,\n            \"image\": 123,\n            \"stock_quantity\": 200\n        },\n        {\n            \"color_id\": 3,\n            \"size_id\": 2,\n            \"image\": 123,\n            \"stock_quantity\": 200\n        },\n        {\n            \"color_id\": 4,\n            \"size_id\": 2,\n            \"image\": 123,\n            \"stock_quantity\": 200\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
 						}
 					}
 				},
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products"
 			},
 			"response": []
 		},
@@ -112,23 +96,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products/abc-sdd-20vwqna9",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products",
-						"abc-sdd-20vwqna9"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products/abc-sdd-20vwqna9"
 			},
 			"response": []
 		},
@@ -137,24 +105,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products/1/show",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products",
-						"1",
-						"show"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products/1/show"
 			},
 			"response": []
 		},
@@ -178,23 +129,7 @@
 						}
 					}
 				},
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products/11",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products",
-						"11"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products/11"
 			},
 			"response": []
 		},
@@ -203,23 +138,7 @@
 			"request": {
 				"method": "DELETE",
 				"header": [],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products/11",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products",
-						"11"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products/11"
 			},
 			"response": []
 		},
@@ -228,24 +147,7 @@
 			"request": {
 				"method": "PUT",
 				"header": [],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products/11/restore",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products",
-						"11",
-						"restore"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products/11/restore"
 			},
 			"response": []
 		},
@@ -254,23 +156,7 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": {
-					"raw": "http://127.0.0.1:8000/api/v1/products/trash",
-					"protocol": "http",
-					"host": [
-						"127",
-						"0",
-						"0",
-						"1"
-					],
-					"port": "8000",
-					"path": [
-						"api",
-						"v1",
-						"products",
-						"trash"
-					]
-				}
+				"url": "http://127.0.0.1:8000/api/v1/products/trash"
 			},
 			"response": []
 		}

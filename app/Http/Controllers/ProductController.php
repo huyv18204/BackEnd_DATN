@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductAtt;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,82 +15,90 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $categoryId = $request->query('categoryId');
-        $name = $request->query('name');
-        $minPrice = $request->query('minPrice');
-        $maxPrice = $request->query('maxPrice');
-        $sort = $request->query('sort', 'ASC');
-        $size = $request->query("size");
-        $products = Product::query()
+        $query = Product::query()
             ->with([
                 'category' => function ($query) {
                     $query->select('id', 'name')->withTrashed();
-                }
+                },
             ]);
-        if ($categoryId) {
-            $products->where('category_id', $categoryId);
-        }
-        if ($name) {
-            $products->where('name', 'like', '%' . $name . '%');
-        }
-        if ($minPrice) {
-            $products->where('regular_price', '>=', $minPrice);
-        }
-        if ($maxPrice) {
-            $products->where('regular_price', '<=', $maxPrice);
-        }
-        $products->orderBy('id', $sort);
 
-        if ($size) {
-            $products = $products->paginate($size);
-        } else {
-            $products = $products->get();
-        }
+        $query->when($request->query('categoryId'), function ($query, $categoryId) {
+            $query->where('category_id', $categoryId);
+        });
+
+        $query->when($request->query('name'), function ($query, $name) {
+            $query->where('name', 'like', '%' . $name . '%');
+        });
+
+        $query->when($request->query('minPrice'), function ($query, $minPrice) {
+            $query->where('regular_price', '>=', $minPrice);
+        });
+
+        $query->when($request->query('maxPrice'), function ($query, $maxPrice) {
+            $query->where('regular_price', '<=', $maxPrice);
+        });
+
+        $query->orderBy('id', $request->query('sort', 'ASC'));
+
+        $size = $request->query('size');
+        $products = $size ? $query->paginate($size) : $query->get();
+
         return response()->json($products);
     }
 
+
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'category_id' => 'required|integer',
-            'name' => 'required|string|max:55',
-            'short_description' => 'nullable|string',
-            'long_description' => 'nullable|string',
-            'regular_price' => 'required|numeric|min:0',
-            'reduced_price' => 'nullable|numeric|min:0',
-            'thumbnail' => 'required|string|max:255',
-            'material' => 'string|max:255'
-        ], [], [
-            'category_id' => 'Id danh mục',
-            'name' => 'Tên sản phẩm',
-            'short_description' => 'Mô tả ngắn',
-            'long_description' => 'Mô tả dài',
-            'regular_price' => 'Giá',
-            'reduced_price' => 'Giá khuyến mại',
-            'thumbnail' => 'Ảnh sản phẩm',
-            'material' => 'chất liệu',
-        ]);
-        $category = DB::table('categories')->where('id', $data['category_id'])->first();
+        $data = $request->validate(['name' => 'required|unique:products,name'], [], ['name' => 'Tên sản phẩm']);
+        $data = $request->except(['productatt']);
+        $category = Category::findOrFail($data['category_id']);
         $currentDay = date('d');
         $currentMonth = date('m');
-        $skuPrev = DB::table('products')->where("sku", "LIKE", $category->sku . $currentDay . $currentMonth . "%")->orderByDesc('id')->first();
+
+        $skuPrev = Product::where("sku", "LIKE", $category->sku . $currentDay . $currentMonth . "%")
+            ->orderByDesc('id')
+            ->first();
+
         if ($skuPrev) {
             $parts = explode('-', $skuPrev->sku);
             $lastPart = (int)end($parts) + 1;
-            $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);;
+            $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);
         } else {
             $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . "001";
         }
 
         $data['slug'] = Str::slug($request->name . "-" . $data['sku']);
-        $response = Product::query()->create($data);
-        if ($response) {
+        $product_atts = $request->product_att;
+
+        try {
+            DB::beginTransaction();
+
+            $product = Product::create($data);
+
+            foreach ($product_atts as $product_att) {
+                ProductAtt::create([
+                    'product_id' => $product->id,
+                    'size_id' => $product_att['size_id'],
+                    'color_id' => $product_att['color_id'],
+                    'image' => $product_att['image'] ?? null,
+                    'stock_quantity' => $product_att['stock_quantity'],
+                ]);
+            }
+            DB::commit();
             return response()->json([
-                "message" => "Thêm thành công",
-                "data" => $response
+                "message" => "Thêm mới sản phẩm thành công"
             ]);
-        } else {
-            return response()->json("Thêm thất bại", 400);
+        } catch (QueryException $exception) {
+            DB::rollBack();
+
+            $message = ($exception->errorInfo[1] == 1062)
+                ? "Kích thước và màu sắc này đã tồn tại cho sản phẩm này." : "Thêm mới sản phẩm thất bại";
+
+            $status = ($exception->errorInfo[1] == 1062) ? 409 : 400;
+
+            return response()->json([
+                "message" => $message,
+            ], $status);
         }
     }
 
@@ -125,25 +136,12 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        $data = $request->validate([
-            'category_id' => 'required|integer',
-            'name' => 'required|string|max:55',
-            'short_description' => 'nullable|string',
-            'long_description' => 'nullable|string',
-            'regular_price' => 'required|numeric|min:0',
-            'reduced_price' => 'nullable|numeric|min:0',
-            'thumbnail' => 'required|string|max:255',
-            'material' => 'string|max:255'
-        ], [], [
-            'category_id' => 'Id danh mục',
-            'name' => 'Tên sản phẩm',
-            'short_description' => 'Mô tả ngắn',
-            'long_description' => 'Mô tả dài',
-            'regular_price' => 'Giá',
-            'reduced_price' => 'Giá khuyến mại',
-            'thumbnail' => 'Ảnh sản phẩm',
-            'material' => 'chất liệu',
-        ]);
+        $data = $request->validate(
+            ['name' => 'required|unique:products,name,' . $id],
+            [],
+            ['name' => 'Tên sản phẩm']
+        );
+        $data = $request->all();
         $product = Product::query()->find($id);
         if (!$product) {
             return response()->json(['error' => "Sản phẩm không tồn tại"]);
@@ -152,67 +150,64 @@ class ProductController extends Controller
             $data['slug'] = Str::slug($data['name'] . "-" . $product->sku);
         }
         $response = $product->update($data);
-        if ($response) {
-            return response()->json("Cập nhật thành công");
-        } else {
-            return response()->json("Cập nhật thất bại");
+        $message = $response ? 'Cập nhật sản phẩm thành công' : 'Cập nhật sản phẩm thất bại';
+        return response()->json(["message" => $message]);
+    }
+
+    public function getProductAtts(int $id)
+    {
+        if ($product = Product::query()->with('product_atts')->find($id)) {
+            return response()->json($product, 200);
         }
+        return response()->json(['message' => 'sản phẩm không tồn tại'], 404);
     }
 
     public function destroy($id)
     {
-        $product = Product::query()->find($id);
-        if (!$product) {
-            return response()->json("Sản phẩm không tồn tại");
+        if ($product = Product::query()->find($id)) {
+            $product->delete();
+            return response()->json(['message' => 'Xóa sản phẩm thành công']);
         }
-        $product->delete();
-        return response()->json("Xoá thành công");
+        return response()->json(['message' => 'Sản phẩm không tồn tại']);
     }
 
     public function trash(Request $request)
     {
-        $categoryId = $request->query('categoryId');
-        $name = $request->query('name');
-        $minPrice = $request->query('minPrice');
-        $maxPrice = $request->query('maxPrice');
-        $sort = $request->query('sort', 'ASC');
-        $size = $request->query("size");
-        $products = Product::onlyTrashed()
-            ->with([
-                'category' => function ($query) {
-                    $query->select('id', 'name')->withTrashed();
-                }
-            ]);
-        if ($categoryId) {
-            $products->where('category_id', $categoryId);
-        }
-        if ($name) {
-            $products->where('name', 'like', '%' . $name . '%');
-        }
-        if ($minPrice) {
-            $products->where('regular_price', '>=', $minPrice);
-        }
-        if ($maxPrice) {
-            $products->where('regular_price', '<=', $maxPrice);
-        }
-        $products->orderBy('id', $sort);
+        $query = Product::onlyTrashed()
+            ->with(['category' => function ($query) {
+                $query->select('id', 'name')->withTrashed();
+            }]);
 
-        if ($size) {
-            $trash = $products->paginate($size);
-        } else {
-            $trash = $products->get();
-        }
+        $query->when($request->query('categoryId'), function ($query, $categoryId) {
+            $query->where('category_id', $categoryId);
+        });
+
+        $query->when($request->query('name'), function ($query, $name) {
+            $query->where('name', 'like', '%' . $name . '%');
+        });
+
+        $query->when($request->query('minPrice'), function ($query, $minPrice) {
+            $query->where('regular_price', '>=', $minPrice);
+        });
+
+        $query->when($request->query('maxPrice'), function ($query, $maxPrice) {
+            $query->where('regular_price', '<=', $maxPrice);
+        });
+
+        $query->orderBy('id', $request->query('sort', 'ASC'));
+
+        $size = $request->query('size');
+        $trash = $size ? $query->paginate($size) : $query->get();
 
         return response()->json($trash);
     }
 
     public function restore($id)
     {
-        $category = Product::withTrashed()->find($id);
-        if (!$category) {
-            return response()->json(["error" => "Sản phẩm không tồn tại"]);
+        if ($product = Product::withTrashed()->find($id)) {
+            $product->restore();
+            return response()->json(['message' => 'Khôi phục sản phẩm thành công'], 200);
         }
-        $category->restore();
-        return response()->json(["message" => "Khôi phục thành công"]);
+        return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
     }
 }

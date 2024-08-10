@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(\App\Models\Product::class)->constrained();
             $table->foreignIdFor(\App\Models\Color::class)->constrained();
-            $table->string("image",255)->nullable();
-            $table->unique(['product_id', "color_id"],'product_variant_unique');
+            $table->foreignIdFor(\App\Models\Size::class)->constrained();
+            $table->string("image", 255)->nullable();
+            $table->integer('stock_quantity')->default(0);
+            $table->unique(['product_id', "color_id", "size_id"], 'product_variant_unique');
             $table->boolean("is_active")->default(true);
             $table->timestamps();
         });

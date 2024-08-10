@@ -13,6 +13,7 @@ class ProductAtt extends Model
     protected $fillable = [
         'product_id',
         'color_id',
+        'size_id',
         'stock_quantity',
         'image',
         'is_active'
@@ -34,8 +35,8 @@ class ProductAtt extends Model
         return $this->belongsTo(Color::class, 'color_id');
     }
 
-    public function sizes()
+    public function size()
     {
-        return $this->belongsToMany(Size::class, 'product_att_size', 'product_att_id', 'size_id');
+        return $this->belongsTo(Size::class, 'size_id');
     }
 }

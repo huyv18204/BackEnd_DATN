@@ -12,11 +12,17 @@ class ProductAttController extends Controller
     public function index(Request $request, int $product_id)
     {
         $size = $request->query('size');
-        $productAtt = ProductAtt::query()->where('product_id', $product_id)->first();
-        if (!$productAtt) {
-            return response()->json(['message' => "Biến thể không tồn tại"], 404);
-        }
-        $query = ProductAtt::query()->where('product_id', $product_id);
+
+        $query = ProductAtt::query()
+            ->where('product_id', $product_id)
+            ->with([
+                'color' => function ($query) {
+                    $query->select('id', 'name');
+                },
+                'size' => function ($query) {
+                    $query->select('id', 'name');
+                }
+            ]);
 
         $searchParams = $request->only(['color_id', 'size_id']);
         foreach ($searchParams as $key => $value) {
@@ -25,12 +31,18 @@ class ProductAttController extends Controller
             }
         }
 
-        $query->orderByDesc('id');
+        $productAtts = $size ? $query->orderByDesc('id')->paginate($size) : $query->orderByDesc('id')->get();
 
-        $productAtts = $size ? $query->paginate($size) : $query->get();
+        $productAtts->makeHidden(['size_id', 'color_id']);
+
+        if ($productAtts->isEmpty()) {
+            return response()->json(['message' => "Biến thể không tồn tại"], 404);
+        }
 
         return response()->json($productAtts);
     }
+
+
 
     public function store(Request $request, int $product_id)
     {
@@ -109,11 +121,5 @@ class ProductAttController extends Controller
     }
 
 
-    public function show(int $product_id, int $product_att_id)
-    {
-        if ($productAtt = ProductAtt::query()->find($product_att_id)) {
-            return response()->json($productAtt, 200);
-        }
-        return response()->json(['message' => 'Biến thể không tồn tại'], 404);
-    }
+ 
 }

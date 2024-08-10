@@ -37,12 +37,12 @@ class CategoryController extends Controller
 
         $data['slug'] = Str::slug($request->name);
 
-        $initials = implode('', array_map(fn ($word) => mb_substr($word, 0, 1), explode(' ', $request->name)));
-        $data['sku'] = $initials;
-        $count = 1;
-        while (Category::where('sku', $data['sku'])->exists()) {
-            $data['sku'] = "{$initials}-{$count}";
-            $count++;
+        $data['sku'] = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4)) . '-' . rand(100, 999);
+
+        if (Category::where('sku', $data['sku'])->exists()) {
+            do {
+                $data['sku'] = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4)) . '-' . rand(100, 999);
+            } while (Category::where('sku', $data['sku'])->exists());
         }
 
         $category = Category::create($data);

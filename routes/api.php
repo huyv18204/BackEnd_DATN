@@ -44,6 +44,7 @@ Route::prefix("v1")->group(function () {
         Route::get('/trash', [ProductController::class, 'trash']);
         Route::get("/{slug}", [ProductController::class, 'getBySlug']);
         Route::get("/{id}/show", [ProductController::class, 'show']);
+        Route::get("/{id}/ProductAtts", [ProductController::class, 'getProductAtts']);
         Route::delete("/{id}", [ProductController::class, 'destroy']);
     });
     Route::prefix('products/{product_id}/productAtts')->group(function () {
@@ -51,7 +52,6 @@ Route::prefix("v1")->group(function () {
         Route::post('/', [ProductAttController::class, 'store']);
         Route::put('/{id}', [ProductAttController::class, 'update']);
         Route::delete('/{id}', [ProductAttController::class, 'destroy']);
-        Route::get("/{id}/show", [ProductAttController::class, 'show']);
     });
 
 

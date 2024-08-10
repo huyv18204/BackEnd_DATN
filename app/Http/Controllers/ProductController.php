@@ -154,6 +154,14 @@ class ProductController extends Controller
         return response()->json(["message" => $message]);
     }
 
+    public function getProductAtts(int $id)
+    {
+        if ($product = Product::query()->with('product_atts')->find($id)) {
+            return response()->json($product, 200);
+        }
+        return response()->json(['message' => 'sản phẩm không tồn tại'], 404);
+    }
+
     public function destroy($id)
     {
         if ($product = Product::query()->find($id)) {

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
@@ -74,4 +75,12 @@ Route::prefix("v1")->group(function () {
         Route::get("/{id}", [SizeController::class, 'show']);
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
+
+    Route::prefix("orders")->group(function () {
+        Route::get("/", [OrderController::class, 'index']);
+        Route::post("/", [OrderController::class, 'store']);
+        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+    });
+
 });

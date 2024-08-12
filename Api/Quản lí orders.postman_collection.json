@@ -1,0 +1,162 @@
+{
+	"info": {
+		"_postman_id": "bcf52284-77a2-4798-8619-2eaef68e54bc",
+		"name": "Quản lí orders",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30503417",
+		"_collection_link": "https://dant88.postman.co/workspace/DANT-Workspace~c2b37beb-57f0-4874-8cc1-aa67423f8dfa/collection/30503417-bcf52284-77a2-4798-8619-2eaef68e54bc?action=share&source=collection_link&creator=30503417"
+	},
+	"item": [
+		{
+			"name": "Lấy tất cả orders",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/orders?size=10&sort=DESC",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					],
+					"query": [
+						{
+							"key": "size",
+							"value": "10"
+						},
+						{
+							"key": "orderStatus",
+							"value": "Huỷ đơn hàng",
+							"disabled": true
+						},
+						{
+							"key": "minPrice",
+							"value": "300000",
+							"disabled": true
+						},
+						{
+							"key": "maxPrice",
+							"value": "700000",
+							"disabled": true
+						},
+						{
+							"key": "sort",
+							"value": "DESC"
+						},
+						{
+							"key": "userId",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "page",
+							"value": "1",
+							"disabled": true
+						},
+						{
+							"key": "paymentMethod",
+							"value": "VN Pay",
+							"disabled": true
+						},
+						{
+							"key": "paymentStatus",
+							"value": "Chưa thanh toán",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cập nhật trạng thái thanh toán",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"payment_status\" : \"Đã thanh toán\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/orders/10/payment-status",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"10",
+						"payment-status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cập nhật trạng thái đơn hàng",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"order_status\" : \"Huỷ đơn hàng\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/v1/orders/10/order-status",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"10",
+						"order-status"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

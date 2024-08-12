@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CategoryController extends Controller
@@ -37,15 +38,20 @@ class CategoryController extends Controller
 
         $data['slug'] = Str::slug($request->name);
 
-        $data['sku'] = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4)) . '-' . rand(100, 999);
+        $currentDay = date('d');
+        $currentMonth = date('m');
+        $prevCode = "CA" . $currentDay . $currentMonth;
 
-        if (Category::where('sku', $data['sku'])->exists()) {
-            do {
-                $data['sku'] = strtoupper(substr(str_shuffle('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 4)) . '-' . rand(100, 999);
-            } while (Category::where('sku', $data['sku'])->exists());
+        $stt = DB::table('categories')->where("category_code", "LIKE", $prevCode . "%")->orderByDesc('id')->first();
+        if ($stt) {
+            $parts = explode('-', $stt->category_code);
+            $lastPart = (int)end($parts) + 1;
+            $data['category_code'] = $prevCode . '-' . str_pad($lastPart, 2, '0', STR_PAD_LEFT);
+        } else {
+            $data['category_code'] = $prevCode . '-' . "01";
         }
 
-        $category = Category::create($data);
+        $category = Category::query()->create($data);
 
         return response()->json([
             $category ? 'message' : 'error' => $category ? 'Thêm mới thành công' : 'Thêm thất bại'

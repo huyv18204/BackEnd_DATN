@@ -14,7 +14,7 @@ class Category extends Model
     protected $fillable = [
         "name",
         "slug",
-        "sku",
+        "category_code",
         "is_active"
     ];
 

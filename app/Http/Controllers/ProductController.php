@@ -51,20 +51,19 @@ class ProductController extends Controller
     {
         $data = $request->validate(['name' => 'required|unique:products,name'], [], ['name' => 'Tên sản phẩm']);
         $data = $request->except(['productatt']);
-        $category = Category::findOrFail($data['category_id']);
         $currentDay = date('d');
         $currentMonth = date('m');
-
-        $skuPrev = Product::where("sku", "LIKE", $category->sku . $currentDay . $currentMonth . "%")
+        $prevSku = "PR" . $currentDay . $currentMonth;
+        $prevProduct = Product::query()->where("sku", "LIKE", $prevSku . "%")
             ->orderByDesc('id')
             ->first();
 
-        if ($skuPrev) {
-            $parts = explode('-', $skuPrev->sku);
+        if ($prevProduct) {
+            $parts = explode('-', $prevProduct->sku);
             $lastPart = (int)end($parts) + 1;
-            $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);
+            $data['sku'] = $prevSku . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);
         } else {
-            $data['sku'] = $category->sku . $currentDay . $currentMonth . '-' . "001";
+            $data['sku'] = $prevSku . '-' . "001";
         }
 
         $data['slug'] = Str::slug($request->name . "-" . $data['sku']);
@@ -90,7 +89,6 @@ class ProductController extends Controller
             ]);
         } catch (QueryException $exception) {
             DB::rollBack();
-
             $message = ($exception->errorInfo[1] == 1062)
                 ? "Kích thước và màu sắc này đã tồn tại cho sản phẩm này." : "Thêm mới sản phẩm thất bại";
 

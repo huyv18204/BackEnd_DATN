@@ -159,6 +159,15 @@
 				"url": "http://127.0.0.1:8000/api/v1/products/trash"
 			},
 			"response": []
+		},
+		{
+			"name": "Lấy tất cả biển thể theo id sản phẩm",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://127.0.0.1:8000/api/v1/products/5/ProductAtts"
+			},
+			"response": []
 		}
 	]
 }

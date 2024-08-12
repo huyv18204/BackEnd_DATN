@@ -15,14 +15,7 @@ class ProductAttController extends Controller
 
         $query = ProductAtt::query()
             ->where('product_id', $product_id)
-            ->with([
-                'color' => function ($query) {
-                    $query->select('id', 'name');
-                },
-                'size' => function ($query) {
-                    $query->select('id', 'name');
-                }
-            ]);
+            ->with(['color:id,name', 'size:id,name']);
 
         $searchParams = $request->only(['color_id', 'size_id']);
         foreach ($searchParams as $key => $value) {
@@ -119,7 +112,4 @@ class ProductAttController extends Controller
         }
         return response()->json(['message' => 'Biến thể không tồn tại'], 404);
     }
-
-
- 
 }

@@ -12,15 +12,15 @@ class CategoryController extends Controller
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
-        $searchParams = $request->only(['id', 'name']);
-
         $query = Category::query();
 
-        foreach ($searchParams as $key => $value) {
-            if ($value) {
-                $query->where($key, 'LIKE', "%{$value}%");
-            }
-        }
+        $query->when($request->query('id'), function ($query, $id) {
+            $query->where('id', $id);
+        });
+
+        $query->when($request->query('name'), function ($query, $name) {
+            $query->where('name', 'LIKE', '%' . $name . '%');
+        });
 
         $query->orderBy('id', $sort);
         $categories = $size ? $query->paginate($size) : $query->get();
@@ -107,15 +107,15 @@ class CategoryController extends Controller
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
-        $searchParams = $request->only(['id', 'name']);
-
         $query = Category::onlyTrashed();
 
-        foreach ($searchParams as $key => $value) {
-            if ($value) {
-                $query->where($key, 'LIKE', "%{$value}%");
-            }
-        }
+        $query->when($request->query('id'), function ($query, $id) {
+            $query->where('id', $id);
+        });
+
+        $query->when($request->query('name'), function ($query, $name) {
+            $query->where('name', 'LIKE', '%' . $name . '%');
+        });
 
         $query->orderBy('id', $sort);
         $trash = $size ? $query->paginate($size) : $query->get();

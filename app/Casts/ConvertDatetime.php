@@ -20,7 +20,7 @@ class ConvertDatetime implements CastsAttributes
         }
         return Carbon::parse($value)
             ->timezone('Asia/Ho_Chi_Minh')
-            ->format('d/m/Y H:i:s');
+            ->format('H:i:s d/m/Y');
     }
 
     /**

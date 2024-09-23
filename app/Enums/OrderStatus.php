@@ -4,10 +4,10 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
-    case PENDING = 'Chờ lấy hàng';
-    case PROCESSING = 'Đang giao hàng';
-    case COMPLETED = 'Giao hàng thành công';
-    case CANCELED = 'Huỷ đơn hàng';
+    case PENDING = 'Chờ xác nhận';
+    case ACCEPT = 'Đã xác nhận';
+//    case COMPLETED = 'Giao hàng thành công';
+//    case CANCELED = 'Huỷ đơn hàng';
 
 
     public static function isValidValue(string $value): bool

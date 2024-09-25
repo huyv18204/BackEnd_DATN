@@ -6,6 +6,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
+use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -83,4 +84,12 @@ Route::prefix("v1")->group(function () {
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
     });
 
+    Route::prefix("users")->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::post('/', [UserController::class, 'store']);
+        Route::put('/{id}/role', [UserController::class, 'updateRole']);
+        Route::get('/blacklist', [UserController::class, 'blackList']);
+        Route::delete('/{id}/add-blacklist', [UserController::class, 'addBlackList']);
+        Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
+    });
 });

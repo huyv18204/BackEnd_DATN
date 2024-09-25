@@ -20,9 +20,13 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
-        'password',
+        'phone',
         'address',
-        'is_active'
+        'date_of_birth',
+        'avatar',
+        'password',
+        'is_blocked',
+        'role'
     ];
 
     /**
@@ -43,7 +47,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'is_blocked' => 'boolean'
     ];
+
 
     public function orders(){
         return $this->hasMany(Order::class);

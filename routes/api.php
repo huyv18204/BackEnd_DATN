@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
@@ -25,11 +26,28 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
 Route::prefix("v1")->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::get('/email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify');
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('password/email', [AuthController::class, 'sendResetOTPEmail'])->middleware('throttle:3,30');
+    Route::post('password/reset', [AuthController::class, 'resetPasswordWithOTP']);
+    Route::middleware(['api', 'auth.jwt'])->prefix('auth')->as('auth.')->group(function () {
+        Route::get('profile', [AuthController::class, 'profile']);
+        Route::post('profile', [AuthController::class, 'editProfile']);
+        route::post('changePassword', [AuthController::class, 'changePassword']);
+        Route::post('logout', [AuthController::class, 'logout']);
+    });
+});
+
+Route::get('v1/categories', [CategoryController::class, 'index']);
+Route::get("v1/products", [ProductController::class, 'index']);
+Route::get('v1/products/2/productAtts', [ProductAttController::class, 'index']);
+
+Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
     Route::prefix('categories')->group(function () {
         Route::put('/{id}/restore', [CategoryController::class, 'restore']);
-        Route::get('/', [CategoryController::class, 'index']);
         Route::get('/trash', [CategoryController::class, 'trash']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
@@ -40,7 +58,6 @@ Route::prefix("v1")->group(function () {
 
     Route::prefix("products")->group(function () {
         Route::put('/{id}/restore', [ProductController::class, 'restore']);
-        Route::get("/", [ProductController::class, 'index']);
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
         Route::get('/trash', [ProductController::class, 'trash']);
@@ -50,7 +67,6 @@ Route::prefix("v1")->group(function () {
         Route::delete("/{id}", [ProductController::class, 'destroy']);
     });
     Route::prefix('products/{product_id}/productAtts')->group(function () {
-        Route::get('/', [ProductAttController::class, 'index']);
         Route::post('/', [ProductAttController::class, 'store']);
         Route::put('/{id}', [ProductAttController::class, 'update']);
         Route::delete('/{id}', [ProductAttController::class, 'destroy']);

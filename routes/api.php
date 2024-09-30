@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
@@ -98,6 +99,13 @@ Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
         Route::post("/", [OrderController::class, 'store']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+    });
+
+    Route::prefix("carts")->group(function () {
+        Route::get("/{id}", [CartController::class, 'show']);
+        Route::post("/", [CartController::class, 'store']);
+        Route::put("/{id}", [CartController::class, 'update']);
+        Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 
     Route::prefix("users")->group(function () {

@@ -22,10 +22,8 @@ return new class extends Migration
                 'MOMO'
             ]);
             $table->enum('order_status', [
-                'Chờ lấy hàng',
-                'Đang giao hàng',
-                'Giao hàng thành công',
-                'Huỷ đơn hàng'
+                'Chờ xác nhận',
+                'Đã xác nhận',
             ]);
             $table->enum('payment_status', [
                 'Chưa thanh toán',

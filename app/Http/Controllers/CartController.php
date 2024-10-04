@@ -4,13 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use Illuminate\Http\Request;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class CartController extends Controller
 {
-    public function show(Request $request,$id)
+    public function show(Request $request)
     {
         $size = $request->query('size');
-        $carts = Cart::query()->where('user_id', $id)->orderByDesc('id');
+        $user = JWTAuth::parseToken()->authenticate();
+        $carts = Cart::query()->where('user_id', $user->id)->orderByDesc('id');
         $carts = $size ? $carts->paginate() : $carts->get();
         return response()->json($carts);
     }

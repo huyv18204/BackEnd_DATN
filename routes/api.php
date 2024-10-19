@@ -43,7 +43,7 @@ Route::prefix("v1")->group(function () {
 
 Route::get('v1/categories', [CategoryController::class, 'index']);
 Route::get("v1/products", [ProductController::class, 'index']);
-Route::get('v1/products/2/productAtts', [ProductAttController::class, 'index']);
+Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
 Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
     Route::prefix('categories')->group(function () {

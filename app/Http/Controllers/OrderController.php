@@ -19,13 +19,14 @@ class OrderController extends Controller
             ->with([
                 'user' => function ($query) {
                     $query->select('id', 'name', "address", "email");
-                },
-                'order_details.product' => function ($query) {
-                    $query->select('id', 'sku', 'category_id');
-                },
-                'order_details.product.category' => function ($query) {
-                    $query->select('name', 'id');
                 }
+                // ,
+                // 'order_details.product' => function ($query) {
+                //     $query->select('id', 'sku', 'category_id');
+                // },
+                // 'order_details.product.category' => function ($query) {
+                //     $query->select('name', 'id');
+                // }
             ]);
 
 

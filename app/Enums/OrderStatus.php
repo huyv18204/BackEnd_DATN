@@ -7,7 +7,7 @@ enum OrderStatus: string
     case PENDING = 'Chờ xác nhận';
     case ACCEPT = 'Đã xác nhận';
 //    case COMPLETED = 'Giao hàng thành công';
-//    case CANCELED = 'Huỷ đơn hàng';
+//    case CANCELED = 'Đã từ chối';
 
 
     public static function isValidValue(string $value): bool

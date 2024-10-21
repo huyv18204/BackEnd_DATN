@@ -18,7 +18,7 @@ class OrderController extends Controller
         $query = Order::query()
             ->with([
                 'user' => function ($query) {
-                    $query->select('id', 'name', "address", "email");
+                    $query->select('id', 'name', "address", "email", "phone");
                 }
             ]);
 

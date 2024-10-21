@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProductEvent;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductAtt;
@@ -148,6 +149,11 @@ class ProductController extends Controller
             $data['slug'] = Str::slug($data['name'] . "-" . $product->sku);
         }
         $response = $product->update($data);
+
+        if($response){
+            broadcast(new ProductEvent(__FUNCTION__, Product::query()->find($id)));
+        }
+
         $message = $response ? 'Cập nhật sản phẩm thành công' : 'Cập nhật sản phẩm thất bại';
         return response()->json(["message" => $message]);
     }
@@ -162,14 +168,13 @@ class ProductController extends Controller
         return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
     }
 
-
-
-
-
     public function destroy($id)
     {
         if ($product = Product::query()->find($id)) {
-            $product->delete();
+            $response = $product->delete();
+            if($response){
+                broadcast(new ProductEvent(__FUNCTION__, $response));
+            }
             return response()->json(['message' => 'Xóa sản phẩm thành công']);
         }
         return response()->json(['message' => 'Sản phẩm không tồn tại']);
@@ -210,6 +215,7 @@ class ProductController extends Controller
     {
         if ($product = Product::withTrashed()->find($id)) {
             $product->restore();
+            broadcast(new ProductEvent(__FUNCTION__, $product));
             return response()->json(['message' => 'Khôi phục sản phẩm thành công'], 200);
         }
         return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductAttController;
@@ -45,7 +46,16 @@ Route::get('v1/categories', [CategoryController::class, 'index']);
 Route::get("v1/products", [ProductController::class, 'index']);
 Route::get('v1/products/2/productAtts', [ProductAttController::class, 'index']);
 
+
+
+
+Route::group(['middleware' => ['jwt.auth']], function () {
+    Route::post('send-message', [ChatController::class, 'SendMessage']);
+});
+
+
 Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
+
     Route::prefix('categories')->group(function () {
         Route::put('/{id}/restore', [CategoryController::class, 'restore']);
         Route::get('/trash', [CategoryController::class, 'trash']);
@@ -109,3 +119,7 @@ Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
         Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
     });
 });
+
+
+
+

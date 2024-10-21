@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Broadcast;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +15,15 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+    return (int)$user->id === (int)$id;
+});
+
+Broadcast::channel('chat.{conversation_id}', function ($user, $conversation_id) {
+    $user_token = JWTAuth::parseToken()->authenticate();
+    $conversation_user = \App\Models\ConversationUser::query()
+        ->where('conversation_id', (int)$conversation_id)
+        ->where('user_id', $user_token->id)
+        ->first();
+    return $conversation_user != null;
+
 });

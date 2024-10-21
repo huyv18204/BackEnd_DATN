@@ -24,7 +24,9 @@ return new class extends Migration
             $table->enum('order_status', [
                 'Chờ xác nhận',
                 'Đã xác nhận',
-            ]);
+                'Giao hàng thành công',
+                "Đã huỷ"
+            ])->default("Chờ xác nhận");
             $table->enum('payment_status', [
                 'Chưa thanh toán',
                 'Đã thanh toán',

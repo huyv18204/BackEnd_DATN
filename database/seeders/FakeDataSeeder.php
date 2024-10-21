@@ -173,6 +173,7 @@ class FakeDataSeeder extends Seeder
                     'product_name' => 'Product N + 1',
                     'unit_price' => $unit_price,
                     'total_amount' => $unit_price * $quantity,
+                    'thumbnail' => $productAtt->image,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

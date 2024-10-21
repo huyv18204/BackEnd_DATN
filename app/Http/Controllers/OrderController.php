@@ -7,7 +7,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Carbon;
 
 class OrderController extends Controller
 {
@@ -20,13 +20,6 @@ class OrderController extends Controller
                 'user' => function ($query) {
                     $query->select('id', 'name', "address", "email");
                 }
-                // ,
-                // 'order_details.product' => function ($query) {
-                //     $query->select('id', 'sku', 'category_id');
-                // },
-                // 'order_details.product.category' => function ($query) {
-                //     $query->select('name', 'id');
-                // }
             ]);
 
 
@@ -74,21 +67,25 @@ class OrderController extends Controller
     public function updateOrderStt(Request $request, $id)
     {
 
-        $validatedData = $request->validate([
-            'order_status' => [
-                'required',
-                new \Illuminate\Validation\Rules\Enum(OrderStatus::class)
-            ],
-        ]);
 
+        if(!$request->order_status){
+            return response()->json("Trạng thái là bắt buộc");
+        }
+
+        if(!OrderStatus::isValidValue($request->order_status)){
+            return response()->json("Trạng thái không hợp lệ");
+        }
 
         $order = Order::query()->find($id);
         if (!$order) {
             return response()->json('Đơn hàng không tồn tại');
         }
+        if($order->order_status === "Đã xác nhận" && $request['order_status'] === "Chờ xác nhận"){
+            return response()->json("Trạng thái không hợp lệ");
+        }
 
         $response = $order->update([
-            'order_status' => $validatedData['order_status']
+            'order_status' => $request['order_status']
         ]);
 
         if ($response) {
@@ -109,11 +106,14 @@ class OrderController extends Controller
                 new \Illuminate\Validation\Rules\Enum(PaymentStatus::class)
             ],
         ]);
+        
 
         $order = Order::query()->find($id);
         if (!$order) {
             return response()->json('Đơn hàng không tồn tại');
         }
+
+
 
         $response = $order->update([
             'payment_status' => $validatedData['payment_status']
@@ -126,6 +126,13 @@ class OrderController extends Controller
         }
 
 
+    }
+    public function show($id){
+        $order = Order::query()->find($id);
+        if(!$order){
+            return response()->json("Đơn hàng không tồn tại");
+        }
+        return response()->json($order);
     }
 
 }

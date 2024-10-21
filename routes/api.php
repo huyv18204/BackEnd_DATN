@@ -97,9 +97,14 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix("orders")->group(function () {
         Route::get("/", [OrderController::class, 'index']);
+        Route::get("/{id}", [OrderController::class, 'show']);
         Route::post("/", [OrderController::class, 'store']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+    });
+    
+    
+    Route::prefix("order-details")->group(function () {
         Route::get('/{id}', [OrderDetailsController::class, 'show']);
     });
 

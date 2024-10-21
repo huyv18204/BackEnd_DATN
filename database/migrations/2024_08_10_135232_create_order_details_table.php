@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->string("product_name", 255);
             $table->decimal('unit_price', 10, 0);
             $table->decimal('total_amount', 10, 0);
+            $table->string("thumbnail", 255);
             $table->timestamps();
         });
     }

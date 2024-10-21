@@ -18,7 +18,7 @@ class OrderDetailsController extends Controller
             ], 404);
         }
 
-        $query = OrderDetail::query()->with('product')->where('order_id', $id);
+        $query = OrderDetail::query()->where('order_id', $id);
 
         $query->when($request->query('minPrice'), function ($query, $minPrice) {
             $query->where('total_amount', '>=', $minPrice);

@@ -7,7 +7,7 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use Illuminate\Support\Carbon;
 class Order extends Model
 {
     use HasFactory;
@@ -37,4 +37,15 @@ class Order extends Model
         'payment_status' => PaymentStatus::class,
         'payment_method' => PaymentMethod::class,
     ];
+
+
+    public function getCreatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d/m/Y');
+    }
+
+    public function getUpdatedAtAttribute($value)
+    {
+        return Carbon::parse($value)->format('d/m/Y');
+    }
 }

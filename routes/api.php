@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
@@ -43,9 +45,9 @@ Route::prefix("v1")->group(function () {
 
 Route::get('v1/categories', [CategoryController::class, 'index']);
 Route::get("v1/products", [ProductController::class, 'index']);
-Route::get('v1/products/2/productAtts', [ProductAttController::class, 'index']);
+Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
-Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
+Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
         Route::put('/{id}/restore', [CategoryController::class, 'restore']);
         Route::get('/trash', [CategoryController::class, 'trash']);
@@ -95,6 +97,8 @@ Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
 
     Route::prefix("orders")->group(function () {
         Route::get("/", [OrderController::class, 'index']);
+        Route::get("/{id}", [OrderController::class, 'show']);
+        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
         Route::post("/", [OrderController::class, 'store']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
@@ -107,5 +111,14 @@ Route::prefix("v1")->middleware('auth.jwt', 'auth.admin')->group(function () {
         Route::get('/blacklist', [UserController::class, 'blackList']);
         Route::delete('/{id}/add-blacklist', [UserController::class, 'addBlackList']);
         Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
+    });
+});
+
+Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
+    Route::prefix("carts")->group(function () {
+        Route::get("/", [CartController::class, 'show']);
+        Route::post("/", [CartController::class, 'store']);
+        Route::put("/{id}", [CartController::class, 'update']);
+        Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 });

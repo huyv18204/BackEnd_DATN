@@ -5,9 +5,15 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Http\Requests\Order\OrderRequest;
 use App\Models\Order;
+use App\Models\OrderDetail;
+use App\Models\ProductAtt;
+use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -68,11 +74,11 @@ class OrderController extends Controller
     {
 
 
-        if(!$request->order_status){
+        if (!$request->order_status) {
             return response()->json("Trạng thái là bắt buộc");
         }
 
-        if(!OrderStatus::isValidValue($request->order_status)){
+        if (!OrderStatus::isValidValue($request->order_status)) {
             return response()->json("Trạng thái không hợp lệ");
         }
 
@@ -80,7 +86,7 @@ class OrderController extends Controller
         if (!$order) {
             return response()->json('Đơn hàng không tồn tại');
         }
-        if($order->order_status === "Đã xác nhận" && $request['order_status'] === "Chờ xác nhận"){
+        if ($order->order_status === "Đã xác nhận" && $request['order_status'] === "Chờ xác nhận") {
             return response()->json("Trạng thái không hợp lệ");
         }
 
@@ -106,13 +112,12 @@ class OrderController extends Controller
                 new \Illuminate\Validation\Rules\Enum(PaymentStatus::class)
             ],
         ]);
-        
+
 
         $order = Order::query()->find($id);
         if (!$order) {
             return response()->json('Đơn hàng không tồn tại');
         }
-
 
 
         $response = $order->update([
@@ -127,12 +132,49 @@ class OrderController extends Controller
 
 
     }
-    public function show($id){
+
+    public function show($id)
+    {
         $order = Order::query()->find($id);
-        if(!$order){
+        if (!$order) {
             return response()->json("Đơn hàng không tồn tại");
         }
         return response()->json($order);
     }
+
+    public function store(OrderRequest $request)
+    {
+        $data = $request->validated();
+        DB::beginTransaction();
+        try {
+
+            $order = Order::query()->create($data);
+            if ($order) {
+                foreach ($data['order_details'] as $orderDetail) {
+                    $orderDetail['order_id'] = $order->id;
+                    $orderDetails = OrderDetail::query()->create($orderDetail);
+                    if ($orderDetails) {
+                        $product_att = ProductAtt::query()->find($orderDetails->product_att_id);
+                        if ($product_att->stock_quantity >= $orderDetail['quantity']) {
+                            $product_att?->update([
+                                'stock_quantity' => $product_att->stock_quantity - $orderDetail['quantity']
+                            ]);
+                        } else {
+                            throw new Exception("Số lượng sản phẩm {$orderDetail['product_name']} không đủ");
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+            $message = 'Đặt hàng thành công';
+            return response()->json(['message' => $message], 201);
+        } catch (Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+            return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $exception->getMessage()], 400);
+        }
+    }
+
 
 }

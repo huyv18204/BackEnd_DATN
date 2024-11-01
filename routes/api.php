@@ -6,6 +6,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SizeController;
@@ -95,14 +96,14 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
-    Route::prefix("orders")->group(function () {
-        Route::get("/", [OrderController::class, 'index']);
-        Route::get("/{id}", [OrderController::class, 'show']);
-        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-        Route::post("/", [OrderController::class, 'store']);
-        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-    });
+//    Route::prefix("orders")->group(function () {
+//        Route::get("/", [OrderController::class, 'index']);
+//        Route::get("/{id}", [OrderController::class, 'show']);
+//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+//        Route::post("/", [OrderController::class, 'store']);
+//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+//    });
 
     Route::prefix("users")->group(function () {
         Route::get('/', [UserController::class, 'index']);
@@ -122,3 +123,19 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 });
+
+
+Route::prefix("v1")->group(function () {
+    Route::prefix("orders")->group(function () {
+        Route::get("/", [OrderController::class, 'index']);
+        Route::get("/{id}", [OrderController::class, 'show']);
+        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+        Route::post("/", [OrderController::class, 'store']);
+        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+    });
+});
+
+
+Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
+Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);

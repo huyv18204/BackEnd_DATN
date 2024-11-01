@@ -106,7 +106,7 @@ class OrderController extends Controller
                 new \Illuminate\Validation\Rules\Enum(PaymentStatus::class)
             ],
         ]);
-        
+
 
         $order = Order::query()->find($id);
         if (!$order) {
@@ -128,7 +128,7 @@ class OrderController extends Controller
 
     }
     public function show($id){
-        $order = Order::query()->find($id);
+        $order = Order::query()->with('user')->find($id);
         if(!$order){
             return response()->json("Đơn hàng không tồn tại");
         }

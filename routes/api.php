@@ -95,14 +95,14 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
-    Route::prefix("orders")->group(function () {
-        Route::get("/", [OrderController::class, 'index']);
-        Route::get("/{id}", [OrderController::class, 'show']);
-        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-        Route::post("/", [OrderController::class, 'store']);
-        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-    });
+//    Route::prefix("orders")->group(function () {
+//        Route::get("/", [OrderController::class, 'index']);
+//        Route::get("/{id}", [OrderController::class, 'show']);
+//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+//        Route::post("/", [OrderController::class, 'store']);
+//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+//    });
 
     Route::prefix("users")->group(function () {
         Route::get('/', [UserController::class, 'index']);
@@ -122,3 +122,4 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 });
+

@@ -49,7 +49,15 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate(['name' => 'required|unique:products,name'], [], ['name' => 'Tên sản phẩm']);
+        $data = $request->validate([
+            'name' => 'required|unique:products,name',
+            'regular_price' => 'required|numeric|min:0',
+            'reduced_price' => 'numeric|min:0',
+        ], [], [
+            'name' => 'Tên sản phẩm',
+            'regular_price' => 'Giá thường',
+            'reduced_price' => 'Giá giảm',
+        ]);
         $data = $request->except(['productatt']);
         $currentDay = date('d');
         $currentMonth = date('m');
@@ -151,6 +159,7 @@ class ProductController extends Controller
         $message = $response ? 'Cập nhật sản phẩm thành công' : 'Cập nhật sản phẩm thất bại';
         return response()->json(["message" => $message]);
     }
+
     public function getProductAtts(int $id)
     {
         $product = Product::with(['product_atts.size:name,id', 'product_atts.color:name,id'])->find($id);
@@ -161,10 +170,6 @@ class ProductController extends Controller
 
         return response()->json(['message' => 'Sản phẩm không tồn tại'], 404);
     }
-
-
-
-
 
     public function destroy($id)
     {

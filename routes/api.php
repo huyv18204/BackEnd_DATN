@@ -122,3 +122,4 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 });
+

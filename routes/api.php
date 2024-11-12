@@ -47,7 +47,7 @@ Route::get('v1/categories', [CategoryController::class, 'index']);
 Route::get("v1/products", [ProductController::class, 'index']);
 Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
-Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
+Route::prefix("v1")->group(function () {
     Route::prefix('categories')->group(function () {
         Route::put('/{id}/restore', [CategoryController::class, 'restore']);
         Route::get('/trash', [CategoryController::class, 'trash']);
@@ -76,22 +76,18 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
 
     Route::prefix("colors")->group(function () {
-        Route::put('/{id}/restore', [ColorController::class, 'restore']);
-        Route::get('/trash', [ColorController::class, 'trash']);
         Route::get("/", [ColorController::class, 'index']);
         Route::post("/", [ColorController::class, 'store']);
         Route::put("/{id}", [ColorController::class, 'update']);
-        Route::get("/{id}", [ColorController::class, 'show']);
+        Route::put('/{id}/toggleStatus', [ColorController::class, 'toggleStatus']);
         Route::delete("/{id}", [ColorController::class, 'destroy']);
     });
 
     Route::prefix("sizes")->group(function () {
-        Route::put('/{id}/restore', [SizeController::class, 'restore']);
-        Route::get('/trash', [SizeController::class, 'trash']);
         Route::get("/", [SizeController::class, 'index']);
         Route::post("/", [SizeController::class, 'store']);
         Route::put("/{id}", [SizeController::class, 'update']);
-        Route::get("/{id}", [SizeController::class, 'show']);
+        Route::put('/{id}/toggleStatus', [SizeController::class, 'toggleStatus']);
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
@@ -122,4 +118,3 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 });
-

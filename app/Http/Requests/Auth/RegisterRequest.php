@@ -31,6 +31,7 @@ class RegisterRequest extends FormRequest
     public function attributes()
     {
         return [
+            'email' => 'Email',
             'name' => 'Họ tên',
             'password' => 'Mật khẩu',
         ];

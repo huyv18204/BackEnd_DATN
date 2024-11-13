@@ -44,7 +44,8 @@ Route::prefix("v1")->group(function () {
 });
 
 Route::get('v1/categories', [CategoryController::class, 'index']);
-Route::get('v1/categories/{id}/show',[CategoryController::class,'show']);
+Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
+Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
 Route::get("v1/products", [ProductController::class, 'index']);
 Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
@@ -52,6 +53,7 @@ Route::prefix("v1")->group(function () {
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
+        Route::put('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
         Route::get('/{slug}', [CategoryController::class, 'getBySlug']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });

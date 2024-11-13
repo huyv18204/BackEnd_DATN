@@ -19,6 +19,30 @@ class CategoryController extends Controller
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
         try {
+            $query = Category::query()
+                ->whereNull('parent_id')
+                ->with('children.children');
+            $query->when($request->query('id'), function ($query, $id) {
+                $query->where('id', $id);
+            });
+
+            $query->when($request->query('name'), function ($query, $name) {
+                $query->where('name', 'LIKE', '%' . $name . '%');
+            });
+
+            $query->orderBy('id', $sort);
+            $categories = $size ? $query->paginate($size) : $query->get();
+            return ApiResponse::data($categories, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException("Lỗi khi truy xuất danh mục", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+        }
+    }
+
+    public function listParent(Request $request)
+    {
+        $sort = $request->input('sort', 'ASC');
+        $size = $request->query('size');
+        try {
             $query = Category::query()->whereNull('parent_id');
 
             $query->when($request->query('id'), function ($query, $id) {
@@ -43,6 +67,10 @@ class CategoryController extends Controller
         $data = $request->validated();
         try {
             if (empty($parentIds)) {
+                $existingCategory = Category::where('name', $data['name'])->first();
+                if ($existingCategory) {
+                    return ApiResponse::error('Tên danh mục đã tồn tại', Response::HTTP_BAD_REQUEST);
+                }
                 $data['category_code'] = $this->generateCategoryCode();
                 $data['slug'] = $this->generateUniqueSlug($data['name']);
                 $category = Category::query()->create($data);
@@ -79,59 +107,66 @@ class CategoryController extends Controller
 
     public function update(CategoryRequest $request, $id)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
-            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
-        }
+        $category = $this->findOrFail($id);
         $data = $request->validated();
         $parentIds = $request->input('parent_id', []);
 
         try {
             if (empty($parentIds)) {
+                $existingCategory = Category::where('name', $data['name'])
+                    ->where('id', '!=', $id)
+                    ->first();
+                if ($existingCategory) {
+                    return ApiResponse::error('Tên danh mục đã tồn tại', Response::HTTP_BAD_REQUEST);
+                }
                 $category->name = $data['name'];
                 $category->slug = $this->generateUniqueSlug($data['name']);
                 $category->save();
 
                 return ApiResponse::message('Cập nhật danh mục cha thành công', Response::HTTP_OK);
             } else {
-                foreach ($parentIds as $parentId) {
+                try {
+                    DB::beginTransaction();
 
-                    if ($parentId == $category->id) {
-                        return ApiResponse::error('Danh mục không thể làm cha của chính nó, vui lòng chọn danh mục khác.', Response::HTTP_BAD_REQUEST);
+                    foreach ($parentIds as $parentId) {
+                        if ($parentId == $category->id) {
+                            return ApiResponse::error('Danh mục không thể làm cha của chính nó, vui lòng chọn danh mục khác.', Response::HTTP_BAD_REQUEST);
+                        }
+
+                        $existingCategory = Category::where('name', $data['name'])
+                            ->where('parent_id', $parentId)
+                            ->where('id', '!=', $id)
+                            ->first();
+
+                        if ($existingCategory) {
+                            return ApiResponse::error('Tên danh mục này đã tồn tại trong danh mục cha.', Response::HTTP_BAD_REQUEST);
+                        }
+
+                        $category->name = $data['name'];
+                        $category->slug = $this->generateUniqueSlug($data['name'], $parentId);
+                        $category->parent_id = $parentId;
+
+                        if (!empty($data['image'])) {
+                            $category->image = $data['image'];
+                        }
+
+                        $category->save();
                     }
-
-                    $existingCategory = Category::where('name', $data['name'])
-                        ->where('parent_id', $parentId)
-                        ->where('id', '!=', $id)
-                        ->first();
-
-                    if ($existingCategory) {
-                        return ApiResponse::error('Tên danh mục này đã tồn tại trong danh mục cha.', Response::HTTP_BAD_REQUEST);
-                    }
-
-
-                    $category->name = $data['name'];
-                    $category->slug = $this->generateUniqueSlug($data['name'], $parentId);
-                    $category->parent_id = $parentId;
-
-                    if (!empty($data['image'])) {
-                        $category->image = $data['image'];
-                    }
-
-                    $category->save();
+                    DB::commit();
+                    return ApiResponse::message('Cập nhật danh mục con thành công', Response::HTTP_OK);
+                } catch (\Throwable $th) {
+                    DB::rollBack();
+                    throw new CustomException('Lỗi khi cập nhật danh mục', Response::HTTP_INTERNAL_SERVER_ERROR);
                 }
-
-                return ApiResponse::message('Cập nhật danh mục con thành công', Response::HTTP_OK);
             }
         } catch (\Exception $e) {
             throw new CustomException('Cập nhật danh mục thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
         }
     }
 
-    public function show(Request $request, string $id)
+    public function listChildren(Request $request, string $id)
     {
-        $category = $this->findOrFail($id);
+        $category = $this->findOrFailParentId($id);
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
         try {
@@ -153,13 +188,21 @@ class CategoryController extends Controller
         }
     }
 
+    public function toggleStatus(string $id)
+    {
+        $category = $this->findOrFail($id);
+        try {
+            $category->is_active = !$category->is_active;
+            $category->save();
+            return ApiResponse::message("Chuyển đổi trạng thái thành công", Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException("Lỗi khi chuyển trạng thái", Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function destroy(int $id)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
-            return response()->json(['message' => 'Danh mục không tồn tại'], 404);
-        }
+        $category = $this->findOrFail($id);
 
         if ($category->parent_id === null && $category->children()->exists()) {
             return ApiResponse::error('Không thể xóa danh mục cha có danh mục con', Response::HTTP_BAD_REQUEST);
@@ -175,7 +218,6 @@ class CategoryController extends Controller
                 }
             }
         }
-
         $category->delete();
 
         return ApiResponse::error('Xóa danh mục thành công', Response::HTTP_OK);
@@ -220,7 +262,16 @@ class CategoryController extends Controller
         return $slug;
     }
 
-    public function findOrFail($id)
+    private function findOrFail($id)
+    {
+        $category = Category::find($id);
+        if (!$category) {
+            throw new CustomException('Danh mục không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+        return $category;
+    }
+
+    private function findOrFailParentId($id)
     {
         $category = Category::whereNull('parent_id')->find($id);
         if (!$category) {

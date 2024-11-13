@@ -44,17 +44,15 @@ Route::prefix("v1")->group(function () {
 });
 
 Route::get('v1/categories', [CategoryController::class, 'index']);
+Route::get('v1/categories/{id}/show',[CategoryController::class,'show']);
 Route::get("v1/products", [ProductController::class, 'index']);
 Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
 Route::prefix("v1")->group(function () {
     Route::prefix('categories')->group(function () {
-        Route::put('/{id}/restore', [CategoryController::class, 'restore']);
-        Route::get('/trash', [CategoryController::class, 'trash']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
         Route::get('/{slug}', [CategoryController::class, 'getBySlug']);
-        Route::get('/{id}/show', [CategoryController::class, 'show']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
 

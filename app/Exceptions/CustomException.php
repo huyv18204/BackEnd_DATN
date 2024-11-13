@@ -24,7 +24,7 @@ class CustomException extends Exception
     {
         $this->message = $message;
         $this->statusCode = $statusCode;
-        $this->logMessage = $logMessage ?: $message; // Nếu không có logMessage, dùng message mặc định
+        $this->logMessage = $logMessage; // Nếu không có logMessage, dùng message mặc định
 
         parent::__construct($this->message);
     }

@@ -49,7 +49,7 @@ Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChild
 Route::get("v1/products", [ProductController::class, 'index']);
 Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
-Route::prefix("v1")->group(function () {
+Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);

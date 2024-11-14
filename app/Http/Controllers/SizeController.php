@@ -71,6 +71,9 @@ class SizeController extends Controller
     public function destroy($id)
     {
         $size = $this->findOrFail($id);
+        if ($size->product_atts()->exists()) {
+            return ApiResponse::error('Không thể xóa vì kích cỡ này đang được sử dụng', Response::HTTP_BAD_REQUEST);
+        }
         try {
             $size->delete();
             return ApiResponse::message('Xóa kích cỡ thành công', Response::HTTP_OK);

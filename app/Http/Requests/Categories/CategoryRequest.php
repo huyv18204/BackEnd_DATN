@@ -23,7 +23,7 @@ class CategoryRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,bmp,gif,svg,webp|max:2048',
+            'image' => 'nullable',
             'parent_id.*' => 'nullable|exists:categories,id', 
             'is_active' => 'boolean',
         ];

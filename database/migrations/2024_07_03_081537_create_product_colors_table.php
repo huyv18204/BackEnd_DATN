@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('colors', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
+            $table->string('code')->nullable();
             $table->boolean("is_active")->default(true);
-            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('product_colors');
+        Schema::dropIfExists('colors');
     }
 };

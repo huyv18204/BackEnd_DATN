@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CustomException;
+use App\Http\Requests\Color\ColorRequest;
+use App\Http\Response\ApiResponse;
 use App\Models\Color;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
 class ColorController extends Controller
 {
@@ -12,95 +17,78 @@ class ColorController extends Controller
         $size = $request->query('size');
         $name = $request->query('name');
         $sort = $request->query('sort', "ASC");
-        $colors = Color::query();
-        if ($name) {
-            $colors->where('name', $name);
-        };
-        $colors->orderBy('id', $sort);
-        if($size){
-            $colors = $colors->paginate($size);
-        }else{
-            $colors = $colors->get();
-        }
-        return response()->json($colors);
-    }
 
-    public function store(Request $request)
-    {
-        $color = $request->validate([
-            'name' => 'required|string|unique:colors,name|max:55'
-        ]);
-        $response = Color::query()->create($color);
-        if ($response) {
-            return response()->json("Thêm thành công");
-        } else {
-            return response()->json("Thêm thất bại");
+        try {
+            $colors = Color::query();
+
+            if ($name) {
+                $colors->where('name', 'like', "%$name%");
+            }
+
+            $colors->orderBy('id', $sort);
+            $colors = $size ? $colors->paginate($size) : $colors->get();
+
+            return ApiResponse::data($colors, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException('Lỗi khi truy xuất danh sách màu sắc', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
         }
     }
 
-    public function show($id)
+    public function store(ColorRequest $request)
     {
-        $color = Color::query()->find($id);
-        if (!$color) {
-            return response()->json("Màu không tồn tại");
+        $data = $request->validated();
+        try {
+            Color::create($data);
+            return ApiResponse::message('Thêm mới màu sắc thành công', Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            throw new CustomException('Thêm mới màu sắc thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
         }
-        return response()->json($color);
     }
 
-    public function update(Request $request, $id)
+    public function update(ColorRequest $request, $id)
     {
-        $color = Color::query()->find($id);
-        if (!$color) {
-            return response()->json("Màu không tồn tại");
+        $color = $this->findOrFail($id);
+        $data = $request->validated();
+        try {
+            $color->update($data);
+            return ApiResponse::message('Cập nhật màu sắc thành công', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException('Cập nhật màu sắc thất bại, vui lòng thử lại sau.', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
         }
-        $data = $request->validate([
-            'name' => 'required|string|unique:colors,name|max:55'
-        ]);
+    }
 
-        $response = $color->update($data);
-
-        if (!$response) {
-            return response()->json("Cập nhật thất bại");
+    public function toggleStatus($id)
+    {
+        $color = $this->findOrFail($id);
+        try {
+            $color->is_active = !$color->is_active;
+            $color->save();
+            return ApiResponse::message('Thay đổi trạng thái thành công', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException('Thay đổi trạng thái màu sắc thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
         }
-        return response()->json("Cập nhật thành công");
     }
 
     public function destroy($id)
     {
+        $color = $this->findOrFail($id);
+        if ($color->product_atts()->exists()) {
+            return ApiResponse::error('Không thể xóa vì màu này đang được sử dụng', Response::HTTP_BAD_REQUEST);
+        }
+        try {
+            $color->delete();
+            return ApiResponse::message('Xóa màu sắc thành công', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException('Xóa màu sắc thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+        }
+    }
+
+    public function findOrFail($id)
+    {
         $color = Color::query()->find($id);
         if (!$color) {
-            return response()->json("Màu không tồn tại");
+            throw new CustomException('Màu sắc Không tồn tại', Response::HTTP_NOT_FOUND);
         }
-        $color->delete();
-        return response()->json("Xoá thành công");
+        return $color;
     }
-
-
-    public function trash(Request $request)
-    {
-        $size = $request->query('size');
-        $name = $request->query('name');
-        $sort = $request->query('sort', "ASC");
-        $colors = Color::onlyTrashed();
-        if ($name) {
-            $colors->where('name', $name);
-        };
-        $colors->orderBy('id', $sort);
-        if($size){
-            $trash = $colors->paginate($size);
-        }else{
-            $trash = $colors->get();
-        }
-        return response()->json($trash);
-    }
-
-    public function restore($id){
-        $color = Color::withTrashed()->find($id);
-        if(!$color){
-            return response()->json(["error"=> "Màu không tồn tại"]);
-        }
-        $color->restore();
-        return response()->json(["message"=> "Khôi phục thành công"]);
-    }
-
 }

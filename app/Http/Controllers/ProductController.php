@@ -18,7 +18,7 @@ class ProductController extends Controller
         $query = Product::query()
             ->with([
                 'category' => function ($query) {
-                    $query->select('id', 'name')->withTrashed();
+                    $query->select('id', 'name');
                 },
             ]);
 

@@ -6,7 +6,7 @@ class ApiResponse
 {
     public static function data($data, $status)
     {
-        return response()->json([$data], $status);
+        return response()->json($data, $status);
     }
 
     public static function message(string $message, $status)

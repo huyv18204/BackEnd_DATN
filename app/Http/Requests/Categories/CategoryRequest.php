@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Categories;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RegisterRequest extends FormRequest
+class CategoryRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,21 +19,23 @@ class RegisterRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+    public function rules()
     {
-        return [
-            'email' => 'required|email|max:255|unique:users',
+        $rules = [
             'name' => 'required|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,bmp,gif,svg,webp|max:2048',
+            'parent_id.*' => 'nullable|exists:categories,id', 
+            'is_active' => 'boolean',
         ];
-    }
 
+        return $rules;
+    }
     public function attributes()
     {
         return [
-            'email' => 'Email',
-            'name' => 'Họ tên',
-            'password' => 'Mật khẩu',
+            'name' => 'Tên danh mục',
+            'parent_id' => 'Danh mục cha',
+            'is_active' => 'Trạng thái',
         ];
     }
 }

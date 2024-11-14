@@ -79,7 +79,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("/", [ColorController::class, 'index']);
         Route::post("/", [ColorController::class, 'store']);
         Route::put("/{id}", [ColorController::class, 'update']);
-        Route::put('/{id}/toggleStatus', [ColorController::class, 'toggleStatus']);
+        Route::put('/{id}/toggle-status', [ColorController::class, 'toggleStatus']);
         Route::delete("/{id}", [ColorController::class, 'destroy']);
     });
 
@@ -87,7 +87,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("/", [SizeController::class, 'index']);
         Route::post("/", [SizeController::class, 'store']);
         Route::put("/{id}", [SizeController::class, 'update']);
-        Route::put('/{id}/toggleStatus', [SizeController::class, 'toggleStatus']);
+        Route::put('/{id}/toggle-status', [SizeController::class, 'toggleStatus']);
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 

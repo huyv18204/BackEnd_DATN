@@ -22,6 +22,6 @@ class Size extends Model
 
     public function product_atts()
     {
-        return $this->belongsToMany(ProductAtt::class, 'product_att_size');
+        return $this->hasMany(ProductAtt::class, 'size_id');
     }
 }

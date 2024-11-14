@@ -72,7 +72,7 @@ class SizeController extends Controller
     {
         $size = $this->findOrFail($id);
         if ($size->product_atts()->exists()) {
-            return ApiResponse::error('Không thể xóa vì màu này đang được sử dụng', Response::HTTP_BAD_REQUEST);
+            return ApiResponse::error('Không thể xóa vì kích cỡ này đang được sử dụng', Response::HTTP_BAD_REQUEST);
         }
         try {
             $size->delete();

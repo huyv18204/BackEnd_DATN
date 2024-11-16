@@ -6,6 +6,7 @@ use App\Casts\ConvertDatetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
@@ -15,6 +16,7 @@ class Product extends Model
         'slug',
         'material',
         "sku",
+        "gallery",
         "name",
         "thumbnail",
         "short_description",
@@ -44,5 +46,43 @@ class Product extends Model
         return $this->hasMany(ProductAtt::class);
     }
 
+    public function colorImages()
+    {
+        return $this->hasMany(ProductColorImage::class);
+    }
 
+    public static function generateUniqueSKU($productName, $colorName, $sizeName)
+    {
+        $productCode = strtoupper(substr($productName, 0, 2));
+        $colorCode = strtoupper(substr($colorName, 0, 2));
+        $sizeCode = strtoupper($sizeName);
+
+        $skuBase = $productCode . $colorCode . $sizeCode;
+
+        return $skuBase;
+    }
+
+    public static function checkAndResolveDuplicateSKUs(array $productAtts)
+    {
+
+        $existingSKUs = ProductAtt::pluck('sku')->toArray();
+        $existingSKUSet = array_flip($existingSKUs);
+        $newSKUSet = [];
+
+
+        foreach ($productAtts as &$productAtt) {
+            $sku = $productAtt['sku'];
+            $suffix = 1;
+
+            while (isset($existingSKUSet[$sku]) || isset($newSKUSet[$sku])) {
+                $sku = $productAtt['sku'] . '-00' . $suffix;
+                $suffix++;
+            }
+
+            $productAtt['sku'] = $sku;
+            $newSKUSet[$sku] = true;
+        }
+
+        return $productAtts;
+    }
 }

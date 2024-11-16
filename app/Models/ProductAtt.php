@@ -12,10 +12,10 @@ class ProductAtt extends Model
 
     protected $fillable = [
         'product_id',
+        'sku',
         'color_id',
         'size_id',
         'stock_quantity',
-        'image',
         'is_active'
     ];
 

@@ -20,12 +20,8 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $cacheKey = 'products_' . md5(serialize($request->all()));
-
-        $products = Cache::remember($cacheKey, 600, function () use ($request) {
-            $query = Product::with(['category:id,name']);
-            return $this->applyFilters($query, $request);
-        });
+        $query = Product::with(['category:id,name']);
+        return $this->applyFilters($query, $request);
         return ApiResponse::data($products);
     }
 

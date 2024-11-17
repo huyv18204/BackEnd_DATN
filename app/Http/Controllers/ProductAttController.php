@@ -20,35 +20,32 @@ class ProductAttController extends Controller
     public function index(Request $request, int $productId)
     {
         try {
-            $product = Product::findOrFail($productId);
-            $variants = ProductAtt::with(['color', 'size'])
-                ->where('product_id', $productId)
-                ->where('is_active', true)
-                ->get()
-                ->groupBy('color_id');
-            $result = $variants->map(function ($items, $colorId) {
-                $image = ProductColorImage::where('color_id', $colorId)->first();
-                $sizes = $items->map(function ($item) {
-                    return [
-                        'size_id' => $item->size_id,
-                        'sku' => $item->sku,
-                        'stock_quantity' => $item->stock_quantity
-                    ];
-                });
+            $product = Product::select('id')
+                ->with([
+                    'product_atts:product_id,color_id,size_id,stock_quantity'
+                ])
+                ->findOrFail($productId);
+            $colorImages = $product->colorImages->pluck('image', 'color_id');
 
+            $result = $product->product_atts->map(function ($att) use ($colorImages) {
                 return [
-                    'color_id' => $colorId,
-                    'image' => $image ? $image->image : null,
-                    'sizes' => $sizes
+                    'image' => $colorImages[$att['color_id']] ?? null,
+                    'color_id' => $att['color_id'],
+                    'size_id' => $att['size_id'],
+                    'stock_quantity' => $att['stock_quantity']
                 ];
             });
-            $result = $result->values()->toArray();
 
             return ApiResponse::data($result);
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi truy xuất danh sách biến thể", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException(
+                "Lỗi khi truy xuất danh sách biến thể",
+                Response::HTTP_INTERNAL_SERVER_ERROR,
+                $e->getMessage()
+            );
         }
     }
+
 
     public function store(ProductAttRequest $request, int $productId)
     {
@@ -107,24 +104,26 @@ class ProductAttController extends Controller
 
     public function update(Request $request, int $product_id, int $product_att_id)
     {
-        $data = $request->only(['stock_quantity', 'image']);
-
         $product_att = ProductAtt::find($product_att_id);
-
         if (!$product_att) {
-            return response()->json(['message' => 'Biến thể không tồn tại'], 404);
+            return ApiResponse::error('Biến thể không tồn tại', Response::HTTP_BAD_REQUEST);
         }
+        $colorId = $request->color_id;
+        $image = $request->image;
+        $productColorImage = ProductColorImage::where('product_id', $product_id)->where('color_id', $colorId)->first();
 
-        if ($product_att->update(
-            [
-                'id' => $product_att_id,
-                'stock_quantity' => $data['stock_quantity'],
-                'image' => $data['image'] ?? null,
-            ]
-        )) {
-            return response()->json(['message' => 'Cập nhật biến thể thành công'], 200);
+        try {
+            if ($request->stock_quantity) {
+                $product_att->update(['stock_quantity' => $request->stock_quantity]);
+            }
+
+            if ($productColorImage && $image) {
+                $productColorImage->update(['image' => $image]);
+            }
+            return ApiResponse::message('Cập nhật biến thể thành công');
+        } catch (\Exception $e) {
+            throw new CustomException('Cập nhật biến thể thất bại', $e->getMessage());
         }
-        return response()->json(['message' => 'Cập nhật biến thể thất bại'], 400);
     }
 
 

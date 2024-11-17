@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -96,14 +97,13 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
-//    Route::prefix("orders")->group(function () {
-//        Route::get("/", [OrderController::class, 'index']);
-//        Route::get("/{id}", [OrderController::class, 'show']);
-//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-//        Route::post("/", [OrderController::class, 'store']);
-//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-//    });
+    Route::prefix("orders")->group(function () {
+        Route::get("/", [OrderController::class, 'index']);
+        Route::get("/{id}", [OrderController::class, 'show']);
+        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+    });
 
     Route::prefix("users")->group(function () {
         Route::get('/', [UserController::class, 'index']);
@@ -122,20 +122,35 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::put("/{id}", [CartController::class, 'update']);
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
-});
 
-
-Route::prefix("v1")->group(function () {
     Route::prefix("orders")->group(function () {
-        Route::get("/", [OrderController::class, 'index']);
-        Route::get("/{id}", [OrderController::class, 'show']);
-        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
         Route::post("/", [OrderController::class, 'store']);
-        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
     });
+
+    Route::prefix("shipping-addresses")->group(function () {
+        Route::post("/", [ShippingAddressController::class, 'store']);
+        Route::put("/{id}", [ShippingAddressController::class, 'update']);
+        Route::delete("/{id}", [ShippingAddressController::class, 'delete']);
+        Route::get("/user-id", [ShippingAddressController::class, 'getByUserId']);
+        Route::get("/{id}", [ShippingAddressController::class, 'show']);
+
+    });
+
+
 });
-
-
 Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
 Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+//Route::prefix("v1")->group(function () {
+//    Route::prefix("orders")->group(function () {
+//        Route::get("/", [OrderController::class, 'index']);
+//        Route::get("/{id}", [OrderController::class, 'show']);
+//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+//        Route::post("/", [OrderController::class, 'store']);
+//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+//    });
+//
+//});
+
+
+

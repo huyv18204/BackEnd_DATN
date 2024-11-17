@@ -18,13 +18,14 @@ return new class extends Migration
             $table->decimal('total_amount',10,0);
             $table->enum('payment_method', [
                 'Thanh toán khi nhận hàng',
-                'VN Pay',
                 'MOMO'
             ]);
             $table->enum('order_status', [
                 'Chờ xác nhận',
-                'Đã xác nhận',
-                'Giao hàng thành công',
+                'Chờ lấy hàng',
+                'Đang giao',
+                'Đã giao',
+                'Trả hàng',
                 "Đã huỷ"
             ])->default("Chờ xác nhận");
             $table->enum('payment_status', [

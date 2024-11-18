@@ -194,28 +194,37 @@ class ProductController extends Controller
                 'category_id' => $product->category_id,
                 'product_att' => [],
             ];
-
+    
             $colorImagesGrouped = $product->colorImages->keyBy('color_id');
-
+    
             foreach ($product->product_atts->groupBy('color_id') as $colorId => $productAtts) {
                 $colorImage = $colorImagesGrouped->get($colorId);
-
+    
+                $color = $productAtts->first()->color; 
+                $colorName = $color ? $color->name : null;
+    
                 $productData['product_att'][] = [
                     'color_id' => $colorId,
+                    'color_name' => $colorName, 
                     'image' => $colorImage ? $colorImage->image : null,
                     'sizes' => $productAtts->map(function ($productAtt) {
+                        $size = $productAtt->size;
+                        $sizeName = $size ? $size->name : null;
+    
                         return [
                             'size_id' => $productAtt->size_id,
+                            'size_name' => $sizeName,
                             'sku' => $productAtt->sku,
                             'stock_quantity' => $productAtt->stock_quantity
                         ];
                     })->toArray(),
                 ];
             }
-
+    
             return $productData;
         } catch (\Exception $e) {
             throw new CustomException("Lỗi khi xử lý dữ liệu sản phẩm", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
         }
     }
+    
 }

@@ -115,7 +115,7 @@ class FakeDataSeeder extends Seeder
                 DB::table('product_color_images')->insert([
                     'product_id' => $product->id,
                     'color_id' => $color->id,
-                    'image' => 'image_' . $color->name . '.quandz',
+                    'image' => 'https://via.placeholder.com/150',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

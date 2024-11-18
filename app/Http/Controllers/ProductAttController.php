@@ -23,7 +23,7 @@ class ProductAttController extends Controller
     public function index(Request $request, int $productId)
     {
         $product = Product::select('id')->with([
-            'product_atts:product_id,color_id,size_id,stock_quantity',
+            'product_atts:product_id,color_id,size_id,stock_quantity,sku',
             'colorImages:product_id,color_id,image',
             'product_atts.color:id,name',
             'product_atts.size:id,name'
@@ -43,6 +43,7 @@ class ProductAttController extends Controller
 
         $result = $result->map(function ($att) use ($colorImages) {
             return [
+                'sku' => $att->sku,
                 'image' => $colorImages[$att->color_id] ?? null,
                 'color_id' => $att->color_id,
                 'color_name' => $att->color?->name,

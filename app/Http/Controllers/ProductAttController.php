@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductAtt;
 use App\Models\ProductColorImage;
 use App\Models\Size;
+use App\Traits\applyFilters;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,22 +18,25 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductAttController extends Controller
 {
+    use applyFilters;
     public function index(Request $request, int $productId)
     {
         try {
-            $product = Product::select('id')
-                ->with([
-                    'product_atts:product_id,color_id,size_id,stock_quantity'
-                ])
-                ->findOrFail($productId);
+            $product = Product::with([
+                'product_atts:product_id,color_id,size_id,stock_quantity',
+                'colorImages:color_id,image'
+            ])->findOrFail($productId);
+
             $colorImages = $product->colorImages->pluck('image', 'color_id');
 
-            $result = $product->product_atts->map(function ($att) use ($colorImages) {
+            $filteredAtts = $this->Filters($product->product_atts()->getQuery(), $request);
+
+            $result = $filteredAtts->map(function ($att) use ($colorImages) {
                 return [
-                    'image' => $colorImages[$att['color_id']] ?? null,
-                    'color_id' => $att['color_id'],
-                    'size_id' => $att['size_id'],
-                    'stock_quantity' => $att['stock_quantity']
+                    'image' => $colorImages[$att->color_id] ?? null,
+                    'color_id' => $att->color_id,
+                    'size_id' => $att->size_id,
+                    'stock_quantity' => $att->stock_quantity
                 ];
             });
 

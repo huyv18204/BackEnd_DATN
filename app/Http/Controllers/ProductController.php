@@ -15,13 +15,15 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Cache;
+use App\Traits\applyFilters;
 
 class ProductController extends Controller
 {
+    use applyFilters;
     public function index(Request $request)
     {
         $query = Product::with(['category:id,name']);
-        return $this->applyFilters($query, $request);
+        $products = $this->Filters($query, $request);
         return ApiResponse::data($products);
     }
 
@@ -150,7 +152,7 @@ class ProductController extends Controller
     {
         $query = Product::onlyTrashed()
             ->with('category:id,name');
-        $this->applyFilters($query, $request);
+        $this->Filters($query, $request);
         $trash = $query->get();
         return ApiResponse::data($trash);
     }
@@ -176,17 +178,7 @@ class ProductController extends Controller
         }
     }
 
-    private function applyFilters($query, $request)
-    {
-        $query->when($request->query('id'), fn($q, $id) => $q->where('id', $id));
-        $query->when($request->query('categoryId'), fn($q, $categoryId) => $q->where('category_id', $categoryId));
-        $query->when($request->query('name'), fn($q, $name) => $q->where('name', 'like', '%' . $name . '%'));
-        $query->when($request->query('minPrice'), fn($q, $minPrice) => $q->where('regular_price', '>=', $minPrice));
-        $query->when($request->query('maxPrice'), fn($q, $maxPrice) => $q->where('regular_price', '<=', $maxPrice));
-        $query->orderBy('created_at', $request->query('sort', 'ASC'));
-        $size = $request->query('size');
-        return $size ? $query->paginate($size) : $query->get();
-    }
+
 
     private function getProductData($product)
     {

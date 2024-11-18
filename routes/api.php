@@ -4,11 +4,14 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\DeliveryPersonController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentDetailController;
 use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\UserController;
@@ -97,13 +100,14 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
-    Route::prefix("orders")->group(function () {
-        Route::get("/", [OrderController::class, 'index']);
-        Route::get("/{id}", [OrderController::class, 'show']);
-        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-    });
+//    Route::prefix("orders")->group(function () {
+//        Route::get("/", [OrderController::class, 'index']);
+//        Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
+//        Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
+//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+//    });
 
     Route::prefix("users")->group(function () {
         Route::get('/', [UserController::class, 'index']);
@@ -154,3 +158,31 @@ Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallba
 
 
 
+Route::prefix("v1")->group(function () {
+    Route::prefix("delivery-persons")->group(function () {
+        Route::get("/", [DeliveryPersonController::class, 'index']);
+        Route::get("/{id}", [DeliveryPersonController::class, 'show']);
+        Route::post("/", [DeliveryPersonController::class, 'store']);
+        Route::put("/{id}", [DeliveryPersonController::class, 'update']);
+    });
+
+    Route::prefix("shipments")->group(function () {
+        Route::get("/", [ShipmentController::class, 'index']);
+        Route::get("/{id}", [ShipmentController::class, 'show']);
+        Route::post("/", [ShipmentController::class, 'store']);
+        Route::put("/{id}", [ShipmentController::class, 'update']);
+    });
+
+    Route::prefix("shipment-details")->group(function () {
+        Route::get("/{shipment_id}", [ShipmentDetailController::class, 'show']);
+    });
+});
+
+Route::prefix("v1/orders")->group(function () {
+    Route::get("/", [OrderController::class, 'index']);
+    Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
+    Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
+    Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+    Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+    Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+});

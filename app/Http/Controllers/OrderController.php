@@ -16,6 +16,7 @@ use App\Services\OrderHepper;
 use DateTime;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -191,4 +192,18 @@ class OrderController extends Controller
         }
     }
 
+    public function getByWaitingDeliveryStatus(Request $request): JsonResponse
+    {
+        $query = Order::query()
+            ->where('order_status', OrderStatus::WAITING_DELIVERY->value)
+            ->whereDoesntHave('shipment_detail');
+
+        $query->when($request->query('order_code'), function ($query, $orderCode) {
+            $query->where('order_code', $orderCode);
+        });
+        $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+
+        return response()->json($orders);
+
+    }
 }

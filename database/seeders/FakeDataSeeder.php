@@ -26,6 +26,8 @@ class FakeDataSeeder extends Seeder
         DB::table('orders')->truncate();
         DB::table('order_details')->truncate();
         DB::table('users')->truncate();
+        DB::table('vehicles')->truncate();
+        DB::table('delivery_people')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
 

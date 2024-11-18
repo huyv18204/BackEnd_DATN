@@ -27,7 +27,8 @@ class User extends Authenticatable implements JWTSubject
         'avatar',
         'password',
         'is_blocked',
-        'role'
+        'role',
+        'email_verified_at'
     ];
 
     /**
@@ -57,6 +58,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Order::class);
     }
 
+    public  function vehicle()
+    {
+        return $this->hasOne(Vehicle::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
@@ -66,4 +72,5 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
 }

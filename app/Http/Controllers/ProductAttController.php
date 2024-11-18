@@ -19,11 +19,12 @@ use Symfony\Component\HttpFoundation\Response;
 class ProductAttController extends Controller
 {
     use applyFilters;
+
     public function index(Request $request, int $productId)
     {
-        $product = Product::with([
+        $product = Product::select('id')->with([
             'product_atts:product_id,color_id,size_id,stock_quantity',
-            'colorImages:color_id,image',
+            'colorImages:product_id,color_id,image',
             'product_atts.color:id,name',
             'product_atts.size:id,name'
         ])->find($productId);
@@ -31,12 +32,16 @@ class ProductAttController extends Controller
         if (!$product) {
             return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
-
         $colorImages = $product->colorImages->pluck('image', 'color_id');
         $query = $product->product_atts()->getQuery();
         $paginatedAtts = $this->Filters($query, $request);
+        $result = collect($paginatedAtts); 
 
-        $result = $paginatedAtts->getCollection()->map(function ($att) use ($colorImages) {
+        if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $result = $paginatedAtts->getCollection();
+        }
+
+        $result = $result->map(function ($att) use ($colorImages) {
             return [
                 'image' => $colorImages[$att->color_id] ?? null,
                 'color_id' => $att->color_id,
@@ -47,9 +52,12 @@ class ProductAttController extends Controller
             ];
         });
 
-        $paginatedAtts->setCollection($result);
+        if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $paginatedAtts->setCollection($result);
+            return ApiResponse::data($paginatedAtts);
+        }
 
-        return ApiResponse::data($paginatedAtts);
+        return ApiResponse::data($result);
     }
 
 

@@ -20,11 +20,11 @@ class CustomException extends Exception
      * @param int $statusCode
      * @param string|null $logMessage
      */
-    public function __construct($message = 'Lỗi không xác định', $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR, $logMessage = null)
+    public function __construct($message = 'Lỗi không xác định', $logMessage = null, $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR)
     {
         $this->message = $message;
         $this->statusCode = $statusCode;
-        $this->logMessage = $logMessage; 
+        $this->logMessage = $logMessage;
 
         parent::__construct($this->message);
     }
@@ -41,7 +41,6 @@ class CustomException extends Exception
      */
     public function report()
     {
-        // Trả về phản hồi lỗi JSON
         return ApiResponse::error($this->message, $this->statusCode);
     }
 }

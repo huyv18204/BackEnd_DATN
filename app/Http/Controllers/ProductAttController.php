@@ -21,45 +21,35 @@ class ProductAttController extends Controller
     use applyFilters;
     public function index(Request $request, int $productId)
     {
-        try {
-            $product = Product::with([
-                'product_atts:product_id,color_id,size_id,stock_quantity',
-                'colorImages:color_id,image',
-                'product_atts.color:id,name', 
-                'product_atts.size:id,name' 
-            ])->find($productId);
+        $product = Product::with([
+            'product_atts:product_id,color_id,size_id,stock_quantity',
+            'colorImages:color_id,image',
+            'product_atts.color:id,name',
+            'product_atts.size:id,name'
+        ])->find($productId);
 
-            if (!$product) {
-                return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
-            }
-
-            $colorImages = $product->colorImages->pluck('image', 'color_id');
-
-            $query = $product->product_atts()->getQuery();
-
-            $paginatedAtts = $this->Filters($query, $request);
-
-            $result = $paginatedAtts->getCollection()->map(function ($att) use ($colorImages) {
-                return [
-                    'image' => $colorImages[$att->color_id] ?? null,
-                    'color_id' => $att->color_id,
-                    'color_name' => $att->color ? $att->color->name : null, 
-                    'size_id' => $att->size_id,
-                    'size_name' => $att->size ? $att->size->name : null,
-                    'stock_quantity' => $att->stock_quantity
-                ];
-            });
-
-            $paginatedAtts->setCollection($result);
-
-            return ApiResponse::data($paginatedAtts);
-        } catch (\Exception $e) {
-            throw new CustomException(
-                "Lỗi khi truy xuất danh sách biến thể",
-                Response::HTTP_INTERNAL_SERVER_ERROR,
-                $e->getMessage()
-            );
+        if (!$product) {
+            return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
+
+        $colorImages = $product->colorImages->pluck('image', 'color_id');
+        $query = $product->product_atts()->getQuery();
+        $paginatedAtts = $this->Filters($query, $request);
+
+        $result = $paginatedAtts->getCollection()->map(function ($att) use ($colorImages) {
+            return [
+                'image' => $colorImages[$att->color_id] ?? null,
+                'color_id' => $att->color_id,
+                'color_name' => $att->color?->name,
+                'size_id' => $att->size_id,
+                'size_name' => $att->size?->name,
+                'stock_quantity' => $att->stock_quantity,
+            ];
+        });
+
+        $paginatedAtts->setCollection($result);
+
+        return ApiResponse::data($paginatedAtts);
     }
 
 

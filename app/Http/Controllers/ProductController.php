@@ -14,7 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
-use Illuminate\Support\Facades\Cache;
 use App\Traits\applyFilters;
 
 class ProductController extends Controller
@@ -29,8 +28,7 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        $dataProduct = $request->except(['product_att', 'gallery', 'product_color_images']);
-        $dataProduct['gallery'] = $request->has('gallery') ? json_encode($request->gallery) : null;
+        $dataProduct = $request->except(['product_att','product_color_images']);
         $dataProductAtts = $request->product_att;
         $dataProduct['slug'] = Str::slug($request->name);
 
@@ -82,25 +80,16 @@ class ProductController extends Controller
             return ApiResponse::message('Thêm mới sản phẩm thành công', Response::HTTP_CREATED);
         } catch (QueryException $exception) {
             DB::rollBack();
-            throw new CustomException("Lỗi khi thêm sản phẩm", Response::HTTP_INTERNAL_SERVER_ERROR, $exception->getMessage());
+            throw new CustomException("Lỗi khi thêm sản phẩm", $exception->getMessage());
         }
     }
     public function show($id)
     {
-        $product = Product::with([
-            'category',
-            'product_atts.color',
-            'product_atts.size',
-            'colorImages.color',
-        ])->find($id);
-
+        $product = Product::find($id);
         if (!$product) {
             return ApiResponse::error("Sản phẩm không tồn tại", Response::HTTP_NOT_FOUND);
         }
-
-        $productData = $this->getProductData($product);
-
-        return ApiResponse::data($productData);
+        return ApiResponse::data($product);
     }
 
     public function getBySlug($slug)
@@ -133,7 +122,7 @@ class ProductController extends Controller
             $product->update($data);
             return ApiResponse::message("Cập nhật sản phẩm thành công");
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi cập nhật sản phẩm", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException("Lỗi khi cập nhật sản phẩm", $e->getMessage());
         }
     }
 
@@ -177,8 +166,6 @@ class ProductController extends Controller
         }
     }
 
-
-
     private function getProductData($product)
     {
         try {
@@ -194,23 +181,23 @@ class ProductController extends Controller
                 'category_id' => $product->category_id,
                 'product_att' => [],
             ];
-    
+
             $colorImagesGrouped = $product->colorImages->keyBy('color_id');
-    
+
             foreach ($product->product_atts->groupBy('color_id') as $colorId => $productAtts) {
                 $colorImage = $colorImagesGrouped->get($colorId);
-    
-                $color = $productAtts->first()->color; 
+
+                $color = $productAtts->first()->color;
                 $colorName = $color ? $color->name : null;
-    
+
                 $productData['product_att'][] = [
                     'color_id' => $colorId,
-                    'color_name' => $colorName, 
+                    'color_name' => $colorName,
                     'image' => $colorImage ? $colorImage->image : null,
                     'sizes' => $productAtts->map(function ($productAtt) {
                         $size = $productAtt->size;
                         $sizeName = $size ? $size->name : null;
-    
+
                         return [
                             'size_id' => $productAtt->size_id,
                             'size_name' => $sizeName,
@@ -220,11 +207,10 @@ class ProductController extends Controller
                     })->toArray(),
                 ];
             }
-    
+
             return $productData;
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi xử lý dữ liệu sản phẩm", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException("Lỗi khi xử lý dữ liệu sản phẩm", $e->getMessage());
         }
     }
-    
 }

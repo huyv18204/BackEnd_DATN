@@ -29,7 +29,7 @@ class SizeController extends Controller
 
             return ApiResponse::data($sizes, Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Lỗi khi truy xuất danh sách kích cỡ', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Lỗi khi truy xuất danh sách kích cỡ', $e->getMessage());
         }
     }
 
@@ -40,7 +40,7 @@ class SizeController extends Controller
             Size::create($data);
             return ApiResponse::message('Thêm mới kích cỡ thành công', Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            throw new CustomException('Thêm mới kích cỡ thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Thêm mới kích cỡ thất bại', $e->getMessage());
         }
     }
 
@@ -52,7 +52,7 @@ class SizeController extends Controller
             $size->update($data);
             return ApiResponse::message('Cập nhật kích cỡ thành công', Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Cập nhật kích cỡ thất bại, vui lòng thử lại sau.', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Cập nhật kích cỡ thất bại, vui lòng thử lại sau.', $e->getMessage());
         }
     }
 
@@ -64,7 +64,7 @@ class SizeController extends Controller
             $size->save();
             return ApiResponse::message('Thay đổi trạng thái thành công', Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Thay đổi trạng thái kích cỡ thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Thay đổi trạng thái kích cỡ thất bại', $e->getMessage());
         }
     }
 
@@ -78,7 +78,7 @@ class SizeController extends Controller
             $size->delete();
             return ApiResponse::message('Xóa kích cỡ thành công', Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Xóa kích cỡ thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Xóa kích cỡ thất bại', $e->getMessage());
         }
     }
 

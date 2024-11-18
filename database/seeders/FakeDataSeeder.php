@@ -42,6 +42,19 @@ class FakeDataSeeder extends Seeder
             ]);
         }
 
+        DB::table('users')->updateOrInsert(
+            ['email' => 'abc@gmail.com'], 
+            [
+                'name' => 'Admin',
+                'email' => 'abc@gmail.com',
+                'password' => Hash::make('admin'),
+                'email_verified_at' => now(),
+                'role' => 'admin',
+                'is_blocked' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
         // Categories seeding
         for ($i = 1; $i <= 10; $i++) {
 

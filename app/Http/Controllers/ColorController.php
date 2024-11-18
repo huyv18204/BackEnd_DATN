@@ -30,7 +30,7 @@ class ColorController extends Controller
 
             return ApiResponse::data($colors, Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Lỗi khi truy xuất danh sách màu sắc', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Lỗi khi truy xuất danh sách màu sắc', $e->getMessage());
         }
     }
 
@@ -41,7 +41,7 @@ class ColorController extends Controller
             Color::create($data);
             return ApiResponse::message('Thêm mới màu sắc thành công', Response::HTTP_CREATED);
         } catch (\Exception $e) {
-            throw new CustomException('Thêm mới màu sắc thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Thêm mới màu sắc thất bại', $e->getMessage());
         }
     }
 
@@ -53,7 +53,7 @@ class ColorController extends Controller
             $color->update($data);
             return ApiResponse::message('Cập nhật màu sắc thành công', Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Cập nhật màu sắc thất bại, vui lòng thử lại sau.', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Cập nhật màu sắc thất bại, vui lòng thử lại sau.', $e->getMessage());
         }
     }
 
@@ -65,7 +65,7 @@ class ColorController extends Controller
             $color->save();
             return ApiResponse::message('Thay đổi trạng thái thành công', Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Thay đổi trạng thái màu sắc thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Thay đổi trạng thái màu sắc thất bại', $e->getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ class ColorController extends Controller
             $color->delete();
             return ApiResponse::message('Xóa màu sắc thành công', Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException('Xóa màu sắc thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Xóa màu sắc thất bại', $e->getMessage());
         }
     }
 

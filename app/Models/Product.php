@@ -32,6 +32,7 @@ class Product extends Model
         'is_active' => "boolean",
         'regular_price' => 'integer',
         'reduced_price' => 'integer',
+        'gallery' => 'array',
         'created_at' => ConvertDatetime::class,
         'updated_at' => ConvertDatetime::class,
     ];

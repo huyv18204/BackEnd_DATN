@@ -157,7 +157,6 @@ Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallba
 //});
 
 
-
 Route::prefix("v1")->group(function () {
     Route::prefix("delivery-persons")->group(function () {
         Route::get("/", [DeliveryPersonController::class, 'index']);
@@ -171,6 +170,7 @@ Route::prefix("v1")->group(function () {
         Route::get("/{id}", [ShipmentController::class, 'show']);
         Route::post("/", [ShipmentController::class, 'store']);
         Route::put("/{id}", [ShipmentController::class, 'update']);
+        Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
     });
 
     Route::prefix("shipment-details")->group(function () {

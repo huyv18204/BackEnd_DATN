@@ -70,7 +70,9 @@ class ShippingAddressController extends Controller
             ]));
 
             if (!$shippingAddress) {
-                throw new \Exception('Thêm địa chỉ giao hàng thất bại');
+                return response()->json([
+                    'message' => "Thêm địa chỉ giao hàng thất bại"
+                ], 422);
             }
 
             DB::commit();

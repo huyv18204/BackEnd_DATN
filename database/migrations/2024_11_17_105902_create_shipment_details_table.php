@@ -16,7 +16,6 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Shipment::class)->constrained();
             $table->foreignIdFor(\App\Models\Order::class)->constrained();
-
             $table->timestamps();
         });
     }

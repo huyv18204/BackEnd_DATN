@@ -23,8 +23,8 @@ class StoreRequest extends FormRequest
     {
         return [
             'personal.name' => 'required|string|max:255',
-            'personal.email' => 'required|email|max:255',
-            'personal.phone_number' => 'required|string|max:15',
+            'personal.email' => 'required|email|max:255|unique:users,email',
+            'personal.phone_number' => 'required|string|max:10',
             'personal.address' => 'required|string|max:255',
 
             'vehicle.vehicle_name' => 'required|string|max:255',
@@ -42,7 +42,9 @@ class StoreRequest extends FormRequest
             'personal.email.required' => 'Email là bắt buộc.',
             'personal.email.email' => 'Email phải là định dạng hợp lệ.',
             'personal.phone_number.required' => 'Số điện thoại là bắt buộc.',
+            'personal.phone_number.max' => 'Số điện thoại không quá 10 kí tự.',
             'personal.address.required' => 'Địa chỉ là bắt buộc.',
+            'personal.email.unique' => "Email đã tồn tại",
 
             'vehicle.vehicle_name.required' => 'Tên phương tiện là bắt buộc.',
             'vehicle.license_plate.required' => 'Biển số xe là bắt buộc.',

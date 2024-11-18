@@ -89,7 +89,7 @@ class ShipmentController extends Controller
             if (!$shipment) {
                 return response()->json([
                     'message' => 'Lô hàng không tồn tại'
-                ], 404);
+                ], 422);
             }
 
             $shipment->update([
@@ -111,7 +111,6 @@ class ShipmentController extends Controller
             }
 
             DB::commit();
-
             return response()->json([
                 'message' => 'Cập nhật lô hàng thành công'
             ], 200);
@@ -121,6 +120,51 @@ class ShipmentController extends Controller
                 'message' => "Lỗi: " . $exception->getMessage()
             ], 500);
         }
+    }
+
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Chưa hoàn thành,Hoàn thành giao hàng',
+        ], [
+            'status.required' => 'Trường trạng thái là bắt buộc.',
+            'status.in' => 'Trạng thái phải không hợp lệ',
+        ]);
+
+        try {
+            $shipment = Shipment::query()->find($id);
+            if (!$shipment) {
+                return response()->json([
+                    "message" => "Lô hàng không tồn tai"
+                ], 422);
+            }
+            $shipmentDetailExist = ShipmentDetail::query()
+                ->where('shipment_id', $id)
+                ->whereHas('order', function ($query) {
+                    $query->whereNotIn('order_status', ["Đã giao", "Trả hàng"]);
+                })
+                ->exists();
+
+            if (!$shipmentDetailExist) {
+                $shipment->update([
+                    'status' => $validated['status']
+                ]);
+
+                return response()->json([
+                    'message' => "Cập nhật trạng thái thành công"
+                ]);
+            } else {
+                return response()->json([
+                    'message' => "Lô hàng chưa hoàn thiện"
+                ], 422);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], 500);
+        }
+
     }
 
 }

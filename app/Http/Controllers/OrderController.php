@@ -177,7 +177,9 @@ class OrderController extends Controller
                                 'stock_quantity' => $productAtt->stock_quantity - $item['quantity']
                             ]);
                         } else {
-                            throw new Exception("Số lượng sản phẩm {$item['product_name']} không đủ");
+                            return response()->json([
+                                'message' => 'Số luoựng sản phẩm không đủ'
+                            ], 422);
                         }
                     }
                 }
@@ -187,7 +189,6 @@ class OrderController extends Controller
             return response()->json(['message' => $message], 201);
         } catch (Exception $exception) {
             DB::rollBack();
-            Log::error($exception->getMessage());
             return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $exception->getMessage()], 400);
         }
     }

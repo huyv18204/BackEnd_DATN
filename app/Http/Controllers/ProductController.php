@@ -152,8 +152,7 @@ class ProductController extends Controller
     {
         $query = Product::onlyTrashed()
             ->with('category:id,name');
-        $this->Filters($query, $request);
-        $trash = $query->get();
+        $trash =  $this->Filters($query, $request);
         return ApiResponse::data($trash);
     }
 

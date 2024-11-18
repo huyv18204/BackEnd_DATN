@@ -25,13 +25,17 @@ class ProductAttController extends Controller
             $product = Product::with([
                 'product_atts:product_id,color_id,size_id,stock_quantity',
                 'colorImages:color_id,image'
-            ])->findOrFail($productId);
-
+            ])->find($productId);
+            if (!$product) {
+                return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
+            }
             $colorImages = $product->colorImages->pluck('image', 'color_id');
 
-            $filteredAtts = $this->Filters($product->product_atts()->getQuery(), $request);
+            $query = $product->product_atts()->getQuery();
 
-            $result = $filteredAtts->map(function ($att) use ($colorImages) {
+            $paginatedAtts = $this->Filters($query, $request);
+
+            $result = $paginatedAtts->getCollection()->map(function ($att) use ($colorImages) {
                 return [
                     'image' => $colorImages[$att->color_id] ?? null,
                     'color_id' => $att->color_id,
@@ -40,7 +44,9 @@ class ProductAttController extends Controller
                 ];
             });
 
-            return ApiResponse::data($result);
+            $paginatedAtts->setCollection($result);
+
+            return ApiResponse::data($paginatedAtts);
         } catch (\Exception $e) {
             throw new CustomException(
                 "Lỗi khi truy xuất danh sách biến thể",
@@ -49,6 +55,7 @@ class ProductAttController extends Controller
             );
         }
     }
+
 
 
     public function store(ProductAttRequest $request, int $productId)

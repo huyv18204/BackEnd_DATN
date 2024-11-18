@@ -24,11 +24,15 @@ class ProductAttController extends Controller
         try {
             $product = Product::with([
                 'product_atts:product_id,color_id,size_id,stock_quantity',
-                'colorImages:color_id,image'
+                'colorImages:color_id,image',
+                'product_atts.color:id,name', 
+                'product_atts.size:id,name' 
             ])->find($productId);
+
             if (!$product) {
                 return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
             }
+
             $colorImages = $product->colorImages->pluck('image', 'color_id');
 
             $query = $product->product_atts()->getQuery();
@@ -39,7 +43,9 @@ class ProductAttController extends Controller
                 return [
                     'image' => $colorImages[$att->color_id] ?? null,
                     'color_id' => $att->color_id,
+                    'color_name' => $att->color ? $att->color->name : null, 
                     'size_id' => $att->size_id,
+                    'size_name' => $att->size ? $att->size->name : null,
                     'stock_quantity' => $att->stock_quantity
                 ];
             });
@@ -55,7 +61,6 @@ class ProductAttController extends Controller
             );
         }
     }
-
 
 
     public function store(ProductAttRequest $request, int $productId)

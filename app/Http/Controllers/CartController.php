@@ -11,25 +11,51 @@ class CartController extends Controller
     public function show(Request $request)
     {
         $size = $request->query('size');
-        $user = JWTAuth::parseToken()->authenticate();
-        $carts = Cart::query()->where('user_id', $user->id)->orderByDesc('id');
-        $carts = $size ? $carts->paginate() : $carts->get();
-        return response()->json($carts);
+        $userId = JWTAuth::parseToken()->authenticate()->id;
+
+        $carts = Cart::where('user_id', $userId)
+            ->with([
+                'productAtt:id,product_id,size_id,color_id',
+                'productAtt.size:id,name',
+                'productAtt.color:id,name',
+                'productAtt.colorImage:id,product_id,color_id,image'
+            ])
+            ->orderByDesc('id')
+            ->get();
+
+        $result = $carts->map(function ($cart) {
+            return [
+                'product_att_id' => $cart->product_att_id,
+                'quantity' => $cart->quantity,
+                'product_att' => [
+                    'color_id' => $cart->productAtt->color_id ?? null,
+                    'image' => $cart->productAtt->colorImage->image ?? null,
+                    'color_name' => $cart->productAtt->color->name ?? null,
+                    'size_id' => $cart->productAtt->size_id ?? null,
+                    'size_name' => $cart->productAtt->size->name ?? null,
+                ],
+            ];
+        });
+
+        if ($size) {
+            $result = $result->slice(0, $size)->values();
+        }
+
+        return response()->json($result);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
             'product_att_id' => 'required|integer|exists:product_atts,id',
-            'user_id' => 'required|integer|exists:users,id',
             'quantity' => 'required|integer|min:1'
         ]);
 
+        $userId = JWTAuth::parseToken()->authenticate()->id;
 
-        $cart = Cart::query()->where('user_id', $request->user_id)
+        $cart = Cart::query()->where('user_id', $userId)
             ->where('product_att_id', $request->product_att_id)
-            ->where('product_id', $request->product_id)->first();
+            ->first();
 
         if ($cart) {
             Cart::query()->where('id', $cart->id)->update([
@@ -37,9 +63,8 @@ class CartController extends Controller
             ]);
         } else {
             Cart::query()->create([
-                'product_id' => $request->product_id,
                 'product_att_id' => $request->product_att_id,
-                'user_id' => $request->user_id,
+                'user_id' => $userId,
                 'quantity' => $request->quantity
             ]);
         }

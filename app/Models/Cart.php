@@ -11,11 +11,15 @@ class Cart extends Model
     use HasFactory;
 
     protected $fillable = [
-        'product_id',
         'product_att_id',
         'user_id',
         'quantity'
     ];
+
+    public function productAtt()
+    {
+        return $this->belongsTo(ProductAtt::class, 'product_att_id');
+    }
 
     protected $casts = [
         'created_at' => ConvertDatetime::class,

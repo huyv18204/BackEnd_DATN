@@ -25,6 +25,7 @@ class CartController extends Controller
 
         $result = $carts->map(function ($cart) {
             return [
+                'id' => $cart->id,
                 'product_att_id' => $cart->product_att_id,
                 'quantity' => $cart->quantity,
                 'product_att' => [

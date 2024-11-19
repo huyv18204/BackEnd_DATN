@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\DeliveryPerson\StoreRequest;
+use App\Http\Requests\DeliveryPerson\UpdateRequest;
 use App\Models\DeliveryPerson;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -106,14 +107,18 @@ class DeliveryPersonController extends Controller
     }
 
 
-    public function update(StoreRequest $request, $id): JsonResponse
+    public function update(UpdateRequest $request, $id): JsonResponse
     {
         $validated = $request->validated();
         DB::beginTransaction();
         try {
 
             $delivery_person = DeliveryPerson::query()->find($id);
-
+            if (User::query()->where('email', $validated['personal']['email'])->where('id','!=' ,$delivery_person->user_id)->exists()) {
+                return response()->json([
+                    "message" => "Email đã tồn tại"
+                ], 422);
+            }
             if ($delivery_person) {
                 User::query()->find($delivery_person->user_id)->update([
                     'name' => $validated['personal']['name'],

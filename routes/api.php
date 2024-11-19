@@ -107,8 +107,7 @@ Route::prefix("v1")->middleware(['auth.jwt','auth.admin'])->group(function () {
         Route::post('/', [UserController::class, 'store']);
         Route::put('/{id}/role', [UserController::class, 'updateRole']);
         Route::get('/blacklist', [UserController::class, 'blackList']);
-        Route::delete('/{id}/add-blacklist', [UserController::class, 'addBlackList']);
-        Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
+        Route::delete('/{id}/toggle-blacklist', [UserController::class, 'toggleBlackList']);
     });
 });
 

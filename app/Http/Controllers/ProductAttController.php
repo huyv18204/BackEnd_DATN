@@ -35,7 +35,7 @@ class ProductAttController extends Controller
         $colorImages = $product->colorImages->pluck('image', 'color_id');
         $query = $product->product_atts()->getQuery();
         $paginatedAtts = $this->Filters($query, $request);
-        $result = collect($paginatedAtts); 
+        $result = collect($paginatedAtts);
 
         if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
             $result = $paginatedAtts->getCollection();
@@ -60,7 +60,6 @@ class ProductAttController extends Controller
 
         return ApiResponse::data($result);
     }
-
 
     public function store(ProductAttRequest $request, int $productId)
     {
@@ -105,13 +104,12 @@ class ProductAttController extends Controller
         } catch (\Illuminate\Database\QueryException $exception) {
             DB::rollBack();
             if ($exception->errorInfo[1] == 1062) {
-                throw new CustomException('Kích thước và màu sắc đã tồn tại', Response::HTTP_BAD_REQUEST, $exception->getMessage());
+                throw new CustomException('Kích thước và màu sắc đã tồn tại', $exception->getMessage(), Response::HTTP_BAD_REQUEST,);
             }
         } catch (Exception $e) {
             DB::rollBack();
             throw new CustomException(
                 'Sản phẩm không tồn tại',
-                Response::HTTP_NOT_FOUND,
                 $e->getMessage()
             );
         }

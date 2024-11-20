@@ -81,7 +81,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \r\n    \"email\":\"quanlhph39312@fpt.edu.vn\",\r\n    \"password\":\"123456789\"\r\n}",
+							"raw": "{ \r\n    \"email\":\"abc@gmail.com\",\r\n    \"password\":\"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -817,7 +817,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/users/12/add-blacklist",
+							"raw": "http://127.0.0.1:8000/api/v1/users/10/toggle-blacklist",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -830,8 +830,8 @@
 								"api",
 								"v1",
 								"users",
-								"12",
-								"add-blacklist"
+								"10",
+								"toggle-blacklist"
 							]
 						}
 					},
@@ -873,48 +873,6 @@
 								"v1",
 								"users",
 								"blacklist"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Khôi phục người dùng",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/users/11/restore-blacklist",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"users",
-								"11",
-								"restore-blacklist"
 							]
 						}
 					},
@@ -999,7 +957,7 @@
 							"urlencoded": []
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/4/productAtts?size=5",
+							"raw": "http://127.0.0.1:8000/api/v1/products/10/productAtts",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1012,7 +970,7 @@
 								"api",
 								"v1",
 								"products",
-								"4",
+								"10",
 								"productAtts"
 							],
 							"query": [
@@ -1033,7 +991,8 @@
 								},
 								{
 									"key": "size",
-									"value": "5"
+									"value": "10",
+									"disabled": true
 								}
 							]
 						}
@@ -1053,7 +1012,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"color_id\": 2,\r\n        \"image\": \"abc.jpg\",\r\n        \"sizes\": [\r\n            {\r\n                \"size_id\": 1,\r\n                \"stock_quantity\": 10\r\n            },\r\n            {\r\n                \"size_id\": 2,\r\n                \"stock_quantity\": 20\r\n            },\r\n            {\r\n                \"size_id\": 3,\r\n                \"stock_quantity\": 30\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"color_id\": 3,\r\n        \"image\": \"abc.jpg\",\r\n        \"sizes\": [\r\n            {\r\n                \"size_id\": 1,\r\n                \"stock_quantity\": 50\r\n            },\r\n            {\r\n                \"size_id\": 2,\r\n                \"stock_quantity\": 60\r\n            }\r\n        ]\r\n    }\r\n]",
+							"raw": "[\r\n    {\r\n        \"color_id\": 5,\r\n        \"image\": \"abc.jpg\",\r\n        \"sizes\": [\r\n            {\r\n                \"size_id\": 1,\r\n                \"stock_quantity\": 10\r\n            },\r\n            {\r\n                \"size_id\": 2,\r\n                \"stock_quantity\": 20\r\n            },\r\n            {\r\n                \"size_id\": 3,\r\n                \"stock_quantity\": 30\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"color_id\": 6,\r\n        \"image\": \"abc.jpg\",\r\n        \"sizes\": [\r\n            {\r\n                \"size_id\": 1,\r\n                \"stock_quantity\": 50\r\n            },\r\n            {\r\n                \"size_id\": 2,\r\n                \"stock_quantity\": 60\r\n            }\r\n        ]\r\n    }\r\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1061,7 +1020,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/11/productAtts",
+							"raw": "http://127.0.0.1:8000/api/v1/products/13/productAtts",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1074,7 +1033,7 @@
 								"api",
 								"v1",
 								"products",
-								"11",
+								"13",
 								"productAtts"
 							]
 						}
@@ -1102,7 +1061,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts/10",
+							"raw": "http://127.0.0.1:8000/api/v1/products/1/productAtts/13",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1117,7 +1076,7 @@
 								"products",
 								"1",
 								"productAtts",
-								"10"
+								"13"
 							]
 						}
 					},
@@ -1214,7 +1173,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products?minPrice=300000&size=6",
+							"raw": "http://127.0.0.1:8000/api/v1/products?sort=DESC",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1241,7 +1200,8 @@
 								},
 								{
 									"key": "minPrice",
-									"value": "300000"
+									"value": "300000",
+									"disabled": true
 								},
 								{
 									"key": "maxPrice",
@@ -1250,8 +1210,7 @@
 								},
 								{
 									"key": "sort",
-									"value": "DESC",
-									"disabled": true
+									"value": "DESC"
 								},
 								{
 									"key": "page",
@@ -1260,7 +1219,8 @@
 								},
 								{
 									"key": "size",
-									"value": "6"
+									"value": "6",
+									"disabled": true
 								},
 								{
 									"key": "id",
@@ -1288,7 +1248,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"material\": \"Cotton\",\n    \"name\": \"product test 2021\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"gallery\": [\n        \"image1.quandz\",\n        \"image2.quandz\"\n    ],\n    \"regular_price\": 312,\n    \"reduced_price\": 300,\n    \"category_id\": 1,\n    \"product_att\": [\n        {\n            \"color_id\": 1,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 2,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 3,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 4,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 5,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 6,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        }\n    ]\n}",
+							"raw": "{\n    \"material\": \"Cotton\",\n    \"name\": \"product test 201\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"gallery\": [\n        \"image1.quandz\",\n        \"image2.quandz\",\n        \"image3.quandz\"\n    ],\n    \"regular_price\": 312,\n    \"reduced_price\": 300,\n    \"category_id\": 1,\n    \"product_att\": [\n        {\n            \"color_id\": 1,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 2,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 3,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 4,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        }\n    ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1326,7 +1286,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/chloe-torp7",
+							"raw": "http://127.0.0.1:8000/api/v1/products/christine-wintheiser1",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1339,7 +1299,7 @@
 								"api",
 								"v1",
 								"products",
-								"chloe-torp7"
+								"christine-wintheiser1"
 							],
 							"query": [
 								{
@@ -1364,7 +1324,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/1/show",
+							"raw": "http://127.0.0.1:8000/api/v1/products/12/show",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1377,7 +1337,7 @@
 								"api",
 								"v1",
 								"products",
-								"1",
+								"12",
 								"show"
 							]
 						}
@@ -1820,7 +1780,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"product_id\": 4,\n    \"product_att_id\": 2,\n    \"user_id\": 1,\n    \"quantity\": 2\n}",
+							"raw": "{\n    \"product_att_id\": 2,\n    \"quantity\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1869,7 +1829,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"quantity\": 10\n}",
+							"raw": "{\n    \"quantity\": 200\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1877,7 +1837,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/carts/1",
+							"raw": "http://127.0.0.1:8000/api/v1/carts/3",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1890,7 +1850,7 @@
 								"api",
 								"v1",
 								"carts",
-								"1"
+								"3"
 							]
 						}
 					},
@@ -1953,7 +1913,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/carts/1?page=1&size=5",
+							"raw": "http://127.0.0.1:8000/api/v1/carts/?page=1&size=5",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1966,7 +1926,7 @@
 								"api",
 								"v1",
 								"carts",
-								"1"
+								""
 							],
 							"query": [
 								{
@@ -1981,6 +1941,38 @@
 						}
 					},
 					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
 				}
 			]
 		},
@@ -2442,7 +2434,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"CategoryChildren 40\",\r\n    \"parent_id\": [4,2,1,3] \r\n}",
+							"raw": "{\r\n    \"name\": \"Category 03\",\r\n    \"parent_id\": [1,2,3] \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2631,6 +2623,441 @@
 								"v1",
 								"categories",
 								"2"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{access_token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Giảm giá",
+			"item": [
+				{
+					"name": "Danh sách chiến dịch",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "trên",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "1",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Tạo chiến dịch",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-19 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\",\r\n    \"status\": \"pending\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chỉnh sửa chiến dịch",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 50,\r\n    \"start_date\": \"2024-11-20 00:00:00\",\r\n    \"end_date\": \"2024-11-25 23:59:59\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chi tiết chiến dịch",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/show",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"2",
+								"show"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lọc sản phẩm thêm vào chiến dịch",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/filter?size=10",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"filter"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "categoryId",
+									"value": "11",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Ms",
+									"disabled": true
+								},
+								{
+									"key": "minPrice",
+									"value": "400000",
+									"disabled": true
+								},
+								{
+									"key": "maxPrice",
+									"value": "900000",
+									"disabled": true
+								},
+								{
+									"key": "minStockQuantity",
+									"value": "200",
+									"disabled": true
+								},
+								{
+									"key": "MaxStockQuantity",
+									"value": "1000",
+									"disabled": true
+								},
+								{
+									"key": "sortByPrice",
+									"value": "asc",
+									"disabled": true
+								},
+								{
+									"key": "sortByStockQuantity",
+									"value": "asc",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Thêm sản phẩm vào chiến dịch",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8,\r\n        9,\r\n        10\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/add-product",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"1",
+								"add-product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Xóa sản phẩm khỏi chiến dịch",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/product/2",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"1",
+								"product",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chuyển trạng thái chiến dịch",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/toggle-status",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"2",
+								"toggle-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lấy danh mục",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/category",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"category"
 							]
 						}
 					},

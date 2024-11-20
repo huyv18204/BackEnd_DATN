@@ -8,10 +8,11 @@ use App\Http\Requests\Campaigns\StoreRequest;
 use App\Http\Response\ApiResponse;
 use App\Models\Campaign;
 use App\Models\CampaignProduct;
+use App\Models\Category;
+use App\Models\Product;
 use App\Traits\applyFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Expr\Cast\String_;
 use Symfony\Component\HttpFoundation\Response;
 
 class CampaignController extends Controller
@@ -44,15 +45,32 @@ class CampaignController extends Controller
     public function update(CampaignRequest $request, string $id)
     {
         $campaign = Campaign::find($id);
+
         if (!$campaign) {
             return ApiResponse::message('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
         }
+
         $data = $request->validated();
+
+        $oldStartDate = $campaign->start_date;
+        $oldEndDate = $campaign->end_date;
+        $newStartDate = $data['start_date'] ?? $oldStartDate;
+        $newEndDate = $data['end_date'] ?? $oldEndDate;
+
         try {
             $campaign->update($data);
+
+            if ($newStartDate !== $oldStartDate || $newEndDate !== $oldEndDate) {
+                $campaign->status = $newStartDate > now()
+                    ? 'pending'
+                    : ($newEndDate < now() ? 'complete' : 'active');
+                $campaign->save();
+            }
+
+            $this->updateProductPrices($campaign);
             return ApiResponse::message('Cập nhật chiến dịch thành công');
         } catch (\Exception $e) {
-            throw new CustomException('Lỗi khi cập nhật sản phẩm', $e->getMessage());
+            throw new CustomException('Lỗi khi cập nhật chiến dịch', $e->getMessage());
         }
     }
 
@@ -76,6 +94,7 @@ class CampaignController extends Controller
             }
             CampaignProduct::insert($dataProduct);
             DB::commit();
+            $this->updateProductPrices();
             return ApiResponse::message('Thêm sản phẩm vào chiến dịch thành công');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -98,5 +117,111 @@ class CampaignController extends Controller
         }
         $product->delete();
         return ApiResponse::message('Xóa sản phẩm khỏi chiến dịch thành công');
+    }
+
+    public function category()
+    {
+        $categories = Category::whereNotNull('parent_id')
+            ->with('parent')
+            ->get();
+
+        $categoriesWithDetails = $categories->map(function ($category) {
+            return [
+                'id' => $category->id,
+                'name' => $category->full_path,
+            ];
+        });
+        return response()->json($categoriesWithDetails);
+    }
+
+    public function filter(Request $request)
+    {
+        $query = Product::select(
+            'products.id',
+            'products.name',
+            'products.thumbnail',
+            // 'products.category_id',
+            'products.regular_price',
+            DB::raw('IFNULL(SUM(product_atts.stock_quantity), 0) as total_stock_quantity')
+        )
+            ->leftJoin('product_atts', 'products.id', '=', 'product_atts.product_id')
+            ->groupBy('products.id', 'products.name', 'products.thumbnail', 'products.regular_price');
+
+        $query->when($request->query('id'), fn($q, $id) => $q->where('products.id', $id));
+        $query->when($request->query('categoryId'), fn($q, $categoryId) => $q->where('products.category_id', $categoryId));
+        $query->when($request->query('name'), fn($q, $name) => $q->where('products.name', 'like', '%' . $name . '%'));
+        $query->when($request->query('minPrice'), fn($q, $minPrice) => $q->where('products.regular_price', '>=', $minPrice));
+        $query->when($request->query('maxPrice'), fn($q, $maxPrice) => $q->where('products.regular_price', '<=', $maxPrice));
+
+        if ($request->query('minStockQuantity')) {
+            $query->havingRaw('SUM(product_atts.stock_quantity) >= ?', [$request->query('minStockQuantity')]);
+        }
+        if ($request->query('maxStockQuantity')) {
+            $query->havingRaw('SUM(product_atts.stock_quantity) <= ?', [$request->query('maxStockQuantity')]);
+        }
+
+        $sort = $request->query('sort', 'ASC');
+
+        if ($request->query('sortByPrice')) {
+            $sortByPrice = $request->query('sortByPrice') == 'desc' ? 'desc' : 'asc';
+            $query->orderBy('products.regular_price', $sortByPrice);
+        }
+
+        if ($request->query('sortByStockQuantity')) {
+            $sortByStockQuantity = $request->query('sortByStockQuantity') == 'desc' ? 'desc' : 'asc';
+            $query->orderByRaw('SUM(product_atts.stock_quantity) ' . $sortByStockQuantity);
+        }
+
+        if (!request()->has('sortByPrice') && !request()->has('sortByStockQuantity')) {
+            $query->orderBy('products.id', $sort);
+        }
+
+        $size = $request->query('size');
+        return $size ? $query->paginate($size) : $query->get();
+    }
+
+    public function toggleStatus(string $id)
+    {
+        $campaign = Campaign::find($id);
+        if (!$campaign) {
+            return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+        if ($campaign->status == 'pending') {
+            return ApiResponse::error('Chiến dịch chưa bắt đầu, không thể thay đổi trạng thái', Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($campaign->status == 'complete') {
+            return ApiResponse::error('Chiến dịch đã kết thúc, không thể thay đổi trạng thái', Response::HTTP_BAD_REQUEST);
+        }
+
+        $campaign->status = $campaign->status == 'active' ? 'pause' : 'active';
+        $campaign->save();
+        $this->updateProductPrices();
+        return ApiResponse::message('Cập nhật trạng thái thành công');
+    }
+
+    protected function updateProductPrices()
+    {
+        $discounts = DB::table('campaign_products')
+            ->join('campaigns', 'campaign_products.campaign_id', '=', 'campaigns.id')
+            ->whereIn('campaigns.status', ['active'])
+            ->select('campaign_products.product_id', DB::raw('MAX(campaigns.discount_percentage) as max_discount'))
+            ->groupBy('campaign_products.product_id')
+            ->get()
+            ->pluck('max_discount', 'product_id');
+        if ($discounts) {
+            DB::update("UPDATE products SET reduced_price = 0");
+        }
+        $caseStatements = [];
+        foreach ($discounts as $productId => $discount) {
+            $caseStatements[] = "WHEN id = {$productId} THEN regular_price * (1 - {$discount} / 100)";
+        }
+        if (!empty($caseStatements)) {
+            $caseQuery = implode(' ', $caseStatements);
+            DB::update("
+                        UPDATE products
+                        SET reduced_price = CASE {$caseQuery} ELSE reduced_price END
+                    ");
+        }
     }
 }

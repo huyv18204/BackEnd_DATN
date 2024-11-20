@@ -22,15 +22,24 @@ class CampaignRequest extends FormRequest
     public function rules()
     {
         $id = $this->route('id');
-       
-        return [
-            'name' => "required|string|unique:campaigns,name,{$id}",
+
+        $rules = [
+            'name' => "required|string|unique:campaigns,name",
             'description' => 'nullable|string',
             'discount_percentage' => 'required|numeric|min:0|max:100',
             'start_date' => 'required|date|after_or_equal:today',
             'end_date' => 'required|date|after:start_date',
-            
         ];
+        if ($id) {
+            $rules = [
+                'name' => "required|string|unique:campaigns,name,{$id}",
+                'description' => 'nullable|string',
+                'discount_percentage' => 'required|numeric|min:0|max:100',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after:start_date',
+            ];
+        }
+        return $rules;
     }
 
     public function messages()

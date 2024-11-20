@@ -114,11 +114,14 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix("campaigns")->group(function () {
         Route::get('/', [CampaignController::class, 'index']);
+        Route::get('category', [CampaignController::class, 'category']);
+        Route::get('filter', [CampaignController::class, 'filter']);
         Route::post('/', [CampaignController::class, 'store']);
         Route::put('/{id}', [CampaignController::class, 'update']);
         Route::get('/{id}/show', [CampaignController::class, 'show']);
         Route::post('{id}/add-product', [CampaignController::class, 'addProduct']);
         route::delete('/{id}/product/{productId}', [CampaignController::class, 'destroy']);
+        route::put('/{id}/toggle-status', [CampaignController::class, 'toggleStatus']);
     });
 });
 

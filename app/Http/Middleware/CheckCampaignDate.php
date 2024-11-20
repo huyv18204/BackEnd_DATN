@@ -6,6 +6,7 @@ use App\Models\Campaign;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckCampaignDate
@@ -40,14 +41,13 @@ class CheckCampaignDate
 
     protected function updateProductPrices(Campaign $campaign, bool $startCampaign)
     {
-        $products = $campaign->products;
-        foreach ($products as $product) {
-            $newPrice = $startCampaign ? $product->regular_price - ($product->regular_price * ($campaign->discount_percentage / 100)) : 0;
-            if ($product->reduced_price != $newPrice) {
-                $product->update([
-                    'reduced_price' => $newPrice
-                ]);
-            }
-        }
+        $productData = $campaign->products()->select('regular_price', 'product_id')->get();
+        $newPrice = $startCampaign
+            ? DB::raw('regular_price * (1 - ' . $campaign->discount_percentage . ' / 100)')
+            : 0;
+            
+        DB::table('products')
+            ->whereIn('id', $productData->pluck('product_id')->toArray())
+            ->update(['reduced_price' => $newPrice]);
     }
 }

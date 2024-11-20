@@ -199,6 +199,7 @@ class ProductController extends Controller
                         $sizeName = $size ? $size->name : null;
 
                         return [
+                            'id' => $productAtt->id,
                             'size_id' => $productAtt->size_id,
                             'size_name' => $sizeName,
                             'sku' => $productAtt->sku,

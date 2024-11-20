@@ -112,7 +112,7 @@ class FakeDataSeeder extends Seeder
                 'short_description' => 'Short description for product ' . $i,
                 'long_description' => 'Long description for product ' . $i,
                 "regular_price" => rand(30000, 1000000),
-                "reduced_price" => rand(30000, 1000000),
+                "reduced_price" => 0,
                 'category_id' => $categoryId,
                 'created_at' => now(),
                 'updated_at' => now(),

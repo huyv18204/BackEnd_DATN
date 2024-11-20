@@ -3,6 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\AuthenticateJwt;
+use App\Http\Middleware\CheckCampaignDate;
 use App\Http\Middleware\IsAdmin;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
@@ -44,6 +45,7 @@ class Kernel extends HttpKernel
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            // CheckCampaignDate::class,
         ],
     ];
 

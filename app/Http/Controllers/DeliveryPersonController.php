@@ -67,6 +67,32 @@ class DeliveryPersonController extends Controller
     }
 
 
+    public function updateStatus(Request $request, $id): JsonResponse
+    {
+        $validate = $request->validate([
+            'status' => 'required|in:available,offline,on delivery',
+        ], [
+            'status.required' => 'Trạng thái không được để trống.',
+            'status.in' => "Trạng thái không hợp lệ"
+        ]);
+
+        try {
+            DeliveryPerson::query()->find($id)->update([
+                'status' => $validate['status'],
+            ]);
+            return response()->json([
+                "message" => "Cập nhật trạng thái thành công"
+            ]);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+
+
+    }
+
+
     public function store(StoreRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -87,7 +113,7 @@ class DeliveryPersonController extends Controller
             $vehicle = Vehicle::query()->create($validated['vehicle']);
 
             DeliveryPerson::query()->create([
-                'status' => 'available',
+                'status' => 'offline',
                 'vehicle_id' => $vehicle->id,
                 'user_id' => $user->id,
             ]);
@@ -114,9 +140,15 @@ class DeliveryPersonController extends Controller
         try {
 
             $delivery_person = DeliveryPerson::query()->find($id);
-            if (User::query()->where('email', $validated['personal']['email'])->where('id','!=' ,$delivery_person->user_id)->exists()) {
+            if (User::query()->where('email', $validated['personal']['email'])->where('id', '!=', $delivery_person->user_id)->exists()) {
                 return response()->json([
                     "message" => "Email đã tồn tại"
+                ], 422);
+            }
+
+            if (User::query()->where('phone', $validated['personal']['phone_number'])->where('id', '!=', $delivery_person->user_id)->exists()) {
+                return response()->json([
+                    "message" => "Số điện thoại đã tồn tại"
                 ], 422);
             }
             if ($delivery_person) {

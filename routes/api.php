@@ -100,14 +100,10 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
-//    Route::prefix("orders")->group(function () {
-//        Route::get("/", [OrderController::class, 'index']);
-//        Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
-//        Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
-//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-//    });
+    Route::prefix("orders")->group(function () {
+        Route::get("/", [OrderController::class, 'index']);
+        Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
+    });
 
     Route::prefix("users")->group(function () {
         Route::get('/', [UserController::class, 'index']);
@@ -117,6 +113,21 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete('/{id}/add-blacklist', [UserController::class, 'addBlackList']);
         Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
     });
+
+    Route::prefix("delivery-persons")->group(function () {
+        Route::get("/", [DeliveryPersonController::class, 'index']);
+        Route::post("/", [DeliveryPersonController::class, 'store']);
+    });
+
+
+    Route::prefix("shipments")->group(function () {
+        Route::get("/", [ShipmentController::class, 'index']);
+        Route::post("/", [ShipmentController::class, 'store']);
+        Route::put("/{id}", [ShipmentController::class, 'update']);
+        Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
+
+    });
+
 });
 
 Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
@@ -141,48 +152,32 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
     });
 
 
-});
-Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
-Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
-//Route::prefix("v1")->group(function () {
-//    Route::prefix("orders")->group(function () {
-//        Route::get("/", [OrderController::class, 'index']);
-//        Route::get("/{id}", [OrderController::class, 'show']);
-//        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-//        Route::post("/", [OrderController::class, 'store']);
-//        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-//        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-//    });
-//
-//});
-
-
-Route::prefix("v1")->group(function () {
-    Route::prefix("delivery-persons")->group(function () {
-        Route::get("/", [DeliveryPersonController::class, 'index']);
-        Route::get("/{id}", [DeliveryPersonController::class, 'show']);
-        Route::post("/", [DeliveryPersonController::class, 'store']);
-        Route::put("/{id}", [DeliveryPersonController::class, 'update']);
+    Route::prefix("orders")->group(function () {
+        Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
+        Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+        Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+        Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
     });
 
-    Route::prefix("shipments")->group(function () {
-        Route::get("/", [ShipmentController::class, 'index']);
-        Route::get("/{id}", [ShipmentController::class, 'show']);
-        Route::post("/", [ShipmentController::class, 'store']);
-        Route::put("/{id}", [ShipmentController::class, 'update']);
-        Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
+
+    Route::prefix("delivery-persons")->group(function () {
+        Route::get("/{id}", [DeliveryPersonController::class, 'show']);
+        Route::put("/{id}", [DeliveryPersonController::class, 'update']);
+        Route::put("/{id}/status", [DeliveryPersonController::class, 'updateStatus']);
     });
 
     Route::prefix("shipment-details")->group(function () {
         Route::get("/{shipment_id}", [ShipmentDetailController::class, 'show']);
     });
-});
 
-Route::prefix("v1/orders")->group(function () {
-    Route::get("/", [OrderController::class, 'index']);
-    Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
-    Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
-    Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-    Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
-    Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+    Route::prefix("shipments")->group(function () {
+        Route::get("/{id}", [ShipmentController::class, 'show']);
+        Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
+        Route::get('/user', [ShipmentController::class, 'getByUserLogin']);
+
+    });
+
 });
+Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
+Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+

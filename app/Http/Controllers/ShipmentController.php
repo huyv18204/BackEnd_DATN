@@ -9,6 +9,7 @@ use App\Services\ShipmentHepper;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class ShipmentController extends Controller
 {
@@ -48,12 +49,41 @@ class ShipmentController extends Controller
     }
 
 
+    public function getByUserId(Request $request, $id): JsonResponse
+    {
+
+        $query = Shipment::query()->with(['shipment_details' => function ($query) {
+            $query->select( 'shipment_id', 'order_id')->with(['order']);
+        }])->where('delivery_person_id', $id);
+
+        if($request->has('code')) {
+            $query->where('code', $request->input('code'));
+        }
+
+        $shipment  = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+        return response()->json($shipment);
+    }
+
+
+    public function getByUserLogin(Request $request): JsonResponse
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $query = Shipment::query()->with(['shipment_details' => function ($query) {
+            $query->select( 'shipment_id', 'order_id')->with(['order']);
+        }])->where('delivery_person_id', $user->id);
+
+        if($request->has('code')) {
+            $query->where('code', $request->input('code'));
+        }
+        $shipment  = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+        return response()->json($shipment);
+    }
+
     public function store(StoreRequest $request): JsonResponse
     {
         $validated = $request->validated();
         DB::beginTransaction();
         try {
-
             $shipment = Shipment::query()->create([
                 'delivery_person_id' => $validated['delivery_person_id'],
                 'code' => ShipmentHepper::createOrderCode()
@@ -64,12 +94,10 @@ class ShipmentController extends Controller
                     'shipment_id' => $shipment->id
                 ]);
             }
-
             DB::commit();
             return response()->json([
                 'message' => 'Tạo lô hàng cho shipper thành công'
             ]);
-
         } catch (\Exception $exception) {
             DB::rollBack();
             return response()->json([

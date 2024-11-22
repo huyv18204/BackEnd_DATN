@@ -19,7 +19,6 @@ return new class extends Migration
             $table->timestamp('start_date');
             $table->timestamp('end_date');
             $table->string('status')->default('pending');
-            $table->boolean("is_active")->default(true);
             $table->timestamps();
         });
     }

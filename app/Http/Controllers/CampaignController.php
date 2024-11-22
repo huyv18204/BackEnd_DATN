@@ -11,6 +11,7 @@ use App\Models\CampaignProduct;
 use App\Models\Category;
 use App\Models\Product;
 use App\Traits\applyFilters;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,6 +30,10 @@ class CampaignController extends Controller
     {
         $data = $request->validated();
         try {
+            $startDate = Carbon::parse($data['start_date']);
+            if ($startDate->lessThanOrEqualTo(Carbon::now())) {
+                $data['status'] = 'active';
+            }
             Campaign::create($data);
             return ApiResponse::message('Thêm mới chiến dịch thành công', Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -36,10 +41,40 @@ class CampaignController extends Controller
         }
     }
 
-    public function show($id)
+    public function show(Request $request, string $id)
     {
-        $campaigns = CampaignProduct::where('campaign_id', $id)->get();
-        return ApiResponse::data($campaigns);
+        $query = CampaignProduct::select(
+            'products.id',
+            'products.name',
+            'products.thumbnail',
+            'products.regular_price',
+            'products.reduced_price',
+            DB::raw('IFNULL(SUM(product_atts.stock_quantity), 0) as total_stock_quantity')
+        )
+            ->join('products', 'campaign_products.product_id', '=', 'products.id')
+            ->leftJoin('product_atts', 'products.id', '=', 'product_atts.product_id')
+            ->where('campaign_products.campaign_id', $id)
+            ->groupBy('products.id', 'products.name', 'products.thumbnail', 'products.regular_price');
+        $query->when($request->query('id'), fn($q, $id) => $q->where('products.id', $id));
+        $query->when($request->query('categoryId'), fn($q, $categoryId) => $q->where('products.category_id', $categoryId));
+        $query->when($request->query('name'), fn($q, $name) => $q->where('products.name', 'like', '%' . $name . '%'));
+        $sort = $request->query('sort', 'ASC');
+        if ($request->query('sortByPrice')) {
+            $sortByPrice = $request->query('sortByPrice') == 'desc' ? 'desc' : 'asc';
+            $query->orderBy('products.reduced_price', $sortByPrice);
+        }
+
+        if ($request->query('sortByStockQuantity')) {
+            $sortByStockQuantity = $request->query('sortByStockQuantity') == 'desc' ? 'desc' : 'asc';
+            $query->orderByRaw('SUM(product_atts.stock_quantity) ' . $sortByStockQuantity);
+        }
+
+        if (!request()->has('sortByPrice') && !request()->has('sortByStockQuantity')) {
+            $query->orderBy('products.id', $sort);
+        }
+
+        $size = $request->query('size');
+        return $size ? $query->paginate($size) : $query->get();
     }
 
     public function update(CampaignRequest $request, string $id)
@@ -102,20 +137,22 @@ class CampaignController extends Controller
         }
     }
 
-    public function destroy(string $id, string $productId)
+    public function destroy(Request $request, string $id)
     {
+        $productIds = $request->input('product_id', []); 
         $campaign = Campaign::find($id);
         if (!$campaign) {
             return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
         }
-        if ($campaign->status == 'complete') {
-            return ApiResponse::error('Không thể xóa sản phẩm khi chiến dịch đã hoàn thành', Response::HTTP_BAD_REQUEST);
+
+        if ($campaign->status != 'pending') {
+            return ApiResponse::error('Chỉ có thể xóa sản phẩm khi chiến dịch chưa bắt đầu', Response::HTTP_BAD_REQUEST);
         }
-        $product = CampaignProduct::where('campaign_id', $id)->where('product_id', $productId)->first();
-        if (!$product) {
-            return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
-        }
-        $product->delete();
+
+        CampaignProduct::where('campaign_id', $id)
+            ->whereIn('product_id', $productIds)
+            ->delete();
+
         return ApiResponse::message('Xóa sản phẩm khỏi chiến dịch thành công');
     }
 
@@ -140,7 +177,6 @@ class CampaignController extends Controller
             'products.id',
             'products.name',
             'products.thumbnail',
-            // 'products.category_id',
             'products.regular_price',
             DB::raw('IFNULL(SUM(product_atts.stock_quantity), 0) as total_stock_quantity')
         )

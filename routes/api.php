@@ -43,12 +43,13 @@ Route::prefix("v1")->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
-
-Route::get('v1/categories', [CategoryController::class, 'index']);
-Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
-Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
-Route::get("v1/products", [ProductController::class, 'index']);
-Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+Route::middleware('check.campaign')->group(function () {
+    Route::get('v1/categories', [CategoryController::class, 'index']);
+    Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
+    Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
+    Route::get("v1/products", [ProductController::class, 'index']);
+    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+});
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
@@ -120,7 +121,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::put('/{id}', [CampaignController::class, 'update']);
         Route::get('/{id}/show', [CampaignController::class, 'show']);
         Route::post('{id}/add-product', [CampaignController::class, 'addProduct']);
-        route::delete('/{id}/product/{productId}', [CampaignController::class, 'destroy']);
+        route::delete('/{id}/product', [CampaignController::class, 'destroy']);
         route::put('/{id}/toggle-status', [CampaignController::class, 'toggleStatus']);
     });
 });

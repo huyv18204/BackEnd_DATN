@@ -23,31 +23,36 @@ class CheckCampaignDate
             $query->whereDate('start_date', $today)
                 ->orWhereDate('end_date', $today);
         })->get();
-        foreach ($campaigns as $campaign) {
-            $startDate = Carbon::createFromFormat('H:i:s d/m/Y', $campaign->start_date);
-            $endDate = Carbon::createFromFormat('H:i:s d/m/Y', $campaign->end_date);
-
-            if ($startDate->isToday()) {
-                $this->updateProductPrices($campaign, true);
-            }
-
-            if ($endDate->isToday()) {
-                $this->updateProductPrices($campaign, false);
-            }
+        if ($campaigns->isNotEmpty()) {
+            $this->updateProductPrices();
         }
 
         return $next($request);
     }
 
-    protected function updateProductPrices(Campaign $campaign, bool $startCampaign)
+    protected function updateProductPrices()
     {
-        $productData = $campaign->products()->select('regular_price', 'product_id')->get();
-        $newPrice = $startCampaign
-            ? DB::raw('regular_price * (1 - ' . $campaign->discount_percentage . ' / 100)')
-            : 0;
-            
-        DB::table('products')
-            ->whereIn('id', $productData->pluck('product_id')->toArray())
-            ->update(['reduced_price' => $newPrice]);
+        $discounts = DB::table('campaign_products')
+            ->join('campaigns', 'campaign_products.campaign_id', '=', 'campaigns.id')
+            ->whereIn('campaigns.status', ['active'])
+            ->select('campaign_products.product_id', DB::raw('MAX(campaigns.discount_percentage) as max_discount'))
+            ->groupBy('campaign_products.product_id')
+            ->get()
+            ->pluck('max_discount', 'product_id');
+
+        if ($discounts) {
+            DB::update("UPDATE products SET reduced_price = 0");
+        }
+        $caseStatements = [];
+        foreach ($discounts as $productId => $discount) {
+            $caseStatements[] = "WHEN id = {$productId} THEN regular_price * (1 - {$discount} / 100)";
+        }
+        if (!empty($caseStatements)) {
+            $caseQuery = implode(' ', $caseStatements);
+            DB::update("
+                        UPDATE products
+                        SET reduced_price = CASE {$caseQuery} ELSE reduced_price END
+                    ");
+        }
     }
 }

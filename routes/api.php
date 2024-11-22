@@ -121,7 +121,8 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::put('/{id}', [CampaignController::class, 'update']);
         Route::get('/{id}/show', [CampaignController::class, 'show']);
         Route::post('{id}/add-product', [CampaignController::class, 'addProduct']);
-        route::delete('/{id}/product', [CampaignController::class, 'destroy']);
+        route::delete('/{id}/product', [CampaignController::class, 'destroyMultiple']);
+        Route::delete('{id}/product/{productId}', [CampaignController::class, 'destroy']);
         route::put('/{id}/toggle-status', [CampaignController::class, 'toggleStatus']);
     });
 });

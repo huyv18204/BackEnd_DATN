@@ -137,9 +137,9 @@ class CampaignController extends Controller
         }
     }
 
-    public function destroy(Request $request, string $id)
+    public function destroyMultiple(Request $request, string $id)
     {
-        $productIds = $request->input('product_id', []); 
+        $productIds = $request->input('product_id', []);
         $campaign = Campaign::find($id);
         if (!$campaign) {
             return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
@@ -155,6 +155,26 @@ class CampaignController extends Controller
 
         return ApiResponse::message('Xóa sản phẩm khỏi chiến dịch thành công');
     }
+
+    public function destroy(string $id, string $productId)
+    {
+
+        $campaign = Campaign::find($id);
+        if (!$campaign) {
+            return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+
+        if ($campaign->status != 'pending') {
+            return ApiResponse::error('Chỉ có thể xóa sản phẩm khi chiến dịch chưa bắt đầu', Response::HTTP_BAD_REQUEST);
+        }
+
+        CampaignProduct::where('campaign_id', $id)
+            ->where('product_id', $productId)
+            ->delete();
+
+        return ApiResponse::message('Xóa sản phẩm khỏi chiến dịch thành công');
+    }
+
 
     public function category()
     {

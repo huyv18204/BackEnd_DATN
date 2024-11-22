@@ -2689,7 +2689,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns?size=10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2716,8 +2716,7 @@
 								},
 								{
 									"key": "size",
-									"value": "1",
-									"disabled": true
+									"value": "10"
 								}
 							]
 						}
@@ -2737,7 +2736,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-19 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\",\r\n    \"status\": \"pending\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ 1\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-24 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2776,7 +2775,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 50,\r\n    \"start_date\": \"2024-11-20 00:00:00\",\r\n    \"end_date\": \"2024-11-25 23:59:59\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không1\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 70,\r\n    \"start_date\": \"2024-11-22 00:00:00\",\r\n    \"end_date\": \"2024-11-25 23:59:59\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2784,7 +2783,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2797,7 +2796,7 @@
 								"api",
 								"v1",
 								"campaigns",
-								"1"
+								"2"
 							]
 						}
 					},
@@ -2821,7 +2820,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/show",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/show?sortByPrice=asc&size=10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2834,8 +2833,38 @@
 								"api",
 								"v1",
 								"campaigns",
-								"2",
+								"1",
 								"show"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "categoryId",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "sortByPrice",
+									"value": "asc"
+								},
+								{
+									"key": "sortByStockQuantity",
+									"value": "desc",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
 							]
 						}
 					},
@@ -2968,10 +2997,16 @@
 					"name": "Xóa sản phẩm khỏi chiến dịch",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "",
+							"raw": "{\r\n    \"product_id\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8,\r\n        9,\r\n        10\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2979,7 +3014,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/product/2",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/product",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2992,9 +3027,8 @@
 								"api",
 								"v1",
 								"campaigns",
-								"1",
-								"product",
-								"2"
+								"2",
+								"product"
 							]
 						}
 					},
@@ -3012,7 +3046,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/toggle-status",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/toggle-status",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -3025,7 +3059,7 @@
 								"api",
 								"v1",
 								"campaigns",
-								"2",
+								"1",
 								"toggle-status"
 							]
 						}

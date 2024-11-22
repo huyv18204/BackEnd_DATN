@@ -24,10 +24,26 @@ class CheckCampaignDate
                 ->orWhereDate('end_date', $today);
         })->get();
         if ($campaigns->isNotEmpty()) {
+            foreach ($campaigns as $campaign) {
+                $this->updateCampaignStatus($campaign);
+            }
             $this->updateProductPrices();
         }
 
         return $next($request);
+    }
+
+    protected function updateCampaignStatus(Campaign $campaign)
+    {
+        $now = now();
+        if ($campaign->start_date > $now) {
+            $campaign->status = 'pending';
+        } elseif ($campaign->end_date < $now) {
+            $campaign->status = 'complete';
+        } else {
+            $campaign->status = 'active';
+        }
+        $campaign->save();
     }
 
     protected function updateProductPrices()

@@ -34,7 +34,7 @@ class CategoryController extends Controller
             $categories = $size ? $query->paginate($size) : $query->get();
             return ApiResponse::data($categories, Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi truy xuất danh mục", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException("Lỗi khi truy xuất danh mục",  $e->getMessage());
         }
     }
 
@@ -57,7 +57,7 @@ class CategoryController extends Controller
             $categories = $size ? $query->paginate($size) : $query->get();
             return ApiResponse::data($categories, Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi truy xuất danh mục", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException("Lỗi khi truy xuất danh mục",  $e->getMessage());
         }
     }
 
@@ -101,7 +101,7 @@ class CategoryController extends Controller
             }
         } catch (\Exception $e) {
             DB::rollBack();
-            throw new CustomException('Thêm mới danh mục thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Thêm mới danh mục thất bại',  $e->getMessage());
         }
     }
 
@@ -156,11 +156,11 @@ class CategoryController extends Controller
                     return ApiResponse::message('Cập nhật danh mục con thành công', Response::HTTP_OK);
                 } catch (\Throwable $th) {
                     DB::rollBack();
-                    throw new CustomException('Lỗi khi cập nhật danh mục', Response::HTTP_INTERNAL_SERVER_ERROR);
+                    throw new CustomException('Lỗi khi cập nhật danh mục',);
                 }
             }
         } catch (\Exception $e) {
-            throw new CustomException('Cập nhật danh mục thất bại', Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException('Cập nhật danh mục thất bại',  $e->getMessage());
         }
     }
 
@@ -184,7 +184,7 @@ class CategoryController extends Controller
             $categories = $size ? $query->paginate($size) : $query->get();
             return ApiResponse::data($categories, Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi truy xuất danh mục con", Response::HTTP_INTERNAL_SERVER_ERROR, $e->getMessage());
+            throw new CustomException("Lỗi khi truy xuất danh mục con",  $e->getMessage());
         }
     }
 
@@ -196,7 +196,7 @@ class CategoryController extends Controller
             $category->save();
             return ApiResponse::message("Chuyển đổi trạng thái thành công", Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi chuyển trạng thái", Response::HTTP_INTERNAL_SERVER_ERROR);
+            throw new CustomException("Lỗi khi chuyển trạng thái", $e->getMessage());
         }
     }
 

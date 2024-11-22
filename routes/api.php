@@ -49,7 +49,7 @@ Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChild
 Route::get("v1/products", [ProductController::class, 'index']);
 Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 
-Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
+Route::prefix("v1")->middleware(['auth.jwt','auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
@@ -59,15 +59,17 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
     });
 
     Route::prefix("products")->group(function () {
-        Route::put('/{id}/restore', [ProductController::class, 'restore']);
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
-        Route::get('/trash', [ProductController::class, 'trash']);
-        Route::get("/{slug}", [ProductController::class, 'getBySlug']);
         Route::get("/{id}/show", [ProductController::class, 'show']);
-        Route::get("/{id}/ProductAtts", [ProductController::class, 'getProductAtts']);
+        
+        Route::get('/trash', [ProductController::class, 'trash']); 
+        Route::put('/{id}/restore', [ProductController::class, 'restore']);
+        
+        Route::get("/{slug}", [ProductController::class, 'getBySlug']); 
         Route::delete("/{id}", [ProductController::class, 'destroy']);
     });
+
     Route::prefix('products/{product_id}/productAtts')->group(function () {
         Route::post('/', [ProductAttController::class, 'store']);
         Route::put('/{id}', [ProductAttController::class, 'update']);
@@ -105,8 +107,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::post('/', [UserController::class, 'store']);
         Route::put('/{id}/role', [UserController::class, 'updateRole']);
         Route::get('/blacklist', [UserController::class, 'blackList']);
-        Route::delete('/{id}/add-blacklist', [UserController::class, 'addBlackList']);
-        Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
+        Route::delete('/{id}/toggle-blacklist', [UserController::class, 'toggleBlackList']);
     });
 });
 

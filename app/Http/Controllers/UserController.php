@@ -58,9 +58,9 @@ class UserController extends Controller
             return response()->json(['message' => 'Bạn không thể cập nhật quyền cho tài khoản đang bị khóa']);
         }
 
-        // if ($user->id === auth('api')->id()) {
-        //     return response()->json(["message" => "Bạn không thể thay đổi quyền của chính mình"], 400);
-        // }
+        if ($user->id === auth('api')->id()) {
+            return response()->json(["message" => "Bạn không thể thay đổi quyền của chính mình"], 400);
+        }
 
         $user->role = $request->role;
         $user->save();
@@ -69,47 +69,33 @@ class UserController extends Controller
     }
 
 
-    public function addBlackList(string $id)
+    public function toggleBlackList(string $id)
     {
         $user = User::find($id);
-
+    
         if (!$user) {
             return response()->json(['message' => 'Người dùng không tồn tại'], 404);
         }
-
+    
         if (!$user->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Tài khoản của bạn chưa được xác thực. Vui lòng kiểm tra email để xác thực tài khoản.'], 403);
+            return response()->json(['message' => 'Tài khoản này chưa được xác thực'], 403);
         }
-
-        // if ($user->id === auth()->user()->id) {
-        //     return response()->json(['message' => 'Bạn không thể tự thêm chính mình vào danh sách đen'], 403);
-        // }
-
+    
+        if ($user->id === auth()->user()->id) {
+            return response()->json(['message' => 'Bạn không thể tự thêm chính mình vào danh sách đen'], 403);
+        }
+    
         if ($user->role == 'admin') {
-            return response()->json(['message' => 'Bạn không có quyền khóa tài khoản người dùng này']);
+            return response()->json(['message' => 'Bạn không có quyền khóa tài khoản người dùng này'], 403);
         }
-
-        $user->is_blocked = true;
+    
+        $user->is_blocked = !$user->is_blocked;
         $user->save();
-
-        return response()->json(['message' => 'Đã thêm người dùng có email là ' . $user->email . ' vào danh sách đen'], 200);
+    
+        $action = $user->is_blocked ? 'Đã thêm vào danh sách đen' : 'Khôi phục';
+        return response()->json(['message' => "{$action} người dùng có email là {$user->email} thành công"], 200);
     }
-
-
-    public function restoreBlackList(string $id)
-    {
-        $user = User::find($id);
-
-        if (!$user || $user->is_blocked == false) {
-            return response()->json(['message' => 'Tài khoản này không có trong danh sách bị chặn'], 404);
-        }
-
-        $user->is_blocked = false;
-        $user->save();
-
-        return response()->json(['message' => 'Khôi phục người dùng có email là ' . $user->email . ' thành công']);
-    }
-
+    
     public function blackList(Request $request)
     {
         $sort = $request->query('sort', 'ASC');

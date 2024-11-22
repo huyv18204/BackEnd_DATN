@@ -2,105 +2,141 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CustomException;
+use App\Http\Requests\ProductAtts\ProductAttRequest;
+use App\Http\Response\ApiResponse;
+use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductAtt;
+use App\Models\ProductColorImage;
+use App\Models\Size;
+use App\Traits\applyFilters;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\Response;
 
 class ProductAttController extends Controller
 {
-    public function index(Request $request, int $product_id)
+    use applyFilters;
+
+    public function index(Request $request, int $productId)
     {
-        $size = $request->query('size');
+        $product = Product::select('id')->with([
+            'product_atts:product_id,color_id,size_id,stock_quantity,sku',
+            'colorImages:product_id,color_id,image',
+            'product_atts.color:id,name',
+            'product_atts.size:id,name'
+        ])->find($productId);
 
-        $query = ProductAtt::query()
-            ->where('product_id', $product_id)
-            ->with(['color:id,name', 'size:id,name']);
+        if (!$product) {
+            return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+        $colorImages = $product->colorImages->pluck('image', 'color_id');
+        $query = $product->product_atts()->getQuery();
+        $paginatedAtts = $this->Filters($query, $request);
+        $result = collect($paginatedAtts);
 
-        $searchParams = $request->only(['color_id', 'size_id']);
-        foreach ($searchParams as $key => $value) {
-            if (!empty($value)) {
-                $query->where($key, $value);
-            }
+        if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $result = $paginatedAtts->getCollection();
         }
 
-        $productAtts = $size ? $query->orderByDesc('id')->paginate($size) : $query->orderByDesc('id')->get();
+        $result = $result->map(function ($att) use ($colorImages) {
+            return [
+                'sku' => $att->sku,
+                'image' => $colorImages[$att->color_id] ?? null,
+                'color_id' => $att->color_id,
+                'color_name' => $att->color?->name,
+                'size_id' => $att->size_id,
+                'size_name' => $att->size?->name,
+                'stock_quantity' => $att->stock_quantity,
+            ];
+        });
 
-        $productAtts->makeHidden(['size_id', 'color_id']);
-
-        if ($productAtts->isEmpty()) {
-            return response()->json(['message' => "Biến thể không tồn tại"], 404);
+        if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
+            $paginatedAtts->setCollection($result);
+            return ApiResponse::data($paginatedAtts);
         }
 
-        return response()->json($productAtts);
+        return ApiResponse::data($result);
     }
 
-
-
-    public function store(Request $request, int $product_id)
+    public function store(ProductAttRequest $request, int $productId)
     {
-        $data = $request->validate([
-            '*.size_id' => 'required|integer|exists:sizes,id',
-            '*.color_id' => 'required|integer|exists:colors,id',
-            '*.stock_quantity' => 'required|integer|min:0',
-            '*.image' => 'nullable|string|max:255',
-        ], [], [
-            '*.size_id' => 'Kích thước',
-            '*.color_id' => 'Màu sắc',
-            '*.stock_quantity' => 'Số lượng',
-            '*.image' => 'Ảnh biến thể',
-        ]);
-
-        if (empty($data)) {
-            return response()->json(['message' => 'Không có dữ liệu biến thể'], 400);
-        }
-
+        $data = $request->validated();
+        $productAtts = [];
+        $productColorImages = [];
+        $colors = Color::whereIn('id', collect($data)->pluck('color_id')->toArray())->get()->keyBy('id');
+        $sizes = Size::whereIn('id', collect($data)->flatMap(fn($att) => collect($att['sizes'])->pluck('size_id'))->toArray())->get()->keyBy('id');
+        $now = now()->toDateTimeString();
         try {
+            $product = Product::findOrFail($productId);
             DB::beginTransaction();
-
             foreach ($data as $item) {
-                ProductAtt::create([
-                    'product_id' => $product_id,
-                    'size_id' => $item['size_id'],
+                $productColorImages[] = [
+                    'product_id' => $productId,
                     'color_id' => $item['color_id'],
-                    'stock_quantity' => $item['stock_quantity'],
                     'image' => $item['image'] ?? null,
-                ]);
-            }
+                    'created_at' => $now,
+                    'updated_at' => $now
+                ];
 
+                foreach ($item['sizes'] as $variant) {
+                    $color = $colors->get($item['color_id']);
+                    $size = $sizes->get($variant['size_id']);
+                    $sku = Product::generateUniqueSKU($product->name, $color->name, $size->name);
+                    $productAtts[] = [
+                        'product_id' => $productId,
+                        'sku' => $sku,
+                        'size_id' => $size->id,
+                        'color_id' => $color->id,
+                        'stock_quantity' => $variant['stock_quantity'],
+                        'created_at' => $now,
+                        'updated_at' => $now
+                    ];
+                }
+            }
+            $productAtts = Product::checkAndResolveDuplicateSKUs($productAtts);
+            DB::table('product_atts')->insert($productAtts);
+            DB::table('product_color_images')->insert($productColorImages);
             DB::commit();
-            return response()->json(['message' => 'Thêm mới biến thể thành công']);
+            return ApiResponse::message('Thêm mới biến thể thành công', Response::HTTP_CREATED);
         } catch (\Illuminate\Database\QueryException $exception) {
             DB::rollBack();
-
             if ($exception->errorInfo[1] == 1062) {
-                return response()->json(['message' => 'Kích thước và màu sắc đã tồn tại'], 409);
+                throw new CustomException('Kích thước và màu sắc đã tồn tại', $exception->getMessage(), Response::HTTP_BAD_REQUEST,);
             }
-            return response()->json(['message' => 'Thêm mới thất bại'], 400);
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw new CustomException(
+                'Sản phẩm không tồn tại',
+                $e->getMessage()
+            );
         }
     }
-
 
     public function update(Request $request, int $product_id, int $product_att_id)
     {
-        $data = $request->only(['stock_quantity', 'image']);
-
         $product_att = ProductAtt::find($product_att_id);
-
         if (!$product_att) {
-            return response()->json(['message' => 'Biến thể không tồn tại'], 404);
+            return ApiResponse::error('Biến thể không tồn tại', Response::HTTP_BAD_REQUEST);
         }
+        $colorId = $request->color_id;
+        $image = $request->image;
+        $productColorImage = ProductColorImage::where('product_id', $product_id)->where('color_id', $colorId)->first();
 
-        if ($product_att->update(
-            [
-                'id' => $product_att_id,
-                'stock_quantity' => $data['stock_quantity'],
-                'image' => $data['image'] ?? null,
-            ]
-        )) {
-            return response()->json(['message' => 'Cập nhật biến thể thành công'], 200);
+        try {
+            if ($request->stock_quantity) {
+                $product_att->update(['stock_quantity' => $request->stock_quantity]);
+            }
+
+            if ($productColorImage && $image) {
+                $productColorImage->update(['image' => $image]);
+            }
+            return ApiResponse::message('Cập nhật biến thể thành công');
+        } catch (\Exception $e) {
+            throw new CustomException('Cập nhật biến thể thất bại', $e->getMessage());
         }
-        return response()->json(['message' => 'Cập nhật biến thể thất bại'], 400);
     }
 
 

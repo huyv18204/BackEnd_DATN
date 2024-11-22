@@ -19,6 +19,7 @@ class FakeDataSeeder extends Seeder
     {
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('product_atts')->truncate();
+        DB::table('product_color_images')->truncate();
         DB::table('colors')->truncate();
         DB::table('sizes')->truncate();
         DB::table('products')->truncate();
@@ -41,6 +42,19 @@ class FakeDataSeeder extends Seeder
             ]);
         }
 
+        DB::table('users')->updateOrInsert(
+            ['email' => 'abc@gmail.com'], 
+            [
+                'name' => 'Admin',
+                'email' => 'abc@gmail.com',
+                'password' => Hash::make('admin'),
+                'email_verified_at' => now(),
+                'role' => 'admin',
+                'is_blocked' => false,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
         // Categories seeding
         for ($i = 1; $i <= 10; $i++) {
 
@@ -89,23 +103,10 @@ class FakeDataSeeder extends Seeder
         $countCategories = DB::table('categories')->count("id");
         for ($i = 1; $i <= 10; $i++) {
             $categoryId = rand(1, $countCategories);
-            $currentDay = date('d');
-            $currentMonth = date('m');
-            $prevSku = "PR" . $currentDay . $currentMonth;
-
-            $stt = DB::table('products')->where("sku", "LIKE", $prevSku . "%")->orderByDesc('id')->first();
-            if ($stt) {
-                $parts = explode('-', $stt->sku);
-                $lastPart = (int)end($parts) + 1;
-                $sku = $prevSku . '-' . str_pad($lastPart, 3, '0', STR_PAD_LEFT);
-            } else {
-                $sku = $prevSku . '-' . "001";
-            }
             $name = fake()->name() . $i;
             DB::table('products')->insert([
-                "slug" => Str::slug($name . '-' . $sku),
+                "slug" => Str::slug($name),
                 "material" => "Vai",
-                "sku" => $sku,
                 'name' => $name,
                 "thumbnail" => fake()->imageUrl(30, 30),
                 'short_description' => 'Short description for product ' . $i,
@@ -118,19 +119,46 @@ class FakeDataSeeder extends Seeder
             ]);
         }
 
-        // Product attributes seeding
         $products = DB::table('products')->get();
         $sizes = DB::table('sizes')->get();
         $colors = DB::table('colors')->get();
+
         foreach ($products as $product) {
+            foreach ($colors as $color) {
+                DB::table('product_color_images')->insert([
+                    'product_id' => $product->id,
+                    'color_id' => $color->id,
+                    'image' => 'https://via.placeholder.com/150',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+
             foreach ($sizes as $size) {
                 foreach ($colors as $color) {
+                    $productCode = strtoupper(substr($product->name, 0, 2));
+                    $colorCode = strtoupper(substr($color->name, 0, 2));
+                    $sizeCode = strtoupper($size->name);
+
+                    $skuBase = $productCode . $colorCode . $sizeCode;
+                    $skuCode = '001';
+                    do {
+                        $sku = $skuBase . $skuCode;
+                        $exists = DB::table('product_atts')
+                            ->where('sku', $sku)
+                            ->exists();
+
+                        if ($exists) {
+                            $skuCode = str_pad((int)$skuCode + 1, 3, '0', STR_PAD_LEFT);
+                        }
+                    } while ($exists);
                     DB::table('product_atts')->insert([
                         'product_id' => $product->id,
+                        'sku' => $sku,
                         'size_id' => $size->id,
                         'color_id' => $color->id,
-                        'image' => fake()->imageUrl(30, 30),
                         'stock_quantity' => rand(1, 10),
+                        'is_active' => true,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
@@ -173,7 +201,7 @@ class FakeDataSeeder extends Seeder
                     'product_name' => 'Product N + 1',
                     'unit_price' => $unit_price,
                     'total_amount' => $unit_price * $quantity,
-                    'thumbnail' => $productAtt->image,
+                    'thumbnail' => 'fake/image',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

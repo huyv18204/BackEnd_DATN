@@ -48,7 +48,7 @@ class FakeDataSeeder extends Seeder
             ['email' => 'abc@gmail.com'],
             [
                 'name' => 'Admin',
-                'email' => 'abc@gmail.com',
+                'email' => 'admin@gmail.com',
                 'password' => Hash::make('admin'),
                 'email_verified_at' => now(),
                 'role' => 'admin',

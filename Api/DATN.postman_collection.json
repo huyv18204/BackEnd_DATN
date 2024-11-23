@@ -957,7 +957,7 @@
 							"urlencoded": []
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/13/productAtts",
+							"raw": "http://127.0.0.1:8000/api/v1/products/10/productAtts",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -970,7 +970,7 @@
 								"api",
 								"v1",
 								"products",
-								"13",
+								"10",
 								"productAtts"
 							],
 							"query": [
@@ -1286,7 +1286,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/astrid-kilback1",
+							"raw": "http://127.0.0.1:8000/api/v1/products/christine-wintheiser1",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1299,7 +1299,7 @@
 								"api",
 								"v1",
 								"products",
-								"astrid-kilback1"
+								"christine-wintheiser1"
 							],
 							"query": [
 								{
@@ -1780,7 +1780,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"product_att_id\": 4,\n    \"quantity\": 2\n}",
+							"raw": "{\n    \"product_att_id\": 2,\n    \"quantity\": 2\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2434,7 +2434,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"CategoryChildren 40\",\r\n    \"parent_id\": [4,2,1,3] \r\n}",
+							"raw": "{\r\n    \"name\": \"Category 03\",\r\n    \"parent_id\": [1,2,3] \r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2689,7 +2689,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns?size=10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2716,8 +2716,7 @@
 								},
 								{
 									"key": "size",
-									"value": "1",
-									"disabled": true
+									"value": "10"
 								}
 							]
 						}
@@ -2737,7 +2736,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-20 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\",\r\n    \"status\": \"pending\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ 1\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-24 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2764,6 +2763,46 @@
 					"response": []
 				},
 				{
+					"name": "Chỉnh sửa chiến dịch",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không1\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 70,\r\n    \"start_date\": \"2024-11-22 00:00:00\",\r\n    \"end_date\": \"2024-11-25 23:59:59\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Chi tiết chiến dịch",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
@@ -2781,7 +2820,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/show",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/show?sortByPrice=asc&size=10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2796,27 +2835,256 @@
 								"campaigns",
 								"1",
 								"show"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "categoryId",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "sortByPrice",
+									"value": "asc"
+								},
+								{
+									"key": "sortByStockQuantity",
+									"value": "desc",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Thêm sản phẩm vào chiến dịch",
+					"name": "Lọc sản phẩm thêm vào chiến dịch",
 					"request": {
-						"method": "POST",
-						"header": [],
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": ""
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/filter?size=10",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"filter"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "categoryId",
+									"value": "11",
+									"disabled": true
+								},
+								{
+									"key": "name",
+									"value": "Ms",
+									"disabled": true
+								},
+								{
+									"key": "minPrice",
+									"value": "400000",
+									"disabled": true
+								},
+								{
+									"key": "maxPrice",
+									"value": "900000",
+									"disabled": true
+								},
+								{
+									"key": "minStockQuantity",
+									"value": "200",
+									"disabled": true
+								},
+								{
+									"key": "MaxStockQuantity",
+									"value": "1000",
+									"disabled": true
+								},
+								{
+									"key": "sortByPrice",
+									"value": "asc",
+									"disabled": true
+								},
+								{
+									"key": "sortByStockQuantity",
+									"value": "asc",
+									"disabled": true
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8,\r\n        9,\r\n        10\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/add-product",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"1",
+								"add-product"
+							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Lọc sản phẩm",
+					"name": "Xóa sản phẩm khỏi chiến dịch",
 					"request": {
-						"method": "POST",
-						"header": []
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8,\r\n        9,\r\n        10\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/product",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"2",
+								"product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Chuyển trạng thái chiến dịch",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/toggle-status",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"1",
+								"toggle-status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lấy danh mục",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/category",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"category"
+							]
+						}
 					},
 					"response": []
 				}

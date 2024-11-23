@@ -38,4 +38,12 @@ class Category extends Model
     {
         return $this->hasMany(Category::class, 'parent_id')->with('children');
     }
+
+    public function getFullPathAttribute()
+    {
+        if ($this->parent) {
+            return $this->parent->name . ' - ' . $this->name;
+        }
+        return $this->name;
+    }
 }

@@ -30,6 +30,12 @@ class ProductAtt extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function colorImage()
+    {
+        return $this->hasOne(ProductColorImage::class, 'product_id', 'product_id')
+            ->whereColumn('color_id', 'color_id');
+    }
+
     public function color()
     {
         return $this->belongsTo(Color::class, 'color_id');

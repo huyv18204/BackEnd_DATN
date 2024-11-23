@@ -2947,15 +2947,6 @@
 									"key": "size",
 									"value": "10"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Thêm sản phẩm vào chiến dịch",
-					"request": {
-						"method": "POST",
 						"header": [
 							{
 								"key": "Accept",

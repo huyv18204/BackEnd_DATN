@@ -52,15 +52,13 @@ class ShipmentController extends Controller
     public function getByUserId(Request $request, $id): JsonResponse
     {
 
-        $query = Shipment::query()->with(['shipment_details' => function ($query) {
-            $query->select( 'shipment_id', 'order_id')->with(['order']);
-        }])->where('delivery_person_id', $id);
+        $query = Shipment::query()->where('delivery_person_id', $id);
 
-        if($request->has('code')) {
+        if ($request->has('code')) {
             $query->where('code', $request->input('code'));
         }
 
-        $shipment  = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+        $shipment = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
         return response()->json($shipment);
     }
 
@@ -68,14 +66,15 @@ class ShipmentController extends Controller
     public function getByUserLogin(Request $request): JsonResponse
     {
         $user = JWTAuth::parseToken()->authenticate();
-        $query = Shipment::query()->with(['shipment_details' => function ($query) {
-            $query->select( 'shipment_id', 'order_id')->with(['order']);
-        }])->where('delivery_person_id', $user->id);
+//        $query = Shipment::query()->with(['shipment_details' => function ($query) {
+//            $query->select( 'shipment_id', 'order_id')->with(['order']);
+//        }])->where('delivery_person_id', $user->id);
 
-        if($request->has('code')) {
+        $query = Shipment::query()->where('delivery_person_id', $user->id);
+        if ($request->has('code')) {
             $query->where('code', $request->input('code'));
         }
-        $shipment  = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+        $shipment = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
         return response()->json($shipment);
     }
 

@@ -75,6 +75,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
         Route::get("/{slug}", [ProductController::class, 'getBySlug']);
         Route::delete("/{id}", [ProductController::class, 'destroy']);
+        Route::post("/check-active", [ProductController::class, 'checkIsActive']);
     });
 
     Route::prefix('products/{product_id}/productAtts')->group(function () {
@@ -138,6 +139,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::post("/", [ShipmentController::class, 'store']);
         Route::put("/{id}", [ShipmentController::class, 'update']);
         Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
+        Route::get('/{id}/user', [ShipmentController::class, 'getByUserId']);
 
     });
 

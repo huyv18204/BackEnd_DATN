@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\Order\OrderRequest;
+use App\Models\DeliveryPerson;
 use App\Models\District;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -136,16 +137,6 @@ class OrderController extends Controller
             ]);
         }
     }
-
-    public function show($id)
-    {
-        $order = Order::query()->find($id);
-        if (!$order) {
-            return response()->json("Đơn hàng không tồn tại");
-        }
-        return response()->json($order);
-    }
-
     public function store(OrderRequest $request)
     {
         $data = $request->validated();
@@ -207,10 +198,13 @@ class OrderController extends Controller
         return response()->json($orders);
 
     }
-    public function show($id){
+
+    public function show($id)
+    {
         $order = Order::query()->with('user')->find($id);
-        if(!$order){
+        if (!$order) {
             return response()->json("Đơn hàng không tồn tại");
         }
         return response()->json($order);
     }
+}

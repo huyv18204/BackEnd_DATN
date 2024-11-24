@@ -14,7 +14,7 @@ class OrderDetail extends Model
         'product_id',
         'product_att_id',
         'quantity',
-        'subtotal',
+        'thumbnail',
         'size',
         'color',
         'product_name',

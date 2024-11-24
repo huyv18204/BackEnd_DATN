@@ -3520,6 +3520,7 @@
                     "type": "tidelift"
                 }
             ],
+
             "time": "2024-11-06T14:19:14+00:00"
         },
         {
@@ -4123,6 +4124,7 @@
             "homepage": "https://symfony.com",
             "support": {
                 "source": "https://github.com/symfony/http-kernel/tree/v6.4.15"
+
             },
             "funding": [
                 {
@@ -4138,7 +4140,9 @@
                     "type": "tidelift"
                 }
             ],
+
             "time": "2024-11-13T13:57:37+00:00"
+
         },
         {
             "name": "symfony/mailer",
@@ -8332,6 +8336,7 @@
         },
         {
             "name": "symfony/yaml",
+
             "version": "v6.4.13",
             "source": {
                 "type": "git",

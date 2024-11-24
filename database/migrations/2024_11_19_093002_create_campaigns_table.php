@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->decimal('discount_percentage', 3, 0)->default(0);
-            $table->timestamp('start_date');
-            $table->timestamp('end_date');
+            $table->timestamp('start_date')->nullable();
+            $table->timestamp('end_date')->nullable();
             $table->string('status')->default('pending');
             $table->timestamps();
         });

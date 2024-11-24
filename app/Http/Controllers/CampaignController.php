@@ -31,10 +31,8 @@ class CampaignController extends Controller
         $data = $request->validated();
         try {
             $startDate = Carbon::parse($data['start_date']);
-            if ($startDate->lessThanOrEqualTo(Carbon::now())) {
-                $data['status'] = 'active';
-            }
-            Campaign::create($data);
+            $campaign = Campaign::create($data);
+            // $this->updateStatus($campaign);
             return ApiResponse::message('Thêm mới chiến dịch thành công', Response::HTTP_CREATED);
         } catch (\Exception $e) {
             throw new CustomException('Lỗi khi thêm chiến dịch', $e->getMessage());
@@ -94,24 +92,12 @@ class CampaignController extends Controller
             return ApiResponse::message('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
         }
 
+        if ($campaign->status == 'complete') {
+            return ApiResponse::error('Không thể cập nhật chiến dịch đã kết thúc', Response::HTTP_BAD_REQUEST);
+        }
         $data = $request->validated();
-
-        $oldStartDate = $campaign->start_date;
-        $oldEndDate = $campaign->end_date;
-        $newStartDate = $data['start_date'] ?? $oldStartDate;
-        $newEndDate = $data['end_date'] ?? $oldEndDate;
-
         try {
             $campaign->update($data);
-
-            if ($newStartDate !== $oldStartDate || $newEndDate !== $oldEndDate) {
-                $campaign->status = $newStartDate > now()
-                    ? 'pending'
-                    : ($newEndDate < now() ? 'complete' : 'active');
-                $campaign->save();
-            }
-
-            $this->updateProductPrices($campaign);
             return ApiResponse::message('Cập nhật chiến dịch thành công');
         } catch (\Exception $e) {
             throw new CustomException('Lỗi khi cập nhật chiến dịch', $e->getMessage());
@@ -124,10 +110,18 @@ class CampaignController extends Controller
         if (!$campaign) {
             return ApiResponse::message('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
         }
+
+        if ($campaign->status !== 'pending') {
+            return ApiResponse::message('Chỉ có thể thêm sản phẩm khi chiến dịch chưa bắt đầu', Response::HTTP_BAD_REQUEST);
+        }
+
         $data = $request->validated();
         $now = now()->toDateTimeString();
+
         try {
             DB::beginTransaction();
+
+            $dataProduct = [];
             foreach ($data['product_id'] as $productId) {
                 $dataProduct[] = [
                     'campaign_id' => $id,
@@ -145,6 +139,7 @@ class CampaignController extends Controller
             throw new CustomException('Lỗi khi thêm sản phẩm chiến dịch', $e->getMessage());
         }
     }
+
 
     public function destroyMultiple(Request $request, string $id)
     {
@@ -251,14 +246,9 @@ class CampaignController extends Controller
         if (!$campaign) {
             return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
         }
-        if ($campaign->status == 'pending') {
-            return ApiResponse::error('Chiến dịch chưa bắt đầu, không thể thay đổi trạng thái', Response::HTTP_BAD_REQUEST);
+        if ($campaign->status != 'active') {
+            return ApiResponse::error('Chỉ có thể thay đổi trạng thái khi chiến dịch đang diễn ra', Response::HTTP_BAD_REQUEST);
         }
-
-        if ($campaign->status == 'complete') {
-            return ApiResponse::error('Chiến dịch đã kết thúc, không thể thay đổi trạng thái', Response::HTTP_BAD_REQUEST);
-        }
-
         $campaign->status = $campaign->status == 'active' ? 'pause' : 'active';
         $campaign->save();
         $this->updateProductPrices();

@@ -110,10 +110,10 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::post('/', [UserController::class, 'store']);
         Route::put('/{id}/role', [UserController::class, 'updateRole']);
         Route::get('/blacklist', [UserController::class, 'blackList']);
-        Route::delete('/{id}/toggle-blacklist', [UserController::class, 'toggleBlackList']);
+        Route::put('/{id}/toggle-blacklist', [UserController::class, 'toggleBlackList']);
     });
 
-    Route::prefix("campaigns")->group(function () {
+    Route::prefix("campaigns")->middleware('check.campaign')->group(function () {
         Route::get('/', [CampaignController::class, 'index']);
         Route::get('category', [CampaignController::class, 'category']);
         Route::get('filter', [CampaignController::class, 'filter']);

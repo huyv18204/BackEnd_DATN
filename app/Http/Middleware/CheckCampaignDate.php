@@ -18,32 +18,33 @@ class CheckCampaignDate
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $today = Carbon::today();
-        $campaigns = Campaign::whereDate('start_date', '<=', $today)
-            ->whereDate('end_date', '>=', $today)
-            ->get();
+        $campaigns = Campaign::whereIn('status', ['pending', 'active'])->get();
         if ($campaigns->isNotEmpty()) {
             foreach ($campaigns as $campaign) {
                 $this->updateCampaignStatus($campaign);
             }
+            $this->updateProductPrices($campaign);
         }
 
         return $next($request);
     }
 
-    protected function updateCampaignStatus(Campaign $campaign)
+
+    private function updateCampaignStatus(Campaign $campaign)
     {
-        $now = now();
-        if ($campaign->start_date <= $now) {
+        $now = Carbon::now('Asia/Ho_Chi_Minh');
+        $startDate = Carbon::createFromFormat('H:i:s d/m/Y', $campaign->start_date);
+        $endDate = Carbon::createFromFormat('H:i:s d/m/Y', $campaign->end_date);
+
+        if ($startDate > $now) {
             $campaign->status = 'pending';
-            if ($campaign->end_date <= $now) {
-                $campaign->status = 'complete';
-            }
-        } else {
+        } elseif ($endDate >= $now) {
             $campaign->status = 'active';
+        } else {
+            $campaign->status = 'complete';
         }
-        $campaign->save();
-        $this->updateProductPrices();
+
+        return $campaign->save();
     }
 
     protected function updateProductPrices()

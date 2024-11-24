@@ -220,10 +220,10 @@ class ProductController extends Controller
     {
         $productIds = $request->input('product_id');
         $errors = [];
-        $products = Product::whereIn('id', $productIds)->get();
+        $products = Product::withTrashed()->whereIn('id', $productIds)->get();
         foreach ($products as $product) {
-            if (!$product->is_active) {
-                $errors[] = "Sản phẩm {$product->name} không được kích hoạt.";
+        if ($product->deleted_at !== null) {
+                $errors[] = "Sản phẩm {$product->name} không tồn tại.";
             }
         }
         if (count($errors) > 0) {

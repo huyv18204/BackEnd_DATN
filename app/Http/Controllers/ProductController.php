@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Size;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -213,5 +214,27 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             throw new CustomException("Lỗi khi xử lý dữ liệu sản phẩm", $e->getMessage());
         }
+    }
+
+    public function checkIsActive(Request $request) : JsonResponse
+    {
+        $productIds = $request->input('product_id');
+        $errors = [];
+        $products = Product::whereIn('id', $productIds)->get();
+        foreach ($products as $product) {
+            if (!$product->is_active) {
+                $errors[] = "Sản phẩm {$product->name} không được kích hoạt.";
+            }
+        }
+        if (count($errors) > 0) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $errors
+            ], 400);
+        }
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tất cả sản phẩm đều hợp lệ.'
+        ]);
     }
 }

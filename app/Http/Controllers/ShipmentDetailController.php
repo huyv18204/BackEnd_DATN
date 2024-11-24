@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class ShipmentDetailController extends Controller
 {
     public function show(Request $request,  $shipment_id) : JsonResponse {
-        $query = ShipmentDetail::query()->with('order.order_details')->where('shipment_id', $shipment_id);
+        $query = ShipmentDetail::query()->with('order')->where('shipment_id', $shipment_id);
 
 
         if ($request->has('order_code')) {

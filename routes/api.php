@@ -119,6 +119,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::post('/', [CampaignController::class, 'store']);
         Route::put('/{id}', [CampaignController::class, 'update']);
         Route::get('/{id}/show', [CampaignController::class, 'show']);
+        Route::get('/{id}/status', [CampaignController::class, 'status']);
         Route::post('{id}/add-product', [CampaignController::class, 'addProduct']);
         route::delete('/{id}/product', [CampaignController::class, 'destroyMultiple']);
         Route::delete('{id}/product/{productId}', [CampaignController::class, 'destroy']);

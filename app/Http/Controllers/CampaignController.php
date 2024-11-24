@@ -77,6 +77,15 @@ class CampaignController extends Controller
         return $size ? $query->paginate($size) : $query->get();
     }
 
+    public function status($id)
+    {
+        $campaign = Campaign::find($id);
+        if (!$campaign) {
+            return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+        return ApiResponse::data($campaign->status);
+    }
+
     public function update(CampaignRequest $request, string $id)
     {
         $campaign = Campaign::find($id);

@@ -19,15 +19,13 @@ class CheckCampaignDate
     public function handle(Request $request, Closure $next): Response
     {
         $today = Carbon::today();
-        $campaigns = Campaign::where(function ($query) use ($today) {
-            $query->whereDate('start_date', $today)
-                ->orWhereDate('end_date', $today);
-        })->get();
+        $campaigns = Campaign::whereDate('start_date', '<=', $today)
+            ->whereDate('end_date', '>=', $today)
+            ->get();
         if ($campaigns->isNotEmpty()) {
             foreach ($campaigns as $campaign) {
                 $this->updateCampaignStatus($campaign);
             }
-            $this->updateProductPrices();
         }
 
         return $next($request);
@@ -36,14 +34,16 @@ class CheckCampaignDate
     protected function updateCampaignStatus(Campaign $campaign)
     {
         $now = now();
-        if ($campaign->start_date > $now) {
+        if ($campaign->start_date <= $now) {
             $campaign->status = 'pending';
-        } elseif ($campaign->end_date < $now) {
-            $campaign->status = 'complete';
+            if ($campaign->end_date <= $now) {
+                $campaign->status = 'complete';
+            }
         } else {
             $campaign->status = 'active';
         }
         $campaign->save();
+        $this->updateProductPrices();
     }
 
     protected function updateProductPrices()

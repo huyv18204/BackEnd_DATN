@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Auth;
+namespace App\Http\Requests\Campaigns;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RegisterRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,18 +22,15 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|max:255|unique:users',
-            'name' => 'required|string|max:255',
-            'password' => 'required|string|min:8|confirmed',
+            'product_id' => 'required|exists:products,id',
+            'product_id' => 'unique:campaign_products,product_id,NULL,id,campaign_id,' . $this->route('id'),
         ];
     }
 
     public function attributes()
     {
         return [
-            'email' => 'Email',
-            'name' => 'Họ tên',
-            'password' => 'Mật khẩu',
+            'product_id' => 'Sản phẩm'
         ];
     }
 }

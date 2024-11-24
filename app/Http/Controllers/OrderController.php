@@ -207,4 +207,10 @@ class OrderController extends Controller
         return response()->json($orders);
 
     }
-}
+    public function show($id){
+        $order = Order::query()->with('user')->find($id);
+        if(!$order){
+            return response()->json("Đơn hàng không tồn tại");
+        }
+        return response()->json($order);
+    }

@@ -6,15 +6,14 @@ use App\Http\Requests\Auth\ChangePasswordRequest;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\ProfileRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Mail\VerifyEmail;
-use App\Mail\VerifyPassword;
+use App\Jobs\SendPasswordResetEmail;
+use App\Jobs\SendVerifyEmail;
 use App\Models\RefreshToken;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -128,7 +127,7 @@ class AuthController extends Controller
 
         $verificationUrl = $this->generateVerificationUrl($user);
 
-        Mail::to($user->email)->send(new VerifyEmail($user, $verificationUrl));
+        SendVerifyEmail::dispatch($user, $verificationUrl);
 
         return response()->json([
             'message' => 'Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản.',
@@ -144,12 +143,12 @@ class AuthController extends Controller
         $user = User::findOrFail($id);
 
         if ($user->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Tài khoản đã được xác thực trước đó.'], 200);
+            return response()->json(['message' => 'Tài khoản apiđã được xác thực trước đó.'], 200);
         }
 
         $user->markEmailAsVerified();
-
-        return response()->json(['message' => 'Tài khoản đã được xác thực thành công.'], 200);
+        
+        return redirect(env('FRONTEND_URL_LOGIN'));
     }
 
     protected function generateVerificationUrl(User $user)
@@ -160,17 +159,6 @@ class AuthController extends Controller
             ['id' => $user->id]
         );
     }
-
-    // protected function generateVerificationUrl(User $user)
-    // {
-    //     $verificationUrl = URL::temporarySignedRoute(
-    //         'verification.verify',
-    //         Carbon::now()->addMinutes(60),
-    //         ['id' => $user->id]
-    //     );
-
-    //     return env('FRONTEND_URL') . '/verify-email?verificationUrl=' . $verificationUrl;
-    // }
 
     public function changePassword(ChangePasswordRequest $request)
     {
@@ -234,7 +222,7 @@ class AuthController extends Controller
             ]
         );
 
-        Mail::to($email)->send(new VerifyPassword($otp, $email, $minutes));
+        SendPasswordResetEmail::dispatch($otp, $email, $minutes);
 
         return response()->json(['message' => 'Mã OTP đã được gửi đến email của bạn.'], 201);
     }
@@ -253,8 +241,13 @@ class AuthController extends Controller
         }
 
         $email = $request->email;
+        $user = User::where('email', $email)->first();
         $otp = $request->otp;
         $password = $request->password;
+        if (Hash::check($password, $user->password)) {
+            return response()->json(['error' => 'Mật khẩu mới không được trùng với mật khẩu cũ.'], 422);
+        }
+
 
         $passwordReset = DB::table('password_reset_tokens')->where('email', $email)->first();
 

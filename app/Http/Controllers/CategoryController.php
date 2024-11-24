@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CustomException;
+use App\Http\Requests\Categories\CategoryRequest;
+use App\Http\Response\ApiResponse;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response;
 
 class CategoryController extends Controller
 {
@@ -13,93 +18,211 @@ class CategoryController extends Controller
     {
         $sort = $request->input('sort', 'ASC');
         $size = $request->query('size');
-        $query = Category::query();
+        try {
+            $query = Category::query()
+                ->whereNull('parent_id')
+                ->with('children.children');
+            $query->when($request->query('id'), function ($query, $id) {
+                $query->where('id', $id);
+            });
 
-        $query->when($request->query('id'), function ($query, $id) {
-            $query->where('id', $id);
-        });
+            $query->when($request->query('name'), function ($query, $name) {
+                $query->where('name', 'LIKE', '%' . $name . '%');
+            });
 
-        $query->when($request->query('name'), function ($query, $name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
-        });
-
-        $query->orderBy('id', $sort);
-        $categories = $size ? $query->paginate($size) : $query->get();
-        return response()->json($categories);
+            $query->orderBy('id', $sort);
+            $categories = $size ? $query->paginate($size) : $query->get();
+            return ApiResponse::data($categories, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException("Lỗi khi truy xuất danh mục",  $e->getMessage());
+        }
     }
 
-    public function store(Request $request)
+    public function listParent(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required|min:6|max:100|unique:categories,name',
-        ], [], [
-            'name' => 'tên danh mục'
-        ]);
+        $sort = $request->input('sort', 'ASC');
+        $size = $request->query('size');
+        try {
+            $query = Category::query()->whereNull('parent_id');
 
-        $data['slug'] = Str::slug($request->name);
+            $query->when($request->query('id'), function ($query, $id) {
+                $query->where('id', $id);
+            });
 
-        $currentDay = date('d');
-        $currentMonth = date('m');
-        $prevCode = "CA" . $currentDay . $currentMonth;
+            $query->when($request->query('name'), function ($query, $name) {
+                $query->where('name', 'LIKE', '%' . $name . '%');
+            });
 
-        $stt = DB::table('categories')->where("category_code", "LIKE", $prevCode . "%")->orderByDesc('id')->first();
-        if ($stt) {
-            $parts = explode('-', $stt->category_code);
-            $lastPart = (int)end($parts) + 1;
-            $data['category_code'] = $prevCode . '-' . str_pad($lastPart, 2, '0', STR_PAD_LEFT);
-        } else {
-            $data['category_code'] = $prevCode . '-' . "01";
+            $query->orderBy('id', $sort);
+            $categories = $size ? $query->paginate($size) : $query->get();
+            return ApiResponse::data($categories, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException("Lỗi khi truy xuất danh mục",  $e->getMessage());
         }
-
-        $category = Category::query()->create($data);
-
-        return response()->json([
-            $category ? 'message' : 'error' => $category ? 'Thêm mới thành công' : 'Thêm thất bại'
-        ], $category ? 200 : 500);
     }
 
-    public function update(Request $request, int $id)
+    public function store(CategoryRequest $request)
     {
-        $category = Category::find($id);
+        $parentIds = $request->input('parent_id', []);
+        $data = $request->validated();
+        try {
+            if (empty($parentIds)) {
+                $existingCategory = Category::where('name', $data['name'])->first();
+                if ($existingCategory) {
+                    return ApiResponse::error('Tên danh mục đã tồn tại', Response::HTTP_BAD_REQUEST);
+                }
+                $data['category_code'] = $this->generateCategoryCode();
+                $data['slug'] = $this->generateUniqueSlug($data['name']);
+                $category = Category::query()->create($data);
+                return ApiResponse::message('Thêm mới danh mục cha thành công', Response::HTTP_CREATED);
+            } else {
+                DB::beginTransaction();
+                foreach ($parentIds as $parentId) {
+                    $existingCategory = Category::where('name', $data['name'])
+                        ->where('parent_id', $parentId)
+                        ->first();
 
-        if (!$category) {
-            return response()->json(['error' => 'Danh mục không tồn tại'], 404);
+                    if ($existingCategory) {
+                        return ApiResponse::error('Tên danh mục này đã tồn tại trong danh mục cha.', Response::HTTP_BAD_REQUEST);
+                    }
+
+                    $data['category_code'] = $this->generateCategoryCode();
+                    $data['slug'] = $this->generateUniqueSlug($data['name'], $parentId);
+
+                    Category::create([
+                        'name' => $data['name'],
+                        'category_code' => $data['category_code'],
+                        'slug' => $data['slug'],
+                        'parent_id' => $parentId,
+                    ]);
+                }
+                DB::commit();
+                return ApiResponse::message('Thêm mới danh mục con thành công', Response::HTTP_CREATED);
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new CustomException('Thêm mới danh mục thất bại',  $e->getMessage());
         }
+    }
 
-        $data = $request->validate([
-            'name' => 'required|min:6|max:100|unique:categories,name,' . $id,
-        ], [], [
-            'name' => 'Tên Danh mục'
-        ]);
+    public function update(CategoryRequest $request, $id)
+    {
+        $category = $this->findOrFail($id);
+        $data = $request->validated();
+        $parentIds = $request->input('parent_id', []);
 
-        if ($category->name != $request->name) {
-            $data['slug'] = Str::slug($request->name);
+        try {
+            if (empty($parentIds)) {
+                $existingCategory = Category::where('name', $data['name'])
+                    ->where('id', '!=', $id)
+                    ->first();
+                if ($existingCategory) {
+                    return ApiResponse::error('Tên danh mục đã tồn tại', Response::HTTP_BAD_REQUEST);
+                }
+                $category->name = $data['name'];
+                $category->slug = $this->generateUniqueSlug($data['name']);
+                $category->save();
+
+                return ApiResponse::message('Cập nhật danh mục cha thành công', Response::HTTP_OK);
+            } else {
+                try {
+                    DB::beginTransaction();
+
+                    foreach ($parentIds as $parentId) {
+                        if ($parentId == $category->id) {
+                            return ApiResponse::error('Danh mục không thể làm cha của chính nó, vui lòng chọn danh mục khác.', Response::HTTP_BAD_REQUEST);
+                        }
+
+                        $existingCategory = Category::where('name', $data['name'])
+                            ->where('parent_id', $parentId)
+                            ->where('id', '!=', $id)
+                            ->first();
+
+                        if ($existingCategory) {
+                            return ApiResponse::error('Tên danh mục này đã tồn tại trong danh mục cha.', Response::HTTP_BAD_REQUEST);
+                        }
+
+                        $category->name = $data['name'];
+                        $category->slug = $this->generateUniqueSlug($data['name'], $parentId);
+                        $category->parent_id = $parentId;
+
+                        if (!empty($data['image'])) {
+                            $category->image = $data['image'];
+                        }
+
+                        $category->save();
+                    }
+                    DB::commit();
+                    return ApiResponse::message('Cập nhật danh mục con thành công', Response::HTTP_OK);
+                } catch (\Throwable $th) {
+                    DB::rollBack();
+                    throw new CustomException('Lỗi khi cập nhật danh mục',);
+                }
+            }
+        } catch (\Exception $e) {
+            throw new CustomException('Cập nhật danh mục thất bại',  $e->getMessage());
         }
+    }
 
-        $response = $category->update($data);
+    public function listChildren(Request $request, string $id)
+    {
+        $category = $this->findOrFailParentId($id);
+        $sort = $request->input('sort', 'ASC');
+        $size = $request->query('size');
+        try {
+            $query = Category::query()->where('parent_id', $id);
 
-        return response()->json([
-            $response ? 'message' : 'error' => $response ? 'Cập nhật danh mục thành công' : 'Cập nhật danh mục thất bại'
-        ], $response ? 200 : 500);
+            $query->when($request->query('id'), function ($query, $id) {
+                $query->where('id', $id);
+            });
+
+            $query->when($request->query('name'), function ($query, $name) {
+                $query->where('name', 'LIKE', '%' . $name . '%');
+            });
+
+            $query->orderBy('id', $sort);
+            $categories = $size ? $query->paginate($size) : $query->get();
+            return ApiResponse::data($categories, Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException("Lỗi khi truy xuất danh mục con",  $e->getMessage());
+        }
+    }
+
+    public function toggleStatus(string $id)
+    {
+        $category = $this->findOrFail($id);
+        try {
+            $category->is_active = !$category->is_active;
+            $category->save();
+            return ApiResponse::message("Chuyển đổi trạng thái thành công", Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException("Lỗi khi chuyển trạng thái", $e->getMessage());
+        }
     }
 
     public function destroy(int $id)
     {
-        if ($category = Category::find($id)) {
-            $category->delete();
-            return response()->json(['message' => 'Xóa danh mục thành công'], 200);
+        $category = $this->findOrFail($id);
+
+        if ($category->parent_id === null && $category->children()->exists()) {
+            return ApiResponse::error('Không thể xóa danh mục cha có danh mục con', Response::HTTP_BAD_REQUEST);
         }
 
-        return response()->json(['message' => 'Danh mục không tồn tại'], 404);
+        if ($category->parent_id !== null) {
+            $products = Product::where('category_id', $category->id)->get();
+
+            if ($products->isNotEmpty()) {
+                foreach ($products as $product) {
+                    $product->category_id = 1;
+                    $product->save();
+                }
+            }
+        }
+        $category->delete();
+
+        return ApiResponse::error('Xóa danh mục thành công', Response::HTTP_OK);
     }
 
-    public function show(int $id)
-    {
-        if ($category = Category::find($id)) {
-            return response()->json($category, 200);
-        }
-        return response()->json(['message' => 'Danh mục không tồn tại'], 404);
-    }
 
     public function getBySlug(string $slug)
     {
@@ -109,32 +232,51 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Danh mục không tồn tại'], 404);
     }
 
-    public function trash(Request $request)
+    protected function generateCategoryCode()
     {
-        $sort = $request->input('sort', 'ASC');
-        $size = $request->query('size');
-        $query = Category::onlyTrashed();
+        $currentDay = date('d');
+        $currentMonth = date('m');
+        $prevCode = "CA" . $currentDay . $currentMonth;
 
-        $query->when($request->query('id'), function ($query, $id) {
-            $query->where('id', $id);
-        });
-
-        $query->when($request->query('name'), function ($query, $name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
-        });
-
-        $query->orderBy('id', $sort);
-        $trash = $size ? $query->paginate($size) : $query->get();
-        return response()->json($trash, 200);
+        $stt = DB::table('categories')->where("category_code", "LIKE", $prevCode . "%")->orderByDesc('id')->first();
+        if ($stt) {
+            $parts = explode('-', $stt->category_code);
+            $lastPart = (int)end($parts) + 1;
+            return $prevCode . '-' . str_pad($lastPart, 2, '0', STR_PAD_LEFT);
+        } else {
+            return $prevCode . '-' . "01";
+        }
     }
 
-    public function restore(int $id)
+    protected function generateUniqueSlug($name, $parentId = null)
     {
-        if ($category = Category::withTrashed()->find($id)) {
-            $category->restore();
-            return response()->json(['message' => 'Khôi phục thành công'], 200);
+        $slug = Str::slug($name);
+
+        if ($parentId) {
+            $parentCategory = Category::find($parentId);
+            if ($parentCategory) {
+                $slug = Str::slug($parentCategory->name) . '-' . $slug;
+            }
         }
 
-        return response()->json(['error' => 'Danh mục không tồn tại'], 404);
+        return $slug;
+    }
+
+    private function findOrFail($id)
+    {
+        $category = Category::find($id);
+        if (!$category) {
+            throw new CustomException('Danh mục không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+        return $category;
+    }
+
+    private function findOrFailParentId($id)
+    {
+        $category = Category::whereNull('parent_id')->find($id);
+        if (!$category) {
+            throw new CustomException('Danh mục cha không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+        return $category;
     }
 }

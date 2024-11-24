@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
@@ -34,11 +35,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::prefix("v1")->group(function () {
-    Route::post('login', [AuthController::class, 'login']);
+    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,2');
     Route::post('register', [AuthController::class, 'register']);
     Route::get('/email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify');
     Route::post('refresh', [AuthController::class, 'refresh']);
-    Route::post('password/email', [AuthController::class, 'sendResetOTPEmail'])->middleware('throttle:3,30');
+    Route::post('password/email', [AuthController::class, 'sendResetOTPEmail'])->middleware('throttle:5,30');
     Route::post('password/reset', [AuthController::class, 'resetPasswordWithOTP']);
     Route::middleware(['api', 'auth.jwt'])->prefix('auth')->as('auth.')->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
@@ -47,32 +48,35 @@ Route::prefix("v1")->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
-
-Route::get('v1/categories', [CategoryController::class, 'index']);
-Route::get("v1/products", [ProductController::class, 'index']);
-Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+Route::middleware('check.campaign')->group(function () {
+    Route::get('v1/categories', [CategoryController::class, 'index']);
+    Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
+    Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
+    Route::get("v1/products", [ProductController::class, 'index']);
+    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+});
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
-        Route::put('/{id}/restore', [CategoryController::class, 'restore']);
-        Route::get('/trash', [CategoryController::class, 'trash']);
         Route::post('/', [CategoryController::class, 'store']);
         Route::put('/{id}', [CategoryController::class, 'update']);
+        Route::put('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
         Route::get('/{slug}', [CategoryController::class, 'getBySlug']);
-        Route::get('/{id}/show', [CategoryController::class, 'show']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
 
     Route::prefix("products")->group(function () {
-        Route::put('/{id}/restore', [ProductController::class, 'restore']);
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
-        Route::get('/trash', [ProductController::class, 'trash']);
-        Route::get("/{slug}", [ProductController::class, 'getBySlug']);
         Route::get("/{id}/show", [ProductController::class, 'show']);
-        Route::get("/{id}/ProductAtts", [ProductController::class, 'getProductAtts']);
+
+        Route::get('/trash', [ProductController::class, 'trash']);
+        Route::put('/{id}/restore', [ProductController::class, 'restore']);
+
+        Route::get("/{slug}", [ProductController::class, 'getBySlug']);
         Route::delete("/{id}", [ProductController::class, 'destroy']);
     });
+
     Route::prefix('products/{product_id}/productAtts')->group(function () {
         Route::post('/', [ProductAttController::class, 'store']);
         Route::put('/{id}', [ProductAttController::class, 'update']);
@@ -81,22 +85,18 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
 
     Route::prefix("colors")->group(function () {
-        Route::put('/{id}/restore', [ColorController::class, 'restore']);
-        Route::get('/trash', [ColorController::class, 'trash']);
         Route::get("/", [ColorController::class, 'index']);
         Route::post("/", [ColorController::class, 'store']);
         Route::put("/{id}", [ColorController::class, 'update']);
-        Route::get("/{id}", [ColorController::class, 'show']);
+        Route::put('/{id}/toggle-status', [ColorController::class, 'toggleStatus']);
         Route::delete("/{id}", [ColorController::class, 'destroy']);
     });
 
     Route::prefix("sizes")->group(function () {
-        Route::put('/{id}/restore', [SizeController::class, 'restore']);
-        Route::get('/trash', [SizeController::class, 'trash']);
         Route::get("/", [SizeController::class, 'index']);
         Route::post("/", [SizeController::class, 'store']);
         Route::put("/{id}", [SizeController::class, 'update']);
-        Route::get("/{id}", [SizeController::class, 'show']);
+        Route::put('/{id}/toggle-status', [SizeController::class, 'toggleStatus']);
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
@@ -110,8 +110,21 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::post('/', [UserController::class, 'store']);
         Route::put('/{id}/role', [UserController::class, 'updateRole']);
         Route::get('/blacklist', [UserController::class, 'blackList']);
-        Route::delete('/{id}/add-blacklist', [UserController::class, 'addBlackList']);
-        Route::put('/{id}/restore-blacklist', [UserController::class, 'restoreBlackList']);
+        Route::delete('/{id}/toggle-blacklist', [UserController::class, 'toggleBlackList']);
+    });
+
+    Route::prefix("campaigns")->group(function () {
+        Route::get('/', [CampaignController::class, 'index']);
+        Route::get('category', [CampaignController::class, 'category']);
+        Route::get('filter', [CampaignController::class, 'filter']);
+        Route::post('/', [CampaignController::class, 'store']);
+        Route::put('/{id}', [CampaignController::class, 'update']);
+        Route::get('/{id}/show', [CampaignController::class, 'show']);
+        Route::get('/{id}/status', [CampaignController::class, 'status']);
+        Route::post('{id}/add-product', [CampaignController::class, 'addProduct']);
+        route::delete('/{id}/product', [CampaignController::class, 'destroyMultiple']);
+        Route::delete('{id}/product/{productId}', [CampaignController::class, 'destroy']);
+        route::put('/{id}/toggle-status', [CampaignController::class, 'toggleStatus']);
     });
 
     Route::prefix("delivery-persons")->group(function () {

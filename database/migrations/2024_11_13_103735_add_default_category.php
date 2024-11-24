@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,13 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('colors', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->index()->unique();
-            $table->string('code')->nullable();
-            $table->boolean("is_active")->default(true);
-            $table->timestamps();
-        });
+        DB::table('categories')->insert([
+            'id' => 1,
+            'name' => 'Chưa phân loại',
+            'parent_id' => null,
+            'category_code' => '1',
+            'slug' => 'chua-phan-loai',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('colors');
+        //
     }
 };

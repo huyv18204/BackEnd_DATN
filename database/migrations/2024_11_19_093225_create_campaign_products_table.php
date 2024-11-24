@@ -9,13 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('colors', function (Blueprint $table) {
+        Schema::create('campaign_products', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->index()->unique();
-            $table->string('code')->nullable();
-            $table->boolean("is_active")->default(true);
+            $table->foreignId('campaign_id')->constrained()->onDelete('cascade'); 
+            $table->foreignId('product_id')->constrained()->onDelete('cascade'); 
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('colors');
+        Schema::dropIfExists('campaign_products');
     }
 };

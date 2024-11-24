@@ -12,10 +12,10 @@ class ProductAtt extends Model
 
     protected $fillable = [
         'product_id',
+        'sku',
         'color_id',
         'size_id',
         'stock_quantity',
-        'image',
         'is_active'
     ];
 
@@ -28,6 +28,12 @@ class ProductAtt extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function colorImage()
+    {
+        return $this->hasOne(ProductColorImage::class, 'product_id', 'product_id')
+            ->whereColumn('color_id', 'color_id');
     }
 
     public function color()

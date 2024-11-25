@@ -52,6 +52,7 @@ Route::middleware('check.campaign')->group(function () {
     Route::get('v1/categories', [CategoryController::class, 'index']);
     Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
     Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
+    Route::get('v1/categories/{id}/product', [CategoryController::class, 'products']);
     Route::get("v1/products", [ProductController::class, 'index']);
     Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 });
@@ -140,9 +141,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::put("/{id}", [ShipmentController::class, 'update']);
         Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
         Route::get('/{id}/user', [ShipmentController::class, 'getByUserId']);
-
     });
-
 });
 
 Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
@@ -163,7 +162,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [ShippingAddressController::class, 'delete']);
         Route::get("/user-id", [ShippingAddressController::class, 'getByUserId']);
         Route::get("/{id}", [ShippingAddressController::class, 'show']);
-
     });
 
 
@@ -189,10 +187,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("/{id}", [ShipmentController::class, 'show']);
         Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
         Route::get('/user', [ShipmentController::class, 'getByUserLogin']);
-
     });
-
 });
 Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
 Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
-

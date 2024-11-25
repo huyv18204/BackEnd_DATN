@@ -232,6 +232,13 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Danh mục không tồn tại'], 404);
     }
 
+    public function products(string $id)
+    {
+        $category = $this->findOrFail($id);
+        $products = $category->products;
+        return response()->json($products);
+    }
+
     protected function generateCategoryCode()
     {
         $currentDay = date('d');

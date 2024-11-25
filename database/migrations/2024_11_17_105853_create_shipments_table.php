@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('code')->unique();
             $table->foreignIdFor(\App\Models\DeliveryPerson::class)->constrained();
-            $table->enum('status', ["Chưa hoàn thành", "Hoàn thành giao hàng"])->default('Chưa hoàn thành');
+            $table->enum('status', ["Chờ giao hàng", "Đang giao hàng","Hoàn thành giao hàng"])->default('Chờ giao hàng');
             $table->timestamps();
         });
     }

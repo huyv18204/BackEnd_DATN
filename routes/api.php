@@ -160,7 +160,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
     Route::prefix("shipping-addresses")->group(function () {
         Route::post("/", [ShippingAddressController::class, 'store']);
         Route::put("/{id}", [ShippingAddressController::class, 'update']);
-        Route::delete("/{id}", [ShippingAddressController::class, 'delete']);
+        Route::delete("/{id}", [ShippingAddressController::class, 'destroy']);
         Route::get("/user-id", [ShippingAddressController::class, 'getByUserId']);
         Route::get("/{id}", [ShippingAddressController::class, 'show']);
 
@@ -170,6 +170,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
     Route::prefix("orders")->group(function () {
         Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
         Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+        Route::get('/user', [OrderController::class, 'getByUserLogin']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
     });
@@ -186,7 +187,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
     });
 
     Route::prefix("shipments")->group(function () {
-        Route::get("/{id}", [ShipmentController::class, 'show']);
+        Route::get("/{id}", [ShipmentController::class, 'show'])->where("id", "[0-9]+");
         Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
         Route::get('/user', [ShipmentController::class, 'getByUserLogin']);
 

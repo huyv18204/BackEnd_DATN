@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Shipment\StoreRequest;
+use App\Models\DeliveryPerson;
 use App\Models\Shipment;
 use App\Models\ShipmentDetail;
 use App\Services\ShipmentHepper;
@@ -66,17 +67,17 @@ class ShipmentController extends Controller
     public function getByUserLogin(Request $request): JsonResponse
     {
         $user = JWTAuth::parseToken()->authenticate();
-//        $query = Shipment::query()->with(['shipment_details' => function ($query) {
-//            $query->select( 'shipment_id', 'order_id')->with(['order']);
-//        }])->where('delivery_person_id', $user->id);
-
-        $query = Shipment::query()->where('delivery_person_id', $user->id);
+        $delivery_person = DeliveryPerson::query()->where('user_id', $user->id)->first();
+        $query = Shipment::query()->with(['shipment_details' => function ($query) {
+            $query->select( 'shipment_id', 'order_id')->with(['order']);
+        }])->where('status', 'Chờ giao hàng')->where('delivery_person_id', $delivery_person->id);
         if ($request->has('code')) {
             $query->where('code', $request->input('code'));
         }
         $shipment = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
         return response()->json($shipment);
     }
+
 
     public function store(StoreRequest $request): JsonResponse
     {
@@ -152,7 +153,7 @@ class ShipmentController extends Controller
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $validated = $request->validate([
-            'status' => 'required|in:Chưa hoàn thành,Hoàn thành giao hàng',
+            'status' => 'required|in:Chờ giao hàng,Hoàn thành giao hàng,Đang giao hàng',
         ], [
             'status.required' => 'Trường trạng thái là bắt buộc.',
             'status.in' => 'Trạng thái phải không hợp lệ',

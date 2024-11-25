@@ -21,4 +21,8 @@ class DeliveryPerson extends Model
     public function vehicle() {
         return $this->belongsTo(Vehicle::class);
     }
+
+    public function shipments() {
+        return $this->hasMany(Shipment::class);
+    }
 }

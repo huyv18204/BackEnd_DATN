@@ -150,25 +150,29 @@ class ShippingAddressController extends Controller
 
     }
 
-    public function getByUserId(Request $request): JsonResponse{
+    public function getByUserId(Request $request): JsonResponse
+    {
         $user = JWTAuth::parseToken()->authenticate();
         $size = $request->query('size');
         try {
             $shippingAddress = ShippingAddress::query()->where('user_id', $user->id);
             $shippingAddress = $size ? $shippingAddress->paginate($size) : $shippingAddress->get();
             return response()->json($shippingAddress);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json(['message' => $exception->getMessage()], 500);
         }
     }
 
 
-    public function show(Request $request, int $id): JsonResponse{
+    public function show(Request $request, int $id): JsonResponse
+    {
         try {
             $shippingAddress = ShippingAddress::query()->find($id);
             return response()->json($shippingAddress);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
             return response()->json(['message' => $exception->getMessage()], 500);
         }
     }
+
+
 }

@@ -19,6 +19,8 @@ use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -207,4 +209,52 @@ class OrderController extends Controller
         }
         return response()->json($order);
     }
+
+    public function getByUserLogin(Request $request): JsonResponse
+    {
+        $user = JWTAuth::parseToken()->authenticate();
+        $deliveryPerson = DeliveryPerson::query()->where('user_id', $user->id)->firstOrFail();
+
+//        ->with(['shipment_details.order' => function ($query) use ($request) {
+//        $query->where('order_status', OrderStatus::WAITING_DELIVERY->value);
+//    }, 'shipment_details.order.user'])
+
+        $query = $deliveryPerson
+            ->shipments()
+            ->with(['shipment_details.order' => function ($query) use ($request) {
+                $query->where('order_status', OrderStatus::WAITING_DELIVERY->value);
+            }, 'shipment_details.order.user'])
+            ->get()
+            ->pluck('shipment_details')
+            ->flatten()
+            ->filter(function ($detail) {
+                return $detail->order !== null; // Loại bỏ shipment_detail không có order
+            })
+            ->pluck('order')
+            ->unique('id');
+
+        // Phân trang thủ công
+        $size = $request->input('size');
+        $page = $request->input('page', 1);
+
+
+        $paginatedOrders = $size ?  $this->paginateCollection($query, $size, $page) :  $query;
+
+        return response()->json($paginatedOrders);
+    }
+
+    private function paginateCollection(Collection $collection, int $size, int $page): LengthAwarePaginator
+    {
+        $offset = ($page - 1) * $size;
+        $items = $collection->slice($offset, $size)->values();
+
+        return new LengthAwarePaginator(
+            $items,
+            $collection->count(),
+            $size,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+    }
+
 }

@@ -15,11 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
-use App\Traits\applyFilters;
 
 class ProductController extends Controller
 {
-    use applyFilters;
     public function index(Request $request)
     {
         $query = Product::with(['category:id,name']);
@@ -29,7 +27,7 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        $dataProduct = $request->except(['product_att','product_color_images']);
+        $dataProduct = $request->except(['product_att', 'product_color_images']);
         $dataProductAtts = $request->product_att;
         $dataProduct['slug'] = Str::slug($request->name);
 
@@ -216,13 +214,13 @@ class ProductController extends Controller
         }
     }
 
-    public function checkIsActive(Request $request) : JsonResponse
+    public function checkIsActive(Request $request): JsonResponse
     {
         $productIds = $request->input('product_id');
         $errors = [];
         $products = Product::withTrashed()->whereIn('id', $productIds)->get();
         foreach ($products as $product) {
-        if ($product->deleted_at !== null) {
+            if ($product->deleted_at !== null) {
                 $errors[] = "Sản phẩm {$product->name} không tồn tại.";
             }
         }
@@ -236,5 +234,38 @@ class ProductController extends Controller
             'status' => 'success',
             'message' => 'Tất cả sản phẩm đều hợp lệ.'
         ]);
+    }
+
+    protected function Filters($query, $request)
+    {
+        $query->when($request->query('id'), fn($q, $id) => $q->where('id', $id));
+        $query->when($request->query('categoryId'), fn($q, $categoryId) => $q->where('category_id', $categoryId));
+        $query->when($request->query('name'), fn($q, $name) => $q->where('name', 'like', '%' . $name . '%'));
+
+        $query->when(
+            $request->query('sizeId'),
+            fn($q, $sizeId) =>
+            $q->whereHas(
+                'product_atts',
+                fn($subQuery) =>
+                $subQuery->where('size_id', $sizeId)
+            )
+        );
+        $query->when(
+            $request->query('colorId'),
+            fn($q, $colorId) =>
+            $q->whereHas(
+                'product_atts',
+                fn($subQuery) =>
+                $subQuery->where('color_id', $colorId)
+            )
+        );
+        $query->when($request->query('minPrice'), fn($q, $minPrice) => $q->where('regular_price', '>=', $minPrice));
+        $query->when($request->query('maxPrice'), fn($q, $maxPrice) => $q->where('regular_price', '<=', $maxPrice));
+
+        $query->orderBy('created_at', $request->query('sort', 'ASC'));
+
+        $size = $request->query('size');
+        return $size ? $query->paginate($size) : $query->get();
     }
 }

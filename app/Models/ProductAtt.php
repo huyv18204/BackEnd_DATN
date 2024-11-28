@@ -16,8 +16,8 @@ class ProductAtt extends Model
         'color_id',
         'size_id',
         'image',
-        'price_regular',
-        'price_sale',
+        'regular_price',
+        'reduced_price',
         'stock_quantity',
         'is_active'
     ];

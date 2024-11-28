@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductAttController extends Controller
 {
-    use applyFilters;
+    use ApplyFilters;
 
     public function index(Request $request, int $productId)
     {
@@ -51,11 +51,11 @@ class ProductAttController extends Controller
                 $productAtts[] = [
                     'product_id' => $productId,
                     'sku' => $sku,
-                    'size_id' => $variant->size_id,
-                    'color_id' => $variant->color_id,
-                    'image' => $variant->image,
-                    'regular_price' => $variant->regular_price,
-                    'reduced_price' => $variant->reduced_price,
+                    'size_id' => $variant['size_id'],
+                    'color_id' => $variant['color_id'],
+                    'image' => $variant['image'],
+                    'regular_price' => $variant['regular_price'],
+                    'reduced_price' => $variant['reduced_price'] ?? null,
                     'stock_quantity' => $variant['stock_quantity'],
                     'created_at' => $now,
                     'updated_at' => $now
@@ -73,30 +73,21 @@ class ProductAttController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             throw new CustomException(
-                'Sản phẩm không tồn tại',
+                'Lỗi khi thêm sản phẩm',
                 $e->getMessage()
             );
         }
     }
 
-    public function update(Request $request, int $product_id, int $product_att_id)
+    public function update(ProductAttRequest $request, int $product_id, int $product_att_id)
     {
         $product_att = ProductAtt::find($product_att_id);
         if (!$product_att) {
             return ApiResponse::error('Biến thể không tồn tại', Response::HTTP_BAD_REQUEST);
         }
-        $colorId = $request->color_id;
-        $image = $request->image;
-        $productColorImage = ProductColorImage::where('product_id', $product_id)->where('color_id', $colorId)->first();
-
+        $data = $request->validated();
         try {
-            if ($request->stock_quantity) {
-                $product_att->update(['stock_quantity' => $request->stock_quantity]);
-            }
-
-            if ($productColorImage && $image) {
-                $productColorImage->update(['image' => $image]);
-            }
+            $product_att->update($data);
             return ApiResponse::message('Cập nhật biến thể thành công');
         } catch (\Exception $e) {
             throw new CustomException('Cập nhật biến thể thất bại', $e->getMessage());

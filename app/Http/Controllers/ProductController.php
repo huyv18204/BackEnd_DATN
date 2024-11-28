@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
+    const PATH_UPLOAD = 'products';
     public function index(Request $request)
     {
         $query = Product::with(['category:id,name']);
@@ -28,29 +29,40 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $dataProduct = $request->except(['product_att']);
+
+        if ($request->hasFile('thumbnail')) {
+            $dataProduct['thumbnail'] = upload_image($request->file('thumbnail'), self::PATH_UPLOAD);
+        }
+
         $dataProductAtts = $request->product_att;
         $dataProduct['slug'] = Str::slug($request->name);
 
         $colors = Color::whereIn('id', collect($dataProductAtts)->pluck('color_id')->toArray())->get()->keyBy('id');
         $sizes = Size::whereIn('id', collect($dataProductAtts)->pluck('size_id')->toArray())->get()->keyBy('id');
 
-        $productColorImages = [];
         $productAtts = [];
         $now = now()->toDateTimeString();
 
         try {
             DB::beginTransaction();
+
             $product = Product::create($dataProduct);
+
             foreach ($dataProductAtts as $productAtt) {
                 $color = $colors->get($productAtt['color_id']);
                 $size = $sizes->get($productAtt['size_id']);
-                $sku = Product::generateUniqueSKU($product->name, $color->name, $size->name);
+                $sku = Product::generateUniqueSKU($product->name, $color->name ?? null, $size->name ?? null);
+
+                if (isset($productAtt['image'])) {
+                    $productAtt['image'] = upload_image($productAtt['image'], self::PATH_UPLOAD);
+                }
+
                 $productAtts[] = [
                     'product_id' => $product->id,
                     'sku' => $sku,
                     'size_id' => $productAtt['size_id'],
                     'color_id' => $productAtt['color_id'],
-                    'image' => $productAtt['image'],
+                    'image' => $productAtt['image'] ?? null,
                     'regular_price' => $productAtt['regular_price'],
                     'reduced_price' => $productAtt['reduced_price'],
                     'stock_quantity' => $productAtt['stock_quantity'],
@@ -58,23 +70,33 @@ class ProductController extends Controller
                     'updated_at' => $now,
                 ];
             }
+
             $productAtts = Product::checkAndResolveDuplicateSKUs($productAtts);
+
             DB::table('product_atts')->insert($productAtts);
-            DB::table('product_color_images')->insert($productColorImages);
 
             DB::commit();
 
-            return ApiResponse::message('Thêm mới sản phẩm thành công', Response::HTTP_CREATED);
+            return ApiResponse::message(
+                'Thêm mới sản phẩm thành công',
+                Response::HTTP_CREATED,
+                ['product' => $product]
+            );
         } catch (QueryException $exception) {
             DB::rollBack();
             if ($exception->errorInfo[1] == 1062) {
-                throw new CustomException('Kích thước và màu sắc đã tồn tại', $exception->getMessage(), Response::HTTP_BAD_REQUEST,);
+                throw new CustomException(
+                    'Kích thước và màu sắc đã tồn tại',
+                    $exception->getMessage(),
+                    Response::HTTP_BAD_REQUEST
+                );
             }
         } catch (Exception $e) {
             DB::rollBack();
             throw new CustomException("Lỗi khi thêm sản phẩm", $e->getMessage());
         }
     }
+
     public function show($id)
     {
         $product = Product::find($id);

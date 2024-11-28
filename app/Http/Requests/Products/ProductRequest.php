@@ -27,8 +27,6 @@ class ProductRequest extends FormRequest
             'name' => 'required|string|max:55|unique:products,name',
             'thumbnail' => 'required|string|max:255',
             'short_description' => 'nullable|string',
-            'gallery' => 'nullable|array',
-            'gallery.*' => 'nullable|string|max:255',
             'long_description' => 'nullable|string',
             'regular_price' => 'required|numeric|min:0',
             'reduced_price' => 'nullable|numeric|min:0|lt:regular_price',
@@ -38,19 +36,18 @@ class ProductRequest extends FormRequest
             'product_att' => 'required|array',
             'product_att.*.size_id' => 'nullable|exists:sizes,id',
             'product_att.*.color_id' => 'nullable|exists:colors,id',
-            'product_att.*.sizes' => 'required|array',
-            'product_att.*.sizes.*.size_id' => 'nullable|exists:sizes,id',
-            'product_att.*.sizes.*.stock_quantity' => 'required|integer|min:0',
+            'product_att.*.image' => 'nullable',
+            'product_att.*.regular_price' => 'nullable|numeric|min:0',
+            'product_att.*.reduced_price' => 'nullable|numeric|min:0|lt:regular_price',
+            'product_att.*.stock_quantity' => 'required|integer|min:0',
         ];
-        
+
         if ($this->isMethod('put') && $productId) {
             $rules = [
                 'material' => 'nullable|string|max:255',
                 'name' => 'required|string|max:55|unique:products,name,' . $productId,
                 'thumbnail' => 'required|string|max:255',
                 'short_description' => 'nullable|string',
-                'gallery' => 'nullable|array',
-                'gallery.*' => 'nullable|string|max:255',
                 'long_description' => 'nullable|string',
                 'regular_price' => 'required|numeric|min:0',
                 'reduced_price' => 'nullable|numeric|min:0|lt:regular_price',

@@ -21,7 +21,6 @@ class FakeDataSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('product_atts')->truncate();
-        DB::table('product_color_images')->truncate();
         DB::table('colors')->truncate();
         DB::table('sizes')->truncate();
         DB::table('products')->truncate();
@@ -146,16 +145,6 @@ class FakeDataSeeder extends Seeder
         $colors = DB::table('colors')->get();
 
         foreach ($products as $product) {
-            foreach ($colors as $color) {
-                DB::table('product_color_images')->insert([
-                    'product_id' => $product->id,
-                    'color_id' => $color->id,
-                    'image' => 'https://via.placeholder.com/150',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
             foreach ($sizes as $size) {
                 foreach ($colors as $color) {
                     $productCode = strtoupper(substr($product->name, 0, 2));
@@ -177,6 +166,8 @@ class FakeDataSeeder extends Seeder
                     DB::table('product_atts')->insert([
                         'product_id' => $product->id,
                         'sku' => $sku,
+                        "regular_price" => 0,
+                        "reduced_price" => 0,
                         'size_id' => $size->id,
                         'color_id' => $color->id,
                         'stock_quantity' => rand(1, 10),

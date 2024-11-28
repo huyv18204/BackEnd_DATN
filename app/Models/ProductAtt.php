@@ -15,6 +15,9 @@ class ProductAtt extends Model
         'sku',
         'color_id',
         'size_id',
+        'image',
+        'price_regular',
+        'price_sale',
         'stock_quantity',
         'is_active'
     ];
@@ -28,12 +31,6 @@ class ProductAtt extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function colorImage()
-    {
-        return $this->hasOne(ProductColorImage::class, 'product_id', 'product_id')
-            ->whereColumn('color_id', 'color_id');
     }
 
     public function color()

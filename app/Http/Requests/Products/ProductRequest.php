@@ -25,7 +25,7 @@ class ProductRequest extends FormRequest
         $rules =  [
             'material' => 'nullable|string|max:255',
             'name' => 'required|string|max:55|unique:products,name',
-            'thumbnail' => 'required|string|max:255',
+            'thumbnail' => 'required|max:255',
             'short_description' => 'nullable|string',
             'long_description' => 'nullable|string',
             'regular_price' => 'required|numeric|min:0',

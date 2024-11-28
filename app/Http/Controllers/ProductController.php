@@ -130,10 +130,20 @@ class ProductController extends Controller
         if ($data['name'] != $product->name) {
             $data['slug'] = Str::slug($data['name']);
         }
+        $oldThumbnail = $product->thumbnail;
         try {
+            if (isset($data['thumbnail'])) {
+                $data['thumbnail'] = upload_image($request->thumbnail, self::PATH_UPLOAD);
+            }
             $product->update($data);
+            if (isset($oldThumbnail) && $oldThumbnail != $data['thumbnail']) {
+                delete_image($oldThumbnail);
+            }
             return ApiResponse::message("Cập nhật sản phẩm thành công");
         } catch (\Exception $e) {
+            if (isset($data['thumbnail'])) {
+                delete_image($data['thumbnail']);
+            }
             throw new CustomException("Lỗi khi cập nhật sản phẩm", $e->getMessage());
         }
     }

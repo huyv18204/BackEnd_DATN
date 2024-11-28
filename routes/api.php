@@ -48,22 +48,15 @@ Route::prefix("v1")->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
-Route::middleware('check.campaign')->group(function () {
-    Route::get('v1/categories', [CategoryController::class, 'index']);
-    Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
-    Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
-    Route::get('v1/categories/{id}/product', [CategoryController::class, 'products']);
-    Route::get("v1/products", [ProductController::class, 'index']);
-    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
-});
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
+        Route::get('/{id}/show', [CategoryController::class, 'show']);
         Route::put('/{id}', [CategoryController::class, 'update']);
-        Route::put('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
-        Route::get('/{slug}', [CategoryController::class, 'getBySlug']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
+        Route::get('/trash', [CategoryController::class, 'trash']);
+        Route::put('/{id}/restore', [CategoryController::class, 'restore']);
     });
 
     Route::prefix("products")->group(function () {
@@ -192,3 +185,13 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 });
 Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
 Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+
+
+
+// client
+Route::middleware('check.campaign')->group(function () {
+    Route::get('v1/categories/', [CategoryController::class, 'index']);
+    Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
+    Route::get("v1/products", [ProductController::class, 'index']);
+    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+});

@@ -81,7 +81,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{ \r\n    \"email\":\"abc@gmail.com\",\r\n    \"password\":\"admin\"\r\n}",
+							"raw": "{ \r\n    \"email\":\"admin@gmail.com\",\r\n    \"password\":\"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -522,7 +522,7 @@
 							"urlencoded": [
 								{
 									"key": "name",
-									"value": "HUHUUHUHUHUH",
+									"value": "Trắng",
 									"type": "text"
 								},
 								{
@@ -625,7 +625,7 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/colors/1",
+							"raw": "http://127.0.0.1:8000/api/v1/colors/7",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -638,7 +638,7 @@
 								"api",
 								"v1",
 								"colors",
-								"1"
+								"7"
 							]
 						}
 					},
@@ -697,7 +697,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/users",
+							"raw": "http://127.0.0.1:8000/api/v1/users?size=10&sort=desc",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -729,8 +729,11 @@
 								},
 								{
 									"key": "size",
-									"value": "10",
-									"disabled": true
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "desc"
 								}
 							]
 						}
@@ -787,7 +790,7 @@
 					"response": []
 				},
 				{
-					"name": "Thêm vào danh sách đen",
+					"name": "chuyển trạng thái",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -799,7 +802,7 @@
 								}
 							]
 						},
-						"method": "DELETE",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Accept",
@@ -957,7 +960,7 @@
 							"urlencoded": []
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/10/productAtts",
+							"raw": "http://127.0.0.1:8000/api/v1/products/10/productAtts?size=10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -991,8 +994,7 @@
 								},
 								{
 									"key": "size",
-									"value": "10",
-									"disabled": true
+									"value": "10"
 								}
 							]
 						}
@@ -1012,7 +1014,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"color_id\": 5,\r\n        \"image\": \"abc.jpg\",\r\n        \"sizes\": [\r\n            {\r\n                \"size_id\": 1,\r\n                \"stock_quantity\": 10\r\n            },\r\n            {\r\n                \"size_id\": 2,\r\n                \"stock_quantity\": 20\r\n            },\r\n            {\r\n                \"size_id\": 3,\r\n                \"stock_quantity\": 30\r\n            }\r\n        ]\r\n    },\r\n    {\r\n        \"color_id\": 6,\r\n        \"image\": \"abc.jpg\",\r\n        \"sizes\": [\r\n            {\r\n                \"size_id\": 1,\r\n                \"stock_quantity\": 50\r\n            },\r\n            {\r\n                \"size_id\": 2,\r\n                \"stock_quantity\": 60\r\n            }\r\n        ]\r\n    }\r\n]",
+							"raw": "[\r\n    {\r\n        \"color_id\": 1,\r\n        \"size_id\":2,\r\n        \"image\": \"abc.jpg\",\r\n        \"regular_price\": 200000,\r\n        \"reduced_price\":10000,\r\n        \"stock_quantity\":100\r\n    }\r\n]",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1020,7 +1022,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/13/productAtts",
+							"raw": "http://127.0.0.1:8000/api/v1/products/11/productAtts",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1033,7 +1035,7 @@
 								"api",
 								"v1",
 								"products",
-								"13",
+								"11",
 								"productAtts"
 							]
 						}
@@ -1173,7 +1175,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products?sort=DESC",
+							"raw": "http://127.0.0.1:8000/api/v1/products?sort=DESC&size=10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1190,7 +1192,7 @@
 							"query": [
 								{
 									"key": "categoryId",
-									"value": "9",
+									"value": "1",
 									"disabled": true
 								},
 								{
@@ -1218,13 +1220,22 @@
 									"disabled": true
 								},
 								{
-									"key": "size",
-									"value": "6",
+									"key": "id",
+									"value": "111",
 									"disabled": true
 								},
 								{
-									"key": "id",
-									"value": "1",
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "colorId",
+									"value": "8",
+									"disabled": true
+								},
+								{
+									"key": "sizeId",
+									"value": "8",
 									"disabled": true
 								}
 							]
@@ -1248,7 +1259,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"material\": \"Cotton\",\n    \"name\": \"product test 201\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"gallery\": [\n        \"image1.quandz\",\n        \"image2.quandz\",\n        \"image3.quandz\"\n    ],\n    \"regular_price\": 312,\n    \"reduced_price\": 300,\n    \"category_id\": 1,\n    \"product_att\": [\n        {\n            \"color_id\": 1,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 2,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 3,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        },\n        {\n            \"color_id\": 4,\n            \"image\": \"image_Red.quandz\",\n            \"sizes\": [\n                {\n                    \"size_id\": 1,\n                    \"stock_quantity\": 6\n                },\n                {\n                    \"size_id\": 2,\n                    \"stock_quantity\": 8\n                },\n                {\n                    \"size_id\": 3,\n                    \"stock_quantity\": 7\n                },\n                {\n                    \"size_id\": 4,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 5,\n                    \"stock_quantity\": 10\n                },\n                {\n                    \"size_id\": 6,\n                    \"stock_quantity\": 10\n                }\n            ]\n        }\n    ]\n}",
+							"raw": "{\n  \"name\": \"Product Name 03\",\n  \"material\": \"cotton\",\n  \"thumbnail\": \"thumbnail.jpg\",\n  \"regular_price\": 100000,\n  \"reduced_price\": 90000,\n  \"category_id\": 1,\n  \"product_att\": [\n    {\n      \"color_id\": 1,\n      \"size_id\": 1,\n      \"image\": \"image1.jpg\",\n      \"regular_price\": 100000,\n      \"reduced_price\": 90000,\n      \"stock_quantity\": 10\n    },\n    {\n      \"color_id\": 1,\n      \"size_id\": 2,\n      \"image\": \"image2.jpg\",\n      \"regular_price\": 100000,\n      \"reduced_price\": 85000,\n      \"stock_quantity\": 5\n    },\n    {\n      \"color_id\": 1,\n      \"size_id\": 2,\n      \"image\": \"image3.jpg\",\n      \"regular_price\": 120000,\n      \"reduced_price\": 90000,\n      \"stock_quantity\": 7\n    }\n  ]\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1286,7 +1297,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/christine-wintheiser1",
+							"raw": "http://127.0.0.1:8000/api/v1/products/product-name-02",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1299,7 +1310,7 @@
 								"api",
 								"v1",
 								"products",
-								"christine-wintheiser1"
+								"product-name-02"
 							],
 							"query": [
 								{
@@ -1324,7 +1335,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/12/show",
+							"raw": "http://127.0.0.1:8000/api/v1/products/10/show",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1337,7 +1348,7 @@
 								"api",
 								"v1",
 								"products",
-								"12",
+								"10",
 								"show"
 							]
 						}
@@ -1367,7 +1378,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"material\": \"Cotton,Vải\",\n    \"name\": \"hu hu hu\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n     \"gallery\": [\n        \"image1.quandz\",\n        \"image2.quandz\"\n    ],\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"regular_price\":0,\n    \"category_id\": 1\n}",
+							"raw": "{\n    \"material\": \"Cotton,Vải\",\n    \"name\": \"hu hu hu\",\n    \"thumbnail\": \"http://example.com/thumbnail.jpg\",\n    \"short_description\": \"This is a short description of the product.\",\n    \"long_description\": \"This is a long description of the product, detailing all the features and benefits.\",\n    \"regular_price\":0,\n    \"category_id\": 1\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1375,7 +1386,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/11",
+							"raw": "http://127.0.0.1:8000/api/v1/products/10",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1388,7 +1399,7 @@
 								"api",
 								"v1",
 								"products",
-								"11"
+								"10"
 							]
 						}
 					},
@@ -1429,9 +1440,15 @@
 					"name": "Khôi phục sản phẩm",
 					"request": {
 						"method": "PUT",
-						"header": [],
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/11/restore",
+							"raw": "http://127.0.0.1:8000/api/v1/products/3/restore",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1444,7 +1461,7 @@
 								"api",
 								"v1",
 								"products",
-								"11",
+								"3",
 								"restore"
 							]
 						}
@@ -1463,7 +1480,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/products/trash?id=10",
+							"raw": "http://127.0.0.1:8000/api/v1/products/trash",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -1486,7 +1503,8 @@
 								},
 								{
 									"key": "id",
-									"value": "10"
+									"value": "10",
+									"disabled": true
 								}
 							]
 						}
@@ -1592,7 +1610,7 @@
 							"urlencoded": [
 								{
 									"key": "name",
-									"value": "HUHUUH",
+									"value": "test",
 									"type": "text"
 								}
 							]
@@ -1780,7 +1798,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"product_att_id\": 2,\n    \"quantity\": 2\n}",
+							"raw": "{\n    \"product_att_id\": 5,\n    \"quantity\": 5\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2246,58 +2264,13 @@
 			]
 		},
 		{
-			"name": "Quản lí danh mục",
+			"name": "Category",
 			"item": [
 				{
 					"name": "Danh sách danh mục",
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/?size=10&page=1",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"categories",
-								""
-							],
-							"query": [
-								{
-									"key": "size",
-									"value": "10"
-								},
-								{
-									"key": "page",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Danh sách danh mục cha",
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
 						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "",
-									"type": "string"
-								}
-							]
+							"type": "noauth"
 						},
 						"method": "GET",
 						"header": [
@@ -2307,17 +2280,8 @@
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/parent?page=2",
+							"raw": "http://127.0.0.1:8000/api/v1/categories",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2329,83 +2293,7 @@
 							"path": [
 								"api",
 								"v1",
-								"categories",
-								"parent"
-							],
-							"query": [
-								{
-									"key": "sort",
-									"value": "DESC",
-									"disabled": true
-								},
-								{
-									"key": "size",
-									"value": "7",
-									"disabled": true
-								},
-								{
-									"key": "page",
-									"value": "2"
-								},
-								{
-									"key": "name",
-									"value": "qu",
-									"disabled": true
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Danh sách danh mục con",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "j",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/4/children",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"categories",
-								"4",
-								"children"
-							],
-							"query": [
-								{
-									"key": "size",
-									"value": "1",
-									"disabled": true
-								},
-								{
-									"key": "page",
-									"value": "1",
-									"disabled": true
-								}
+								"categories"
 							]
 						}
 					},
@@ -2434,7 +2322,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Category 03\",\r\n    \"parent_id\": [1,2,3] \r\n}",
+							"raw": "{\r\n    \"name\": \"Áo khoác 03\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2455,6 +2343,37 @@
 								"api",
 								"v1",
 								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "chi tiết danh mục",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/categories/3",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"3"
 							]
 						}
 					},
@@ -2483,7 +2402,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\" : \"adsa\",\r\n    \"parent_id\": [1,2]\r\n}",
+							"raw": "{\r\n    \"name\" : \"Áo khoác 02\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2491,7 +2410,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/2",
+							"raw": "http://127.0.0.1:8000/api/v1/categories/7",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2504,84 +2423,7 @@
 								"api",
 								"v1",
 								"categories",
-								"2"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Lấy 1 danh mục theo slug",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/category",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"categories",
-								"category"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Chuyển trạng thái danh mục",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{access_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/3/toggle-status",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"categories",
-								"3",
-								"toggle-status"
+								"7"
 							]
 						}
 					},
@@ -2609,7 +2451,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/categories/2",
+							"raw": "http://127.0.0.1:8000/api/v1/categories/3",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2622,7 +2464,89 @@
 								"api",
 								"v1",
 								"categories",
-								"2"
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lấy sản phẩm theo danh mục theo slug",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/categories/ao-chong-nang",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"ao-chong-nang"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Danh sách danh mục bị xóa",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/categories/trash",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"trash"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Khôi phục danh mục",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/categories/3/restore",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"categories",
+								"3",
+								"restore"
 							]
 						}
 					},
@@ -2663,7 +2587,7 @@
 			]
 		},
 		{
-			"name": "Giảm giá",
+			"name": "Campaign",
 			"item": [
 				{
 					"name": "Danh sách chiến dịch",
@@ -2736,7 +2660,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ 1\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-24 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 10,\r\n    \"start_date\": \"2024-11-24 00:00:00\",\r\n    \"end_date\": \"2024-11-30 23:59:59\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2775,7 +2699,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không1\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 70,\r\n    \"start_date\": \"2024-11-22 00:00:00\",\r\n    \"end_date\": \"2024-11-25 23:59:59\"\r\n}",
+							"raw": "{\r\n    \"name\": \"Chiến dịch Điện Biên Phủ trên không\",\r\n    \"description\": \"Phúc Duuuuuuuuuuuuuu\",\r\n    \"discount_percentage\": 70,\r\n    \"start_date\": \"2024-11-24 13:59:00\",\r\n    \"end_date\": \"2024-11-24 14:50:00\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2783,7 +2707,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2",
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1",
 							"protocol": "http",
 							"host": [
 								"127",
@@ -2796,7 +2720,7 @@
 								"api",
 								"v1",
 								"campaigns",
-								"2"
+								"1"
 							]
 						}
 					},
@@ -2947,6 +2871,15 @@
 									"key": "size",
 									"value": "10"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Thêm sản phẩm vào chiến dịch",
+					"request": {
+						"method": "POST",
 						"header": [
 							{
 								"key": "Accept",
@@ -2979,47 +2912,6 @@
 								"campaigns",
 								"1",
 								"add-product"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Xóa sản phẩm khỏi chiến dịch",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Accept",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"product_id\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8,\r\n        9,\r\n        10\r\n    ]\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/product",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "8000",
-							"path": [
-								"api",
-								"v1",
-								"campaigns",
-								"2",
-								"product"
 							]
 						}
 					},
@@ -3083,6 +2975,115 @@
 								"v1",
 								"campaigns",
 								"category"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Xóa nhiều sản phẩm khỏi chiến dịch",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product_id\": [\r\n        1,\r\n        2,\r\n        3,\r\n        4,\r\n        5,\r\n        6,\r\n        7,\r\n        8,\r\n        9,\r\n        10\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/product",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"2",
+								"product"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Xóa sản phẩm khỏi chiến dịch",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/2/product/1",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"2",
+								"product",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Lấy status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://127.0.0.1:8000/api/v1/campaigns/1/status",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "8000",
+							"path": [
+								"api",
+								"v1",
+								"campaigns",
+								"1",
+								"status"
 							]
 						}
 					},

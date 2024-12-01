@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
+use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\DeliveryPerson\StoreRequest;
 use App\Http\Requests\DeliveryPerson\UpdateRequest;
+use App\Jobs\SendConfirmAccountInfo;
 use App\Models\DeliveryPerson;
+use App\Models\Order;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Psy\Util\Json;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class DeliveryPersonController extends Controller
 {
@@ -174,4 +179,109 @@ class DeliveryPersonController extends Controller
             ], 500);
         }
     }
+
+
+    public function register(\App\Http\Requests\DeliveryPerson\RegisterRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+        DB::beginTransaction();
+        try {
+            $user = User::query()->create([
+                'name' => $validated['personal']['name'],
+                'email' => $validated['personal']['email'],
+                'phone' => $validated['personal']['phone_number'],
+                'password' => Hash::make($validated['personal']['password']),
+                'address' => $validated['personal']['address'],
+                'role' => 'shipper'
+            ]);
+
+            $vehicle = Vehicle::query()->create($validated['vehicle']);
+
+            DeliveryPerson::query()->create([
+                'status' => 'offline',
+                'vehicle_id' => $vehicle->id,
+                'user_id' => $user->id,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => "Đăng kí thành công. Vui lòng kiểm tra mail xác nhận trong 2 - 3 ngày tới",
+            ], 200);
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return response()->json([
+                'message' => "Lỗi: " . $exception->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    public function getAccountRegister(Request $request): JsonResponse
+    {
+        try {
+            $query = User::query()->where('role', 'shipper')->where('email_verified_at', null)->orderByDesc('id');
+            $delivery_person = $request->has('size') ? $query->paginate($request->input('size')) : $query->get();
+            return response()->json($delivery_person);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+
+    }
+
+    public function confirmAccount(Request $request, $id): JsonResponse
+    {
+        $validated = $request->validate([
+            'type' => 'string|in:accept,reject',
+        ], [
+            'type.in' => "Trạng thái không hợp lệ"
+        ]);
+
+        $user = User::query()->find($id);
+        if (!$user) {
+            return response()->json([
+                'message' => "Tài khoản không tồn tại"
+            ]);
+        }
+        if ($user->email_verified_at !== null) {
+            return response()->json([
+                'message' => "Tài khoản đã được xác thực trước đó"
+            ]);
+        }
+        DB::beginTransaction();
+        try {
+            if ($validated['type'] === 'accept') {
+
+                $user->update([
+                    'email_verified_at' => now(),
+                ]);
+                SendConfirmAccountInfo::dispatch($user->email, $validated['type']);
+
+                DB::commit();
+                return response()->json([
+                    'message' => "Tài khoản đã được xác nhận"
+                ]);
+            } else {
+                $delivery_person = DeliveryPerson::query()->where('user_id', $id)->first();
+                $delivery_person->delete();
+                Vehicle::query()->find($delivery_person->vehicle_id)->delete();
+                $user->delete();
+                SendConfirmAccountInfo::dispatch($user->email, $validated['type']);
+                DB::commit();
+                return response()->json([
+                    'message' => "Tài khoản đã được từ chối"
+                ]);
+            }
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+
+
 }

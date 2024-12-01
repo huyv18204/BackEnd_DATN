@@ -41,6 +41,9 @@ Route::prefix("v1")->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('password/email', [AuthController::class, 'sendResetOTPEmail'])->middleware('throttle:5,30');
     Route::post('password/reset', [AuthController::class, 'resetPasswordWithOTP']);
+    Route::prefix('delivery-person')->group(function () {
+       Route::post('register', [DeliveryPersonController::class, 'register']);
+    });
     Route::middleware(['api', 'auth.jwt'])->prefix('auth')->as('auth.')->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile', [AuthController::class, 'editProfile']);
@@ -55,6 +58,8 @@ Route::middleware('check.campaign')->group(function () {
     Route::get("v1/products", [ProductController::class, 'index']);
     Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 });
+
+
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
@@ -103,7 +108,9 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix("orders")->group(function () {
         Route::get("/", [OrderController::class, 'index']);
-        Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
+        Route::get("{id}/delivery-person", [OrderController::class, 'getByDeliveryPersonId']);
+        Route::get("{id}/delivery-person/history", [OrderController::class, 'historyDeliveredById']);
+
     });
 
     Route::prefix("users")->group(function () {
@@ -131,6 +138,9 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix("delivery-persons")->group(function () {
         Route::get("/", [DeliveryPersonController::class, 'index']);
         Route::post("/", [DeliveryPersonController::class, 'store']);
+        Route::get("/account-waiting-confirm", [DeliveryPersonController::class, 'getAccountRegister']);
+        Route::put("/{id}/confirm-account", [DeliveryPersonController::class, 'confirmAccount']);
+
     });
 
 
@@ -153,9 +163,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 
-    Route::prefix("orders")->group(function () {
-        Route::post("/", [OrderController::class, 'store']);
-    });
 
     Route::prefix("shipping-addresses")->group(function () {
         Route::post("/", [ShippingAddressController::class, 'store']);
@@ -166,19 +173,24 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 
     });
 
-
     Route::prefix("orders")->group(function () {
+        Route::post("/", [OrderController::class, 'store']);
         Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
         Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
-        Route::get('/user', [OrderController::class, 'getByUserLogin']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
+        Route::put("{id}/assign-delivery-person", [OrderController::class, 'assignToDeliveryPerson']);
+        Route::put("/assign-many-delivery-person", [OrderController::class, 'assignManyToDeliveryPerson']);
+        Route::get("delivery-person", [OrderController::class, 'getByDeliveryPersonLogin']);
+        Route::put("on-delivery-status", [OrderController::class, 'updateManyOrderToOnDeliveryStatus']);
+        Route::get("delivery-person/history", [OrderController::class, 'historyDelivered']);
+
     });
 
 
     Route::prefix("delivery-persons")->group(function () {
-        Route::get("/{id}", [DeliveryPersonController::class, 'show']);
-        Route::put("/{id}", [DeliveryPersonController::class, 'update']);
+        Route::get("/{id}", [DeliveryPersonController::class, 'show'])->where("id", "[0-9]+");
+        Route::put("/{id}", [DeliveryPersonController::class, 'update'])->where("id", "[0-9]+");
         Route::put("/{id}/status", [DeliveryPersonController::class, 'updateStatus']);
     });
 

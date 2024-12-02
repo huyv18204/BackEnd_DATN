@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\Order\OrderRequest;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderStatusHistory;
 use App\Models\ProductAtt;
 use App\Services\OrderHepper;
 use Exception;
@@ -25,7 +27,7 @@ class PaymentController extends Controller
         $accessKey = "F8BBA842ECF85";
         $secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
         $url = "http://localhost:3000/";
-        $ipnUrl = "https://53b7-42-114-89-102.ngrok-free.app/api/payment/callback";
+        $ipnUrl = "https://53b7-42-114-89-102.ngrok-free.app/v1/api/payment/callback";
         $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
         $requestId = time() . '';
         $extraData = json_encode($data);
@@ -75,6 +77,7 @@ class PaymentController extends Controller
                     'payment_status' => PaymentStatus::PAID->value,
                     'order_address' => $address,
                     'note' => $data['note'] ?? null,
+                    "delivery_fee" => $data['delivery_fee'],
                 ]);
 
                 if ($order) {
@@ -93,6 +96,10 @@ class PaymentController extends Controller
                         }
                     }
                 }
+                OrderStatusHistory::query()->create([
+                    'order_id' => $order->id,
+                    'status' => OrderStatus::PENDING->value,
+                ]);
                 DB::commit();
                 return response()->json(['message' => 'Thanh toán thành công']);
             } else {

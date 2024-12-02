@@ -6,11 +6,14 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\DeliveryPersonController;
+use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
+use App\Http\Controllers\OrderStatusHistoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentDetailController;
 use App\Http\Controllers\ShippingAddressController;
@@ -42,7 +45,7 @@ Route::prefix("v1")->group(function () {
     Route::post('password/email', [AuthController::class, 'sendResetOTPEmail'])->middleware('throttle:5,30');
     Route::post('password/reset', [AuthController::class, 'resetPasswordWithOTP']);
     Route::prefix('delivery-person')->group(function () {
-       Route::post('register', [DeliveryPersonController::class, 'register']);
+        Route::post('register', [DeliveryPersonController::class, 'register']);
     });
     Route::middleware(['api', 'auth.jwt'])->prefix('auth')->as('auth.')->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
@@ -58,7 +61,6 @@ Route::middleware('check.campaign')->group(function () {
     Route::get("v1/products", [ProductController::class, 'index']);
     Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 });
-
 
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
@@ -205,7 +207,23 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 
     });
 
+    Route::prefix("order-status-histories")->group(function () {
+        Route::post("/", [OrderStatusHistoryController::class, 'store']);
+    });
+
+    Route::prefix('districts')->group(function () {
+        Route::get("/", [DistrictController::class, 'index']);
+        Route::put("/{id}/fee-delivery", [DistrictController::class, 'updateDeliveryFee']);
+    });
+
+    Route::prefix('provinces')->group(function () {
+        Route::get("/", [ProvinceController::class, 'index']);
+    });
 });
-Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
-Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+
+Route::prefix('v1')->group(function () {
+    Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
+    Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+});
+
 

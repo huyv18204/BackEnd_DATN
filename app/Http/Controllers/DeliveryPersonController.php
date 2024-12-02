@@ -23,7 +23,10 @@ class DeliveryPersonController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = DeliveryPerson::query()->with('user', 'vehicle');
+
+        $sort = $request->input('sort', 'ASC');
+
+        $query = DeliveryPerson::query()->with('user', 'vehicle')->orderBy('id', $sort);
 
         if ($request->has('status')) {
             $query->where('status', $request->input('status'));
@@ -65,12 +68,10 @@ class DeliveryPersonController extends Controller
         return response()->json($delivery_persons);
     }
 
-
     public function show($id): JsonResponse
     {
         return response()->json(DeliveryPerson::with('user', 'vehicle')->find($id));
     }
-
 
     public function updateStatus(Request $request, $id): JsonResponse
     {
@@ -96,7 +97,6 @@ class DeliveryPersonController extends Controller
 
 
     }
-
 
     public function store(StoreRequest $request): JsonResponse
     {
@@ -136,7 +136,6 @@ class DeliveryPersonController extends Controller
             ], 500);
         }
     }
-
 
     public function update(UpdateRequest $request, $id): JsonResponse
     {
@@ -180,7 +179,6 @@ class DeliveryPersonController extends Controller
         }
     }
 
-
     public function register(\App\Http\Requests\DeliveryPerson\RegisterRequest $request): JsonResponse
     {
         $validated = $request->validated();
@@ -215,7 +213,6 @@ class DeliveryPersonController extends Controller
             ], 500);
         }
     }
-
 
     public function getAccountRegister(Request $request): JsonResponse
     {
@@ -281,7 +278,5 @@ class DeliveryPersonController extends Controller
             ]);
         }
     }
-
-
 
 }

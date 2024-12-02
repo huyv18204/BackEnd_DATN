@@ -10,6 +10,7 @@ use App\Models\DeliveryPerson;
 use App\Models\District;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderStatusHistory;
 use App\Models\ProductAtt;
 use App\Models\ShippingAddress;
 use App\Models\Ward;
@@ -81,16 +82,18 @@ class OrderController extends Controller
     public function updateOrderStt(Request $request, $id): JsonResponse
     {
         if (!$request->order_status) {
-            return response()->json("Trạng thái là bắt buộc");
+            return response()->json([
+                'message' => "Trạng thái là bắt buộc"
+            ]);
         }
 
         if (!OrderStatus::isValidValue($request->order_status)) {
-            return response()->json("Trạng thái không hợp lệ");
+            return response()->json(['message' => "Trạng thái không hợp lệ"], 422);
         }
         try {
             $order = Order::query()->find($id);
             if (!$order) {
-                return response()->json('Đơn hàng không tồn tại');
+                return response()->json(['message' => 'Đơn hàng không tồn tại']);
             }
             $order->update([
                 'order_status' => $request['order_status']
@@ -104,6 +107,10 @@ class OrderController extends Controller
                     ]);
                 }
             }
+            OrderStatusHistory::query()->create([
+                'order_id' => $id,
+                'status' => $request['order_status'],
+            ]);
             return response()->json([
                 'message' => 'Cập nhật trạng thái đơn hàng thành công'
             ]);
@@ -151,12 +158,12 @@ class OrderController extends Controller
             $order = Order::query()->create([
                 "order_code" => $data['order_code'],
                 "user_id" => $user_id,
-                "order_date" => now(),
                 "order_status" => OrderStatus::PENDING->value,
                 "payment_method" => PaymentMethod::CASH->value,
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
                 "total_amount" => $data['total_amount'],
                 "order_address" => $address,
+                "delivery_fee" => $data['delivery_fee'],
                 "note" => $data['note'] ?? null,
             ]);
 
@@ -178,6 +185,11 @@ class OrderController extends Controller
                     }
                 }
             }
+
+            OrderStatusHistory::query()->create([
+                'order_id' => $order->id,
+                'status' => OrderStatus::PENDING->value,
+            ]);
             DB::commit();
             $message = 'Đặt hàng thành công';
             return response()->json(['message' => $message], 201);
@@ -189,7 +201,9 @@ class OrderController extends Controller
 
     public function show($id): JsonResponse
     {
-        $order = Order::query()->with('user', 'delivery_person.user')->find($id);
+        $order = Order::query()->with(['user', 'delivery_person.user', 'order_status_histories' => function ($query) {
+            $query->select('status', 'created_at', 'order_id');
+        }])->find($id);
         if (!$order) {
             return response()->json("Đơn hàng không tồn tại");
         }
@@ -299,7 +313,12 @@ class OrderController extends Controller
                     'message' => "Người giao hàng không tồn tại"
                 ]);
             }
-            $query = Order::query()->with('user', 'order_details')->where('delivery_person_id', $deliveryPerson->id)->whereIn('order_status', [OrderStatus::WAITING_DELIVERY->value, OrderStatus::ON_DELIVERY->value]);
+            $sort = $request->input('sort', "ASC");
+            $query = Order::query()
+                ->with('user', 'order_details')
+                ->where('delivery_person_id', $deliveryPerson->id)
+                ->whereIn('order_status', [OrderStatus::WAITING_DELIVERY->value, OrderStatus::ON_DELIVERY->value])
+                ->orderBy('id', $sort);
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
             return response()->json($orders);
         } catch (\Exception $exception) {
@@ -321,7 +340,11 @@ class OrderController extends Controller
                     'message' => "Người giao hàng không tồn tại"
                 ]);
             }
-            $query = Order::query()->with('user', 'order_details')->where('delivery_person_id', $deliveryPerson->id)->whereIn('order_status', [OrderStatus::DELIVERED->value, OrderStatus::RETURN->value]);
+            $sort = $request->input('sort', "ASC");
+            $query = Order::query()->with('user', 'order_details')
+                ->where('delivery_person_id', $deliveryPerson->id)
+                ->whereIn('order_status', [OrderStatus::DELIVERED->value, OrderStatus::RETURN->value])
+                ->orderBy('id', $sort);
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
             return response()->json($orders);
         } catch (\Exception $exception) {
@@ -330,25 +353,6 @@ class OrderController extends Controller
             ]);
         }
     }
-
-//    public function getByDeliveryPersonId(Request $request, $id): JsonResponse
-//    {
-//        try {
-//            $deliveryPerson = DeliveryPerson::query()->where('user_id', $id)->first();
-//            if (!$deliveryPerson) {
-//                return response()->json([
-//                    'message' => "Người giao hàng không tồn tại"
-//                ]);
-//            }
-//            $query = Order::query()->with('user', 'order_details')->where('delivery_person_id', $deliveryPerson->id)->whereIn('order_status', [OrderStatus::WAITING_DELIVERY->value, OrderStatus::ON_DELIVERY->value]);
-//            $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
-//            return response()->json($orders);
-//        } catch (\Exception $exception) {
-//            return response()->json([
-//                'message' => $exception->getMessage()
-//            ]);
-//        }
-//    }
 
 // orders by id delivery  (status : waiting delivery and on delivery)
     public function getByDeliveryPersonId(Request $request, $id): JsonResponse
@@ -360,7 +364,8 @@ class OrderController extends Controller
                     'message' => "Người giao hàng không tồn tại"
                 ], 404);
             }
-            $query = Order::query()->where('delivery_person_id', $id);
+            $sort = $request->input('sort', "ASC");
+            $query = Order::query()->where('delivery_person_id', $id)->orderBy('id', $sort);
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
             return response()->json($orders);
         } catch (\Exception $exception) {
@@ -380,7 +385,10 @@ class OrderController extends Controller
                     'message' => "Người giao hàng không tồn tại"
                 ], 404);
             }
-            $query = Order::query()->with('user', 'order_details')->where('delivery_person_id', $id)->whereIn('order_status', [OrderStatus::DELIVERED->value, OrderStatus::RETURN->value]);
+            $sort = $request->input('sort', "ASC");
+            $query = Order::query()->with('user', 'order_details')->where('delivery_person_id', $id)
+                ->whereIn('order_status', [OrderStatus::DELIVERED->value, OrderStatus::RETURN->value])
+                ->orderBy('id', $sort);
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
             return response()->json($orders);
         } catch (\Exception $exception) {

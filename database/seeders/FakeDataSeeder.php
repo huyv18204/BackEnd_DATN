@@ -201,6 +201,7 @@ class FakeDataSeeder extends Seeder
                 'payment_status' => PaymentStatus::cases()[array_rand(PaymentStatus::cases())]->value,
                 'order_address' => fake()->address,
                 'note' => fake()->sentence(),
+                'delivery_fee' => rand(30000, 100000),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -255,4 +256,5 @@ class FakeDataSeeder extends Seeder
 
         return $categoryCode;
     }
+
 }

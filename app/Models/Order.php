@@ -26,6 +26,7 @@ class Order extends Model
         'note',
         'order_address',
         'delivery_person_id',
+        'delivery_fee'
     ];
 
 
@@ -64,5 +65,10 @@ class Order extends Model
     public function delivery_person(): BelongsTo
     {
         return $this->belongsTo(DeliveryPerson::class);
+    }
+
+    public function order_status_histories(): hasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class);
     }
 }

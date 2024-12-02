@@ -34,6 +34,7 @@ return new class extends Migration {
                 'Đã thanh toán',
             ]);
             $table->string('order_address', 255);
+            $table->decimal('delivery_fee', 10, 0);
             $table->text('note')->nullable();
             $table->timestamps();
         });

@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
-    const PATH_UPLOAD = 'products';
     public function index(Request $request)
     {
         $query = Product::with(['category:id,name']);
@@ -29,10 +28,6 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $dataProduct = $request->except(['product_att']);
-
-        if ($request->hasFile('thumbnail')) {
-            $dataProduct['thumbnail'] = upload_image($request->file('thumbnail'), self::PATH_UPLOAD);
-        }
 
         $dataProductAtts = $request->product_att;
         $dataProduct['slug'] = Str::slug($request->name);
@@ -52,10 +47,6 @@ class ProductController extends Controller
                 $color = $colors->get($productAtt['color_id']);
                 $size = $sizes->get($productAtt['size_id']);
                 $sku = Product::generateUniqueSKU($product->name, $color->name ?? null, $size->name ?? null);
-
-                if (isset($productAtt['image'])) {
-                    $productAtt['image'] = upload_image($productAtt['image'], self::PATH_UPLOAD);
-                }
 
                 $productAtts[] = [
                     'product_id' => $product->id,
@@ -132,18 +123,9 @@ class ProductController extends Controller
         }
         $oldThumbnail = $product->thumbnail;
         try {
-            if (isset($data['thumbnail'])) {
-                $data['thumbnail'] = upload_image($request->thumbnail, self::PATH_UPLOAD);
-            }
             $product->update($data);
-            if (isset($oldThumbnail) && $oldThumbnail != $data['thumbnail']) {
-                delete_image($oldThumbnail);
-            }
             return ApiResponse::message("Cập nhật sản phẩm thành công");
         } catch (\Exception $e) {
-            if (isset($data['thumbnail'])) {
-                delete_image($data['thumbnail']);
-            }
             throw new CustomException("Lỗi khi cập nhật sản phẩm", $e->getMessage());
         }
     }

@@ -8,7 +8,6 @@ use App\Http\Response\ApiResponse;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductAtt;
-use App\Models\ProductColorImage;
 use App\Models\Size;
 use App\Traits\applyFilters;
 use Exception;
@@ -22,16 +21,37 @@ class ProductAttController extends Controller
 
     public function index(Request $request, int $productId)
     {
-        $product = Product::with('product_atts')->find($productId);
+        $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
 
         if (!$product) {
             return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
 
-        $filteredProductAtts = $this->Filters($product->product_atts()->getQuery(), $request);
+        $filteredProductAtts = $this->Filters($product->product_atts()->with(['color', 'size'])->getQuery(), $request);
 
-        return ApiResponse::data($filteredProductAtts);
+
+        $result = $filteredProductAtts->map(function ($variant) {
+            return [
+                'id' => $variant->id,
+                'product_id' => $variant->product_id,
+                'color_id' => $variant->color_id,
+                'color_name' => $variant->color->name ?? null,
+                'size_id' => $variant->size_id,
+                'size_name' => $variant->size->name ?? null,
+                'sku' => $variant->sku,
+                'regular_price' => $variant->regular_price,
+                'reduced_price' => $variant->reduced_price,
+                'image' => $variant->image,
+                'stock_quantity' => $variant->stock_quantity,
+                'is_active' => $variant->is_active,
+                'created_at' => $variant->created_at,
+                'updated_at' => $variant->updated_at,
+            ];
+        });
+
+        return ApiResponse::data($result);
     }
+
 
 
     public function store(ProductAttRequest $request, int $productId)

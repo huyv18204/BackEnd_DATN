@@ -96,6 +96,7 @@ class PaymentController extends Controller
                         }
                     }
                 }
+
                 OrderStatusHistory::query()->create([
                     'order_id' => $order->id,
                     'status' => OrderStatus::PENDING->value,

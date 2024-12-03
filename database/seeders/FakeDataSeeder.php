@@ -197,7 +197,7 @@ class FakeDataSeeder extends Seeder
                 'user_id' => $userId,
                 'total_amount' => rand(100000, 1000000),
                 'payment_method' => PaymentMethod::cases()[array_rand(PaymentMethod::cases())]->value,
-                'order_status' => OrderStatus::cases()[array_rand(OrderStatus::cases())]->value,
+                'order_status' => OrderStatus::PENDING->value,
                 'payment_status' => PaymentStatus::cases()[array_rand(PaymentStatus::cases())]->value,
                 'order_address' => fake()->address,
                 'note' => fake()->sentence(),

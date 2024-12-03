@@ -76,7 +76,7 @@ class DeliveryPersonController extends Controller
     public function updateStatus(Request $request, $id): JsonResponse
     {
         $validate = $request->validate([
-            'status' => 'required|in:available,offline,on delivery',
+            'status' => 'required|in:online,offline,on delivery',
         ], [
             'status.required' => 'Trạng thái không được để trống.',
             'status.in' => "Trạng thái không hợp lệ"

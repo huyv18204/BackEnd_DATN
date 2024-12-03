@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('delivery_people', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->enum('status', ['available', 'offline', 'on delivery']);
+            $table->enum('status', ['online', 'offline', 'on delivery']);
             $table->foreignIdFor(\App\Models\Vehicle::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
         });

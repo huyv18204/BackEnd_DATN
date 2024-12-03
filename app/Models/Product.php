@@ -30,6 +30,8 @@ class Product extends Model
 
     protected $casts = [
         'is_active' => "boolean",
+        'regular_price' => 'integer',
+        'reduced_price' => 'integer',
         'created_at' => ConvertDatetime::class,
         'updated_at' => ConvertDatetime::class,
     ];

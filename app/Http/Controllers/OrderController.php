@@ -232,7 +232,13 @@ class OrderController extends Controller
                 ]);
             }
             $order->update([
-                'delivery_person_id' => $validate['delivery_person_id']
+                'delivery_person_id' => $validate['delivery_person_id'],
+                'order_status' => OrderStatus::WAITING_DELIVERY
+            ]);
+
+            OrderStatusHistory::query()->create([
+                'order_id' => $id,
+                'status' => OrderStatus::WAITING_DELIVERY
             ]);
 
             return response()->json([
@@ -273,9 +279,15 @@ class OrderController extends Controller
                     $errors[$id] = "Đơn hàng không tồn tại";
                     continue;
                 }
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => OrderStatus::WAITING_DELIVERY
+                ]);
                 try {
                     $order->update([
-                        'delivery_person_id' => $validate['delivery_person_id']
+                        'delivery_person_id' => $validate['delivery_person_id'],
+                        'order_status' => OrderStatus::WAITING_DELIVERY
+
                     ]);
                 } catch (\Exception $e) {
                     $errors[$id] = "Không thể gán đơn hàng: " . $e->getMessage();

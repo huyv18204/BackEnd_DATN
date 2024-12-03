@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\ConvertDatetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -15,6 +16,11 @@ class OrderStatusHistory extends Model
         'status',
     ];
 
+    protected $casts = [
+        'created_at' => ConvertDatetime::class,
+        'updated_at' => ConvertDatetime::class,
+    ];
+
     public function getCreatedAtAttribute($value)
     {
         return Carbon::parse($value)->format('H:i:s - d/m/Y');
@@ -22,5 +28,6 @@ class OrderStatusHistory extends Model
 
     public function getUpdatedAtAttribute($value)
     {
-        return Carbon::parse($value)->format('H:i:s - d/m/Y');    }
+        return Carbon::parse($value)->format('H:i:s - d/m/Y');
+    }
 }

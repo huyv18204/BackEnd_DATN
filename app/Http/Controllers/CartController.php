@@ -15,11 +15,9 @@ class CartController extends Controller
     
         $carts = Cart::where('user_id', $userId)
             ->with([
-                'productAtt:id,product_id,size_id,color_id,stock_quantity',
+                'productAtt',
                 'productAtt.size:id,name',
                 'productAtt.color:id,name',
-                'productAtt.colorImage:id,product_id,color_id,image',
-                'productAtt.product:id,name,regular_price,reduced_price'
             ])
             ->orderByDesc('id')
             ->get();

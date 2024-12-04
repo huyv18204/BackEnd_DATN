@@ -15,12 +15,30 @@ class CartController extends Controller
     
         $carts = Cart::where('user_id', $userId)
             ->with([
-                'productAtt',
+                'productAtt' => function ($query) {
+                    $query->select('id', 'product_id', 'color_id', 'size_id', 'sku', 'regular_price', 'reduced_price', 'image', 'stock_quantity', 'is_active')
+                        ->with('product:id,regular_price,reduced_price');
+                },
                 'productAtt.size:id,name',
                 'productAtt.color:id,name',
             ])
             ->orderByDesc('id')
-            ->get();
+            ->get()
+            ->map(function ($cart) {
+                $productAtt = $cart->productAtt;
+    
+                if (!$productAtt->regular_price) {
+                    $productAtt->regular_price = $productAtt->product->regular_price;
+                }
+    
+                if (!$productAtt->reduced_price) {
+                    $productAtt->reduced_price = $productAtt->product->reduced_price;
+                }
+    
+                unset($productAtt->product); 
+    
+                return $cart;
+            });
     
         if ($size) {
             $carts = $carts->slice(0, $size)->values();
@@ -28,6 +46,8 @@ class CartController extends Controller
     
         return response()->json($carts);
     }
+    
+    
     
 
     public function store(Request $request)

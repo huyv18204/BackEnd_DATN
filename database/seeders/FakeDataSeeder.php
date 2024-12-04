@@ -43,6 +43,8 @@ class FakeDataSeeder extends Seeder
                 'address' => fake()->address,
                 'created_at' => now(),
                 'updated_at' => now(),
+                // Fake sdt
+                'phone' => fake()->numerify('##########'),
             ]);
         }
 
@@ -256,5 +258,4 @@ class FakeDataSeeder extends Seeder
 
         return $categoryCode;
     }
-
 }

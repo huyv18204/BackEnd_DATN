@@ -94,8 +94,6 @@ class DeliveryPersonController extends Controller
                 'message' => $exception->getMessage()
             ]);
         }
-
-
     }
 
     public function store(StoreRequest $request): JsonResponse
@@ -225,7 +223,6 @@ class DeliveryPersonController extends Controller
                 'message' => $exception->getMessage()
             ]);
         }
-
     }
 
     public function confirmAccount(Request $request, $id): JsonResponse
@@ -279,4 +276,59 @@ class DeliveryPersonController extends Controller
         }
     }
 
+    //Viet them
+    public function toggleStatusForShipper(Request $request): JsonResponse
+    {
+        $validate = $request->validate([
+            'status' => 'required|in:online,offline,on delivery',
+        ], [
+            'status.required' => 'Trạng thái không được để trống.',
+            'status.in' => "Trạng thái không hợp lệ",
+        ]);
+
+        try {
+            $userId = JWTAuth::parseToken()->authenticate()->id;
+
+            $deliveryPerson = DeliveryPerson::where('user_id', $userId)->first();
+
+            if (!$deliveryPerson) {
+                return response()->json([
+                    'message' => 'Không tìm thấy người giao hàng tương ứng.'
+                ], 404);
+            }
+
+            $deliveryPerson->update([
+                'status' => $validate['status'],
+            ]);
+
+            return response()->json([
+                "message" => "Cập nhật trạng thái thành công",
+            ], 200);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getStatusForShipper(Request $request): JsonResponse
+    {
+        try {
+            $userId = JWTAuth::parseToken()->authenticate()->id;
+
+            $deliveryPerson = DeliveryPerson::where('user_id', $userId)->first();
+
+            if (!$deliveryPerson) {
+                return response()->json([
+                    'message' => 'Không tìm thấy người giao hàng tương ứng.'
+                ], 404);
+            }
+
+            return response()->json([$deliveryPerson->status], 200);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 500);
+        }
+    }
 }

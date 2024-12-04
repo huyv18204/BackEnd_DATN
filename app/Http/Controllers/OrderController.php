@@ -36,7 +36,8 @@ class OrderController extends Controller
             ->with([
                 'user' => function ($query) {
                     $query->select('id', 'name', "address", "email", "phone");
-                }, 'delivery_person.user'
+                },
+                'delivery_person.user'
             ]);
 
         $query->when($request->query('minPrice'), function ($query, $minPrice) {
@@ -314,7 +315,7 @@ class OrderController extends Controller
     }
 
 
-// orders by delivery login (status : waiting delivery and on delivery)
+    // orders by delivery login (status : waiting delivery and on delivery)
     public function getByDeliveryPersonLogin(Request $request): JsonResponse
     {
         try {
@@ -325,13 +326,21 @@ class OrderController extends Controller
                     'message' => "Người giao hàng không tồn tại"
                 ]);
             }
+            //Viet them : lay danh sach theo status
             $sort = $request->input('sort', "ASC");
+            $status = $request->input('status');
+
             $query = Order::query()
                 ->with('user', 'order_details')
                 ->where('delivery_person_id', $deliveryPerson->id)
+                ->when($status, function ($query, $status) {
+                    return $query->where('order_status', $status);
+                })
                 ->whereIn('order_status', [OrderStatus::WAITING_DELIVERY->value, OrderStatus::ON_DELIVERY->value])
                 ->orderBy('id', $sort);
+
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+
             return response()->json($orders);
         } catch (\Exception $exception) {
             return response()->json([
@@ -340,7 +349,7 @@ class OrderController extends Controller
         }
     }
 
-//orders history by delivery login (status return and delivered)
+    //orders history by delivery login (status return and delivered)
     public function historyDelivered(Request $request): JsonResponse
     {
         try {
@@ -366,7 +375,7 @@ class OrderController extends Controller
         }
     }
 
-// orders by id delivery  (status : waiting delivery and on delivery)
+    // orders by id delivery  (status : waiting delivery and on delivery)
     public function getByDeliveryPersonId(Request $request, $id): JsonResponse
     {
         try {
@@ -387,7 +396,7 @@ class OrderController extends Controller
         }
     }
 
-//orders history by id delivery person
+    //orders history by id delivery person
     public function historyDeliveredById(Request $request, $id): JsonResponse
     {
         try {
@@ -434,6 +443,5 @@ class OrderController extends Controller
                 'message' => $exception->getMessage()
             ]);
         }
-
     }
 }

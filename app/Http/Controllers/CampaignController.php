@@ -246,7 +246,7 @@ class CampaignController extends Controller
         if (!$campaign) {
             return ApiResponse::error('Chiến dịch không tồn tại', Response::HTTP_NOT_FOUND);
         }
-        if ($campaign->status != 'active') {
+        if ($campaign->status == 'pending' || $campaign->status == 'complete') {
             return ApiResponse::error('Chỉ có thể thay đổi trạng thái khi chiến dịch đang diễn ra', Response::HTTP_BAD_REQUEST);
         }
         $campaign->status = $campaign->status == 'active' ? 'pause' : 'active';

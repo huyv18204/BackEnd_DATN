@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-trait applyFilters
+trait ApplyFilters
 {
     protected function Filters($query, $request)
     {

@@ -8,7 +8,6 @@ use App\Http\Response\ApiResponse;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductAtt;
-use App\Models\ProductColorImage;
 use App\Models\Size;
 use App\Traits\applyFilters;
 use Exception;
@@ -18,88 +17,72 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductAttController extends Controller
 {
-    use applyFilters;
+    use ApplyFilters;
 
     public function index(Request $request, int $productId)
     {
-        $product = Product::select('id')->with([
-            'product_atts:id,product_id,color_id,size_id,stock_quantity,sku',
-            'colorImages:product_id,color_id,image',
-            'product_atts.color:id,name',
-            'product_atts.size:id,name'
-        ])->find($productId);
+        $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
 
         if (!$product) {
             return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
-        $colorImages = $product->colorImages->pluck('image', 'color_id');
-        $query = $product->product_atts()->getQuery();
-        $paginatedAtts = $this->Filters($query, $request);
-        $result = collect($paginatedAtts);
 
-        if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-            $result = $paginatedAtts->getCollection();
-        }
+        $filteredProductAtts = $this->Filters($product->product_atts()->with(['color', 'size'])->getQuery(), $request);
 
-        $result = $result->map(function ($att) use ($colorImages) {
+
+        $result = $filteredProductAtts->map(function ($variant) {
             return [
-                'id' => $att->id,
-                'sku' => $att->sku,
-                'image' => $colorImages[$att->color_id] ?? null,
-                'color_id' => $att->color_id,
-                'color_name' => $att->color?->name,
-                'size_id' => $att->size_id,
-                'size_name' => $att->size?->name,
-                'stock_quantity' => $att->stock_quantity,
+                'id' => $variant->id,
+                'product_id' => $variant->product_id,
+                'color_id' => $variant->color_id,
+                'color_name' => $variant->color->name ?? null,
+                'size_id' => $variant->size_id,
+                'size_name' => $variant->size->name ?? null,
+                'sku' => $variant->sku,
+                'regular_price' => $variant->regular_price,
+                'reduced_price' => $variant->reduced_price,
+                'image' => $variant->image,
+                'stock_quantity' => $variant->stock_quantity,
+                'is_active' => $variant->is_active,
+                'created_at' => $variant->created_at,
+                'updated_at' => $variant->updated_at,
             ];
         });
 
-        if ($paginatedAtts instanceof \Illuminate\Pagination\LengthAwarePaginator) {
-            $paginatedAtts->setCollection($result);
-            return ApiResponse::data($paginatedAtts);
-        }
-
         return ApiResponse::data($result);
     }
+
+
 
     public function store(ProductAttRequest $request, int $productId)
     {
         $data = $request->validated();
         $productAtts = [];
-        $productColorImages = [];
         $colors = Color::whereIn('id', collect($data)->pluck('color_id')->toArray())->get()->keyBy('id');
-        $sizes = Size::whereIn('id', collect($data)->flatMap(fn($att) => collect($att['sizes'])->pluck('size_id'))->toArray())->get()->keyBy('id');
+        $sizes = Size::whereIn('id', collect($data)->pluck('size_id')->toArray())->get()->keyBy('id');
         $now = now()->toDateTimeString();
         try {
             $product = Product::findOrFail($productId);
             DB::beginTransaction();
-            foreach ($data as $item) {
-                $productColorImages[] = [
+            foreach ($data as $variant) {
+                $color = $colors->get($variant['color_id']);
+                $size = $sizes->get($variant['size_id']);
+                $sku = Product::generateUniqueSKU($product->name, $color->name, $size->name);
+                $productAtts[] = [
                     'product_id' => $productId,
-                    'color_id' => $item['color_id'],
-                    'image' => $item['image'] ?? null,
+                    'sku' => $sku,
+                    'size_id' => $variant['size_id'],
+                    'color_id' => $variant['color_id'],
+                    'image' => $variant['image'] ?? null,
+                    'regular_price' => $variant['regular_price'] ?? null,
+                    'reduced_price' => $variant['reduced_price'] ?? null,
+                    'stock_quantity' => $variant['stock_quantity'],
                     'created_at' => $now,
                     'updated_at' => $now
                 ];
-
-                foreach ($item['sizes'] as $variant) {
-                    $color = $colors->get($item['color_id']);
-                    $size = $sizes->get($variant['size_id']);
-                    $sku = Product::generateUniqueSKU($product->name, $color->name, $size->name);
-                    $productAtts[] = [
-                        'product_id' => $productId,
-                        'sku' => $sku,
-                        'size_id' => $size->id,
-                        'color_id' => $color->id,
-                        'stock_quantity' => $variant['stock_quantity'],
-                        'created_at' => $now,
-                        'updated_at' => $now
-                    ];
-                }
             }
             $productAtts = Product::checkAndResolveDuplicateSKUs($productAtts);
             DB::table('product_atts')->insert($productAtts);
-            DB::table('product_color_images')->insert($productColorImages);
             DB::commit();
             return ApiResponse::message('Thêm mới biến thể thành công', Response::HTTP_CREATED);
         } catch (\Illuminate\Database\QueryException $exception) {
@@ -110,30 +93,21 @@ class ProductAttController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             throw new CustomException(
-                'Sản phẩm không tồn tại',
+                'Lỗi khi thêm sản phẩm',
                 $e->getMessage()
             );
         }
     }
 
-    public function update(Request $request, int $product_id, int $product_att_id)
+    public function update(ProductAttRequest $request, int $product_id, int $product_att_id)
     {
         $product_att = ProductAtt::find($product_att_id);
         if (!$product_att) {
             return ApiResponse::error('Biến thể không tồn tại', Response::HTTP_BAD_REQUEST);
         }
-        $colorId = $request->color_id;
-        $image = $request->image;
-        $productColorImage = ProductColorImage::where('product_id', $product_id)->where('color_id', $colorId)->first();
-
+        $data = $request->validated();
         try {
-            if ($request->stock_quantity) {
-                $product_att->update(['stock_quantity' => $request->stock_quantity]);
-            }
-
-            if ($productColorImage && $image) {
-                $productColorImage->update(['image' => $image]);
-            }
+            $product_att->update($data);
             return ApiResponse::message('Cập nhật biến thể thành công');
         } catch (\Exception $e) {
             throw new CustomException('Cập nhật biến thể thất bại', $e->getMessage());

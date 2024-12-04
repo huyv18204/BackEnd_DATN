@@ -15,11 +15,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
-use App\Traits\applyFilters;
 
 class ProductController extends Controller
 {
-    use applyFilters;
     public function index(Request $request)
     {
         $query = Product::with(['category:id,name']);
@@ -29,14 +27,14 @@ class ProductController extends Controller
 
     public function store(ProductRequest $request)
     {
-        $dataProduct = $request->except(['product_att','product_color_images']);
+        $dataProduct = $request->except(['product_att']);
+
         $dataProductAtts = $request->product_att;
         $dataProduct['slug'] = Str::slug($request->name);
 
         $colors = Color::whereIn('id', collect($dataProductAtts)->pluck('color_id')->toArray())->get()->keyBy('id');
-        $sizes = Size::whereIn('id', collect($dataProductAtts)->flatMap(fn($att) => collect($att['sizes'])->pluck('size_id'))->toArray())->get()->keyBy('id');
+        $sizes = Size::whereIn('id', collect($dataProductAtts)->pluck('size_id')->toArray())->get()->keyBy('id');
 
-        $productColorImages = [];
         $productAtts = [];
         $now = now()->toDateTimeString();
 
@@ -46,44 +44,50 @@ class ProductController extends Controller
             $product = Product::create($dataProduct);
 
             foreach ($dataProductAtts as $productAtt) {
-                $productColorImages[] = [
+                $color = $colors->get($productAtt['color_id']);
+                $size = $sizes->get($productAtt['size_id']);
+                $sku = Product::generateUniqueSKU($product->name, $color->name ?? null, $size->name ?? null);
+
+                $productAtts[] = [
                     'product_id' => $product->id,
+                    'sku' => $sku,
+                    'size_id' => $productAtt['size_id'],
                     'color_id' => $productAtt['color_id'],
-                    'image' => $productAtt['image'],
+                    'image' => $productAtt['image'] ?? null,
+                    'regular_price' => $productAtt['regular_price'],
+                    'reduced_price' => $productAtt['reduced_price'],
+                    'stock_quantity' => $productAtt['stock_quantity'],
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
-
-                foreach ($productAtt['sizes'] as $variant) {
-                    $color = $colors->get($productAtt['color_id']);
-                    $size = $sizes->get($variant['size_id']);
-
-                    $sku = Product::generateUniqueSKU($product->name, $color->name, $size->name);
-
-                    $productAtts[] = [
-                        'product_id' => $product->id,
-                        'sku' => $sku,
-                        'size_id' => $variant['size_id'],
-                        'color_id' => $productAtt['color_id'],
-                        'stock_quantity' => $variant['stock_quantity'],
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
             }
 
             $productAtts = Product::checkAndResolveDuplicateSKUs($productAtts);
+
             DB::table('product_atts')->insert($productAtts);
-            DB::table('product_color_images')->insert($productColorImages);
 
             DB::commit();
 
-            return ApiResponse::message('Thêm mới sản phẩm thành công', Response::HTTP_CREATED);
+            return ApiResponse::message(
+                'Thêm mới sản phẩm thành công',
+                Response::HTTP_CREATED,
+                ['product' => $product]
+            );
         } catch (QueryException $exception) {
             DB::rollBack();
-            throw new CustomException("Lỗi khi thêm sản phẩm", $exception->getMessage());
+            if ($exception->errorInfo[1] == 1062) {
+                throw new CustomException(
+                    'Kích thước và màu sắc đã tồn tại',
+                    $exception->getMessage(),
+                    Response::HTTP_BAD_REQUEST
+                );
+            }
+        } catch (Exception $e) {
+            DB::rollBack();
+            throw new CustomException("Lỗi khi thêm sản phẩm", $e->getMessage());
         }
     }
+
     public function show($id)
     {
         $product = Product::find($id);
@@ -99,7 +103,6 @@ class ProductController extends Controller
             'category',
             'product_atts.color',
             'product_atts.size',
-            'colorImages.color',
         ])->where('slug', $slug)->first();
 
         if (!$product) {
@@ -113,12 +116,12 @@ class ProductController extends Controller
 
     public function update(ProductRequest $request, $id)
     {
-        $data = $request->except('gallery');
-        $data['gallery'] =  $request->has('gallery') ? json_encode($request->gallery) : null;
+        $data = $request->validated();
         $product = $this->findOrFail($id);
         if ($data['name'] != $product->name) {
             $data['slug'] = Str::slug($data['name']);
         }
+        $oldThumbnail = $product->thumbnail;
         try {
             $product->update($data);
             return ApiResponse::message("Cập nhật sản phẩm thành công");
@@ -153,17 +156,17 @@ class ProductController extends Controller
             $product->restore();
             return ApiResponse::message('Khôi phục sản phẩm thành công');
         } catch (Exception $e) {
-            throw new CustomException('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND, $e->getMessage());
+            throw new CustomException('Sản phẩm không tồn tại', $e->getMessage());
         }
     }
 
     private function findOrFail($id)
     {
         try {
-            $product = Product::find($id);
+            $product = Product::findOrFail($id);
             return $product;
         } catch (\Exception $e) {
-            throw new CustomException('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND, $e->getMessage());
+            throw new CustomException('Sản phẩm không tồn tại', $e->getMessage());
         }
     }
 
@@ -183,18 +186,19 @@ class ProductController extends Controller
                 'product_att' => [],
             ];
 
-            $colorImagesGrouped = $product->colorImages->keyBy('color_id');
 
             foreach ($product->product_atts->groupBy('color_id') as $colorId => $productAtts) {
-                $colorImage = $colorImagesGrouped->get($colorId);
 
                 $color = $productAtts->first()->color;
                 $colorName = $color ? $color->name : null;
+                $image = $productAtts->first(function ($productAtt) {
+                    return !empty($productAtt->image);
+                })?->image;
 
                 $productData['product_att'][] = [
                     'color_id' => $colorId,
                     'color_name' => $colorName,
-                    'image' => $colorImage ? $colorImage->image : null,
+                    'image' => $image ?? null,
                     'sizes' => $productAtts->map(function ($productAtt) {
                         $size = $productAtt->size;
                         $sizeName = $size ? $size->name : null;
@@ -203,6 +207,9 @@ class ProductController extends Controller
                             'id' => $productAtt->id,
                             'size_id' => $productAtt->size_id,
                             'size_name' => $sizeName,
+                            'image' => $productAtt->image,
+                            'regular_price' =>  $productAtt->regular_price,
+                            'reduced_price' =>  $productAtt->reduced_price,
                             'sku' => $productAtt->sku,
                             'stock_quantity' => $productAtt->stock_quantity
                         ];
@@ -216,13 +223,13 @@ class ProductController extends Controller
         }
     }
 
-    public function checkIsActive(Request $request) : JsonResponse
+    public function checkIsActive(Request $request): JsonResponse
     {
         $productIds = $request->input('product_id');
         $errors = [];
         $products = Product::withTrashed()->whereIn('id', $productIds)->get();
         foreach ($products as $product) {
-        if ($product->deleted_at !== null) {
+            if ($product->deleted_at !== null) {
                 $errors[] = "Sản phẩm {$product->name} không tồn tại.";
             }
         }
@@ -236,5 +243,38 @@ class ProductController extends Controller
             'status' => 'success',
             'message' => 'Tất cả sản phẩm đều hợp lệ.'
         ]);
+    }
+
+    protected function Filters($query, $request)
+    {
+        $query->when($request->query('id'), fn($q, $id) => $q->where('id', $id));
+        $query->when($request->query('categoryId'), fn($q, $categoryId) => $q->where('category_id', $categoryId));
+        $query->when($request->query('name'), fn($q, $name) => $q->where('name', 'like', '%' . $name . '%'));
+
+        $query->when(
+            $request->query('sizeId'),
+            fn($q, $sizeId) =>
+            $q->whereHas(
+                'product_atts',
+                fn($subQuery) =>
+                $subQuery->where('size_id', $sizeId)
+            )
+        );
+        $query->when(
+            $request->query('colorId'),
+            fn($q, $colorId) =>
+            $q->whereHas(
+                'product_atts',
+                fn($subQuery) =>
+                $subQuery->where('color_id', $colorId)
+            )
+        );
+        $query->when($request->query('minPrice'), fn($q, $minPrice) => $q->where('regular_price', '>=', $minPrice));
+        $query->when($request->query('maxPrice'), fn($q, $maxPrice) => $q->where('regular_price', '<=', $maxPrice));
+
+        $query->orderBy('created_at', $request->query('sort', 'ASC'));
+
+        $size = $request->query('size');
+        return $size ? $query->paginate($size) : $query->get();
     }
 }

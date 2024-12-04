@@ -12,42 +12,25 @@ class CartController extends Controller
     {
         $size = $request->query('size');
         $userId = JWTAuth::parseToken()->authenticate()->id;
-
+    
         $carts = Cart::where('user_id', $userId)
             ->with([
                 'productAtt:id,product_id,size_id,color_id,stock_quantity',
                 'productAtt.size:id,name',
                 'productAtt.color:id,name',
-                'productAtt.colorImage:id,product_id,color_id,image'
+                'productAtt.colorImage:id,product_id,color_id,image',
+                'productAtt.product:id,name,regular_price,reduced_price'
             ])
             ->orderByDesc('id')
             ->get();
-
-        $result = $carts->map(function ($cart) {
-            return [
-                'id' => $cart->id,
-                'name' => $cart->productAtt->product->name,
-                'regular_price' => $cart->productAtt->product->regular_price ?? null,
-                'reduced_price' => $cart->productAtt->product->reduced_price ?? null,
-                'product_att_id' => $cart->product_att_id,
-                'quantity' => $cart->quantity,
-                'product_att' => [
-                    'color_id' => $cart->productAtt->color_id ?? null,
-                    'image' => $cart->productAtt->colorImage->image ?? null,
-                    'color_name' => $cart->productAtt->color->name ?? null,
-                    'size_id' => $cart->productAtt->size_id ?? null,
-                    'size_name' => $cart->productAtt->size->name ?? null,
-                    'stock_quantity' => $cart->productAtt->stock_quantity,
-                ],
-            ];
-        });
-
+    
         if ($size) {
-            $result = $result->slice(0, $size)->values();
+            $carts = $carts->slice(0, $size)->values();
         }
-
-        return response()->json($result);
+    
+        return response()->json($carts);
     }
+    
 
     public function store(Request $request)
     {

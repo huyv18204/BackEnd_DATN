@@ -59,44 +59,15 @@ class FakeDataSeeder extends Seeder
                 'updated_at' => now(),
             ]
         );
-        // Danh mục cha Nam
-        $nam = Category::create([
-            'name' => 'Nam',
-            'slug' => 'nam',
-            'parent_id' => null,
-            'category_code' => $this->generateCategoryCode('NAM'),
-            'is_active' => true,
-        ]);
 
-        // Danh mục con của Nam
-        $namChildren = ['Áo khoác', 'Áo Polo', 'Áo Sơ Mi', 'Áo Chống Nắng', 'Áo Nỉ'];
-        foreach ($namChildren as $child) {
+
+
+        $categories = ['Áo khoác', 'Áo Sơ Mi', 'Áo Chống Nắng', 'Áo Nỉ', 'Váy'];
+        foreach ($categories as $category) {
             Category::create([
-                'name' => $child,
-                'slug' => Str::slug($child) . '-' . 'nam',
-                'parent_id' => $nam->id,
-                'category_code' => $this->generateCategoryCode('NAM'),
-                'is_active' => true,
-            ]);
-        }
-
-        // Danh mục cha Nữ
-        $nu = Category::create([
-            'name' => 'Nữ',
-            'slug' => 'nu',
-            'parent_id' => null,
-            'category_code' => $this->generateCategoryCode('NU'),
-            'is_active' => true,
-        ]);
-
-        // Danh mục con của Nữ
-        $nuChildren = ['Áo khoác', 'Áo Sơ Mi', 'Áo Chống Nắng', 'Áo Nỉ', 'Váy'];
-        foreach ($nuChildren as $child) {
-            Category::create([
-                'name' => $child,
-                'slug' => Str::slug($child) . '-' . 'nu',
-                'parent_id' => $nu->id,
-                'category_code' => $this->generateCategoryCode('NU'),
+                'name' => $category,
+                'slug' => Str::slug($category),
+                'category_code' => $this->generateCategoryCode(),
                 'is_active' => true,
             ]);
         }
@@ -230,29 +201,19 @@ class FakeDataSeeder extends Seeder
             }
         }
     }
-    private function generateCategoryCode($prefix)
+    protected function generateCategoryCode()
     {
-        // Lấy ngày và tháng hiện tại
         $currentDay = date('d');
         $currentMonth = date('m');
-        $prevCode = $prefix . $currentDay . $currentMonth;
+        $prevCode = "CA" . $currentDay . $currentMonth;
 
-        // Lấy mã danh mục cuối cùng theo mã bắt đầu với prefix
-        $stt = DB::table('categories')
-            ->where("category_code", "LIKE", $prevCode . "%")
-            ->orderByDesc('id')
-            ->first();
-
+        $stt = DB::table('categories')->where("category_code", "LIKE", $prevCode . "%")->orderByDesc('id')->first();
         if ($stt) {
-            // Tăng mã danh mục nếu đã có
             $parts = explode('-', $stt->category_code);
             $lastPart = (int)end($parts) + 1;
-            $categoryCode = $prevCode . '-' . str_pad($lastPart, 2, '0', STR_PAD_LEFT);
+            return $prevCode . '-' . str_pad($lastPart, 2, '0', STR_PAD_LEFT);
         } else {
-            // Mã danh mục đầu tiên
-            $categoryCode = $prevCode . '-01';
+            return $prevCode . '-' . "01";
         }
-
-        return $categoryCode;
     }
 }

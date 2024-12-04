@@ -21,20 +21,27 @@ class CategoryRequest extends FormRequest
      */
     public function rules()
     {
-        $rules = [
-            'name' => 'required|string|max:255',
+        $id = $this->route('id');
+    
+        if ($this->isMethod('PUT')) {
+            return [
+                'name' => 'required|string|max:255|unique:categories,name,' . $id,
+                'image' => 'nullable',
+                'is_active' => 'boolean',
+            ];
+        }
+    
+        return [
+            'name' => 'required|string|max:255|unique:categories,name',
             'image' => 'nullable',
-            'parent_id.*' => 'nullable|exists:categories,id', 
             'is_active' => 'boolean',
         ];
-
-        return $rules;
     }
+    
     public function attributes()
     {
         return [
             'name' => 'Tên danh mục',
-            'parent_id' => 'Danh mục cha',
             'is_active' => 'Trạng thái',
         ];
     }

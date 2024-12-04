@@ -53,10 +53,9 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::get('/{id}/show', [CategoryController::class, 'show']);
+        Route::put('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
         Route::put('/{id}', [CategoryController::class, 'update']);
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
-        Route::get('/trash', [CategoryController::class, 'trash']);
-        Route::put('/{id}/restore', [CategoryController::class, 'restore']);
     });
 
     Route::prefix("products")->group(function () {

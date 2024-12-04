@@ -24,6 +24,11 @@ class CategoryController extends Controller
                 $query->where('id', $id);
             });
 
+            $query->when($request->query('status') !== null, function ($query) use ($request) {
+                $status = filter_var($request->query('status'), FILTER_VALIDATE_BOOLEAN);
+                $query->where('is_active', $status);
+            });
+
             $query->when($request->query('name'), function ($query, $name) {
                 $query->where('name', 'LIKE', '%' . $name . '%');
             });
@@ -82,6 +87,11 @@ class CategoryController extends Controller
     public function destroy(int $id)
     {
         if ($category = Category::find($id)) {
+            if ($category->products()->exists()) {
+                return response()->json([
+                    'message' => 'Không thể xóa danh mục vì vẫn còn sản phẩm liên kết'
+                ], 400);
+            }
             $category->delete();
             return response()->json(['message' => 'Xóa danh mục thành công'], 200);
         }
@@ -89,33 +99,16 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Danh mục không tồn tại'], 404);
     }
 
-    public function trash(Request $request)
+    public function toggleStatus(string $id)
     {
-        $sort = $request->input('sort', 'ASC');
-        $size = $request->query('size');
-        $query = Category::onlyTrashed();
-
-        $query->when($request->query('id'), function ($query, $id) {
-            $query->where('id', $id);
-        });
-
-        $query->when($request->query('name'), function ($query, $name) {
-            $query->where('name', 'LIKE', '%' . $name . '%');
-        });
-
-        $query->orderBy('id', $sort);
-        $trash = $size ? $query->paginate($size) : $query->get();
-        return ApiResponse::data($trash);
-    }
-
-    public function restore(int $id)
-    {
-        if ($category = Category::withTrashed()->find($id)) {
-            $category->restore();
-            return response()->json(['message' => 'Khôi phục thành công'], 200);
+        $category = $this->findOrFail($id);
+        try {
+            $category->is_active = !$category->is_active;
+            $category->save();
+            return ApiResponse::message('Thay đổi trạng thái thành công', Response::HTTP_OK);
+        } catch (\Exception $e) {
+            throw new CustomException('Thay đổi trạng thái danh mục thất bại', $e->getMessage());
         }
-
-        return response()->json(['error' => 'Danh mục không tồn tại'], 404);
     }
 
     private function findOrFail($id)

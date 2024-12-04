@@ -212,6 +212,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 
     Route::prefix('districts')->group(function () {
         Route::get("/", [DistrictController::class, 'index']);
+        Route::get("/{code}", [DistrictController::class, 'show']);
         Route::put("/{id}/fee-delivery", [DistrictController::class, 'updateDeliveryFee']);
     });
 

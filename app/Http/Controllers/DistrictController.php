@@ -14,6 +14,22 @@ class DistrictController extends Controller
         return response()->json($districts);
     }
 
+    public function show($code): JsonResponse
+    {
+        try {
+            $district = District::query()->where('code', $code)->first();
+            if (!$district) {
+                return response()->json([
+                    'message' => 'Quận không tồn tại'
+                ]);
+            }
+            return response()->json($district);
+        } catch (\Exception $exception) {
+            return response()->json(['message' => $exception->getMessage()], 500);
+        }
+
+    }
+
 
     public function updateDeliveryFee(Request $request, $id): JsonResponse
     {

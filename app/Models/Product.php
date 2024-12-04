@@ -10,13 +10,13 @@ use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
+   
     use HasFactory;
     use SoftDeletes;
     protected $fillable = [
         'slug',
         'material',
         "sku",
-        "gallery",
         "name",
         "thumbnail",
         "short_description",
@@ -25,14 +25,13 @@ class Product extends Model
         "regular_price",
         "reduced_price",
         "category_id",
-        "is_active",
+        "is_active"
     ];
 
     protected $casts = [
         'is_active' => "boolean",
         'regular_price' => 'integer',
         'reduced_price' => 'integer',
-        'gallery' => 'array',
         'created_at' => ConvertDatetime::class,
         'updated_at' => ConvertDatetime::class,
     ];
@@ -45,11 +44,6 @@ class Product extends Model
     public function product_atts()
     {
         return $this->hasMany(ProductAtt::class);
-    }
-
-    public function colorImages()
-    {
-        return $this->hasMany(ProductColorImage::class);
     }
 
     public static function generateUniqueSKU($productName, $colorName, $sizeName)

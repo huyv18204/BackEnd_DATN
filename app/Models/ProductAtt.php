@@ -15,12 +15,17 @@ class ProductAtt extends Model
         'sku',
         'color_id',
         'size_id',
+        'image',
+        'regular_price',
+        'reduced_price',
         'stock_quantity',
         'is_active'
     ];
 
     protected $casts = [
         'is_active' => "boolean",
+        'regular_price' => 'integer',
+        'reduced_price' => 'integer',
         'created_at' => ConvertDatetime::class,
         'updated_at' => ConvertDatetime::class,
     ];
@@ -28,12 +33,6 @@ class ProductAtt extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
-    }
-
-    public function colorImage()
-    {
-        return $this->hasOne(ProductColorImage::class, 'product_id', 'product_id')
-            ->whereColumn('color_id', 'color_id');
     }
 
     public function color()

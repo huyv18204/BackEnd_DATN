@@ -13,10 +13,13 @@ return new class extends Migration
     {
         Schema::create('product_atts', function (Blueprint $table) {
             $table->id();
-            $table->string("sku", 55)->index()->unique();
             $table->foreignIdFor(\App\Models\Product::class)->constrained();
-            $table->foreignIdFor(\App\Models\Color::class)->nullable()->constrained(); 
-            $table->foreignIdFor(\App\Models\Size::class)->nullable()->constrained();
+            $table->foreignIdFor(\App\Models\Color::class)->constrained();
+            $table->foreignIdFor(\App\Models\Size::class)->constrained();
+            $table->string("sku")->unique();
+            $table->decimal('regular_price', 8, 0)->nullable();
+            $table->decimal('reduced_price', 8, 0)->nullable();
+            $table->string("image", 255)->nullable();
             $table->integer('stock_quantity')->default(0);
             $table->unique(['product_id', "color_id", "size_id"], 'product_variant_unique');
             $table->boolean("is_active")->default(true);

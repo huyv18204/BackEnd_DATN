@@ -10,8 +10,9 @@ class District extends Model
     use HasFactory;
 
     protected $fillable = [
-      'name',
-      'code',
-      'province_code',
+        'name',
+        'code',
+        'province_code',
+        'shipping_fee'
     ];
 }

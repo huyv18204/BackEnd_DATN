@@ -17,6 +17,7 @@ class OrderRequest extends FormRequest
             'total_amount' => 'required|integer|numeric|min:0',
             'shipping_address_id' => 'required|integer|exists:shipping_addresses,id',
             'note' => 'nullable|string',
+            'delivery_fee' => 'required|integer|numeric|min:0',
             'order_details' => 'required|array',
             'order_details.*.product_id' => 'required|exists:products,id',
             'order_details.*.product_att_id' => 'required|exists:product_atts,id',
@@ -36,7 +37,7 @@ class OrderRequest extends FormRequest
             'required' => ':attribute là bắt buộc',
             'integer' => ':attribute phải là số',
             'numeric' => ':attribute phải là số',
-            'exists' => ':attribute không ồn tại',
+            'exists' => ':attribute không tồn tại',
             'string' => ':attribute phải là chuỗi',
             'max' => ':attribute không được vượt quá :values'
 
@@ -58,6 +59,7 @@ class OrderRequest extends FormRequest
             'order_details.*.total_amount' => 'Tổng số tiền',
             'order_details.*.quantity' => "Số lượng",
             'order_details.*.thumbnail' => 'Ảnh',
+            'delivery_fee' => "Tiền vận chuyển"
 
 
         ];

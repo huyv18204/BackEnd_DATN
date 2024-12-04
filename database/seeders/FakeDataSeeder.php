@@ -42,6 +42,8 @@ class FakeDataSeeder extends Seeder
                 'address' => fake()->address,
                 'created_at' => now(),
                 'updated_at' => now(),
+                // Fake sdt
+                'phone' => fake()->numerify('##########'),
             ]);
         }
 
@@ -159,10 +161,11 @@ class FakeDataSeeder extends Seeder
                 'user_id' => $userId,
                 'total_amount' => rand(100000, 1000000),
                 'payment_method' => PaymentMethod::cases()[array_rand(PaymentMethod::cases())]->value,
-                'order_status' => OrderStatus::cases()[array_rand(OrderStatus::cases())]->value,
+                'order_status' => OrderStatus::PENDING->value,
                 'payment_status' => PaymentStatus::cases()[array_rand(PaymentStatus::cases())]->value,
                 'order_address' => fake()->address,
                 'note' => fake()->sentence(),
+                'delivery_fee' => rand(30000, 100000),
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

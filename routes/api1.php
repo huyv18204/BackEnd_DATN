@@ -6,14 +6,11 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
 use App\Http\Controllers\DeliveryPersonController;
-use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
-use App\Http\Controllers\OrderStatusHistoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentDetailController;
 use App\Http\Controllers\ShippingAddressController;
@@ -44,9 +41,6 @@ Route::prefix("v1")->group(function () {
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::post('password/email', [AuthController::class, 'sendResetOTPEmail'])->middleware('throttle:5,30');
     Route::post('password/reset', [AuthController::class, 'resetPasswordWithOTP']);
-    Route::prefix('delivery-person')->group(function () {
-        Route::post('register', [DeliveryPersonController::class, 'register']);
-    });
     Route::middleware(['api', 'auth.jwt'])->prefix('auth')->as('auth.')->group(function () {
         Route::get('profile', [AuthController::class, 'profile']);
         Route::post('profile', [AuthController::class, 'editProfile']);
@@ -54,17 +48,13 @@ Route::prefix("v1")->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
     });
 });
-
-
-Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
-    Route::prefix('categories')->group(function () {
-        Route::post('/', [CategoryController::class, 'store']);
-        Route::get('/{id}/show', [CategoryController::class, 'show']);
-        Route::put('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
-        Route::put('/{id}', [CategoryController::class, 'update']);
-        Route::delete('/{id}', [CategoryController::class, 'destroy']);
-    });
-
+Route::middleware('check.campaign')->group(function () {
+    Route::get('v1/categories', [CategoryController::class, 'index']);
+    Route::get('v1/categories/parent', [CategoryController::class, 'listParent']);
+    Route::get('v1/categories/{id}/children', [CategoryController::class, 'listChildren']);
+    Route::get('v1/categories/{id}/product', [CategoryController::class, 'products']);
+    Route::get("v1/products", [ProductController::class, 'index']);
+    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
     Route::prefix("products")->group(function () {
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
@@ -83,6 +73,19 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::put('/{id}', [ProductAttController::class, 'update']);
         Route::delete('/{id}', [ProductAttController::class, 'destroy']);
     });
+});
+
+
+Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
+    Route::prefix('categories')->group(function () {
+        Route::post('/', [CategoryController::class, 'store']);
+        Route::put('/{id}', [CategoryController::class, 'update']);
+        Route::put('/{id}/toggle-status', [CategoryController::class, 'toggleStatus']);
+        Route::get('/{slug}', [CategoryController::class, 'getBySlug']);
+        Route::delete('/{id}', [CategoryController::class, 'destroy']);
+    });
+
+    
 
 
     Route::prefix("colors")->group(function () {
@@ -103,8 +106,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix("orders")->group(function () {
         Route::get("/", [OrderController::class, 'index']);
-        Route::get("{id}/delivery-person", [OrderController::class, 'getByDeliveryPersonId']);
-        Route::get("{id}/delivery-person/history", [OrderController::class, 'historyDeliveredById']);
+        Route::get("/status", [OrderController::class, 'getByWaitingDeliveryStatus']);
     });
 
     Route::prefix("users")->group(function () {
@@ -132,8 +134,6 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     Route::prefix("delivery-persons")->group(function () {
         Route::get("/", [DeliveryPersonController::class, 'index']);
         Route::post("/", [DeliveryPersonController::class, 'store']);
-        Route::get("/account-waiting-confirm", [DeliveryPersonController::class, 'getAccountRegister']);
-        Route::put("/{id}/confirm-account", [DeliveryPersonController::class, 'confirmAccount']);
     });
 
 
@@ -154,6 +154,9 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::delete("/{id}", [CartController::class, 'destroy']);
     });
 
+    Route::prefix("orders")->group(function () {
+        Route::post("/", [OrderController::class, 'store']);
+    });
 
     Route::prefix("shipping-addresses")->group(function () {
         Route::post("/", [ShippingAddressController::class, 'store']);
@@ -163,27 +166,20 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("/{id}", [ShippingAddressController::class, 'show']);
     });
 
+
     Route::prefix("orders")->group(function () {
-        Route::post("/", [OrderController::class, 'store']);
         Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
         Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
+        Route::get('/user', [OrderController::class, 'getByUserLogin']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
-        Route::put("{id}/assign-delivery-person", [OrderController::class, 'assignToDeliveryPerson']);
-        Route::put("/assign-many-delivery-person", [OrderController::class, 'assignManyToDeliveryPerson']);
-        Route::get("delivery-person", [OrderController::class, 'getByDeliveryPersonLogin']);
-        Route::put("on-delivery-status", [OrderController::class, 'updateManyOrderToOnDeliveryStatus']);
-        Route::get("delivery-person/history", [OrderController::class, 'historyDelivered']);
     });
 
 
     Route::prefix("delivery-persons")->group(function () {
-        Route::get("/{id}", [DeliveryPersonController::class, 'show'])->where("id", "[0-9]+");
-        Route::put("/{id}", [DeliveryPersonController::class, 'update'])->where("id", "[0-9]+");
+        Route::get("/{id}", [DeliveryPersonController::class, 'show']);
+        Route::put("/{id}", [DeliveryPersonController::class, 'update']);
         Route::put("/{id}/status", [DeliveryPersonController::class, 'updateStatus']);
-        //Viet them
-        Route::put("/statusForShipper", [DeliveryPersonController::class, 'toggleStatusForShipper']);
-        Route::get("/statusForShipper", [DeliveryPersonController::class, 'getStatusForShipper']);
     });
 
     Route::prefix("shipment-details")->group(function () {
@@ -195,31 +191,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::put('/{id}/status', [ShipmentController::class, 'updateStatus']);
         Route::get('/user', [ShipmentController::class, 'getByUserLogin']);
     });
-
-    Route::prefix("order-status-histories")->group(function () {
-        Route::post("/", [OrderStatusHistoryController::class, 'store']);
-    });
-
-    Route::prefix('districts')->group(function () {
-        Route::get("/", [DistrictController::class, 'index']);
-        Route::put("/{id}/fee-delivery", [DistrictController::class, 'updateDeliveryFee']);
-    });
-
-    Route::prefix('provinces')->group(function () {
-        Route::get("/", [ProvinceController::class, 'index']);
-    });
 });
-
-Route::prefix('v1')->group(function () {
-    Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
-    Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
-});
-
-
-// client
-Route::middleware('check.campaign')->group(function () {
-    Route::get('v1/categories/', [CategoryController::class, 'index']);
-    Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
-    Route::get("v1/products", [ProductController::class, 'index']);
-    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
-});
+Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
+Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);

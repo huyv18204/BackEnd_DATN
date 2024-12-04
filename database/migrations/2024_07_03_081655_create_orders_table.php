@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -15,32 +14,32 @@ return new class extends Migration
             $table->id();
             $table->string('order_code', 10)->unique();
             $table->foreignId('user_id')->constrained();
-            $table->decimal('total_amount',10,0);
+            $table->decimal('total_amount', 10, 0);
             $table->enum('payment_method', [
                 'Thanh toán khi nhận hàng',
                 'MOMO'
             ]);
             $table->enum('order_status', [
                 'Chờ xác nhận',
+                'Đã xác nhận',
                 'Chờ lấy hàng',
                 'Đang giao',
                 'Đã giao',
                 'Trả hàng',
                 "Đã huỷ"
             ])->default("Chờ xác nhận");
+            $table->foreignIdFor(\App\Models\DeliveryPerson::class)->nullable()->constrained()->onDelete('set null');
             $table->enum('payment_status', [
                 'Chưa thanh toán',
                 'Đã thanh toán',
             ]);
-            $table->string('order_address',255);
+            $table->string('order_address', 255);
+            $table->decimal('delivery_fee', 10, 0);
             $table->text('note')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('orders');

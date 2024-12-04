@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Casts\ConvertDatetime;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+
 class Order extends Model
 {
     use HasFactory;
@@ -22,15 +25,19 @@ class Order extends Model
         'order_status',
         'payment_status',
         'note',
-        'order_address'
+        'order_address',
+        'delivery_person_id',
+        'delivery_fee'
     ];
 
 
-    public function order_details(){
+    public function order_details()
+    {
         return $this->hasMany(OrderDetail::class);
     }
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
@@ -39,7 +46,6 @@ class Order extends Model
         'payment_status' => PaymentStatus::class,
         'payment_method' => PaymentMethod::class,
     ];
-
 
     public function getCreatedAtAttribute($value)
     {
@@ -51,8 +57,18 @@ class Order extends Model
         return Carbon::parse($value)->format('d/m/Y');
     }
 
-    public function shipment_detail() : HasOne
+    public function shipment_detail(): HasOne
     {
         return $this->hasOne(ShipmentDetail::class);
+    }
+
+    public function delivery_person(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryPerson::class);
+    }
+
+    public function order_status_histories(): hasMany
+    {
+        return $this->hasMany(OrderStatusHistory::class);
     }
 }

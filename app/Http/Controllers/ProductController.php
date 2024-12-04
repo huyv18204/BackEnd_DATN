@@ -191,12 +191,14 @@ class ProductController extends Controller
 
                 $color = $productAtts->first()->color;
                 $colorName = $color ? $color->name : null;
-
+                $image = $productAtts->first(function ($productAtt) {
+                    return !empty($productAtt->image);
+                })?->image;
 
                 $productData['product_att'][] = [
                     'color_id' => $colorId,
                     'color_name' => $colorName,
-                    'image' => $productAtts->first()->image,
+                    'image' => $image ?? null,
                     'sizes' => $productAtts->map(function ($productAtt) {
                         $size = $productAtt->size;
                         $sizeName = $size ? $size->name : null;

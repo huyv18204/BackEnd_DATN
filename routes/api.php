@@ -37,6 +37,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+// client
+Route::middleware('check.campaign')->group(function () {
+    Route::get('v1/categories/', [CategoryController::class, 'index']);
+    Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
+    Route::get("v1/products", [ProductController::class, 'index']);
+    Route::get("v1/products/{slug}", [ProductController::class, 'getBySlug']);
+    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+    Route::get("v1/sizes", [SizeController::class, 'index']);
+    Route::get("v1/colors", [ColorController::class, 'index']);
+});
+
+
 Route::prefix("v1")->group(function () {
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,2');
     Route::post('register', [AuthController::class, 'register']);
@@ -73,7 +85,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::get('/trash', [ProductController::class, 'trash']);
         Route::put('/{id}/restore', [ProductController::class, 'restore']);
 
-        Route::get("/{slug}", [ProductController::class, 'getBySlug']);
+
         Route::delete("/{id}", [ProductController::class, 'destroy']);
         Route::post("/check-active", [ProductController::class, 'checkIsActive']);
     });
@@ -86,7 +98,6 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
 
     Route::prefix("colors")->group(function () {
-        Route::get("/", [ColorController::class, 'index']);
         Route::post("/", [ColorController::class, 'store']);
         Route::put("/{id}", [ColorController::class, 'update']);
         Route::put('/{id}/toggle-status', [ColorController::class, 'toggleStatus']);
@@ -94,7 +105,6 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     });
 
     Route::prefix("sizes")->group(function () {
-        Route::get("/", [SizeController::class, 'index']);
         Route::post("/", [SizeController::class, 'store']);
         Route::put("/{id}", [SizeController::class, 'update']);
         Route::put('/{id}/toggle-status', [SizeController::class, 'toggleStatus']);
@@ -213,13 +223,4 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 Route::prefix('v1')->group(function () {
     Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
     Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
-});
-
-
-// client
-Route::middleware('check.campaign')->group(function () {
-    Route::get('v1/categories/', [CategoryController::class, 'index']);
-    Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
-    Route::get("v1/products", [ProductController::class, 'index']);
-    Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
 });

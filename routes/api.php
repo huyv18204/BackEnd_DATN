@@ -81,11 +81,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
         Route::get("/{id}/show", [ProductController::class, 'show']);
-
-        Route::get('/trash', [ProductController::class, 'trash']);
-        Route::put('/{id}/restore', [ProductController::class, 'restore']);
-
-
+        Route::put("{id}/toggle-status", [ProductController::class, 'toggleStatus']);
         Route::delete("/{id}", [ProductController::class, 'destroy']);
         Route::post("/check-active", [ProductController::class, 'checkIsActive']);
     });
@@ -157,6 +153,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 });
 
 Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
+
     Route::prefix("carts")->group(function () {
         Route::get("/", [CartController::class, 'show']);
         Route::post("/", [CartController::class, 'store']);

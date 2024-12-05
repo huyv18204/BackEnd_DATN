@@ -114,6 +114,16 @@ class ProductController extends Controller
         return ApiResponse::data($productData);
     }
 
+    public function toggleStatus(string $id)
+    {
+        $product = $this->findOrFail($id);
+        $newStatus = !$product->is_active;
+        $product->is_active = $newStatus;
+        $product->product_atts()->update(['is_active' => $newStatus]);
+        $product->save();
+        return ApiResponse::message('Thay đổi trạng thái thành công');
+    }
+
     public function update(ProductRequest $request, $id)
     {
         $data = $request->validated();
@@ -121,7 +131,6 @@ class ProductController extends Controller
         if ($data['name'] != $product->name) {
             $data['slug'] = Str::slug($data['name']);
         }
-        $oldThumbnail = $product->thumbnail;
         try {
             $product->update($data);
             return ApiResponse::message("Cập nhật sản phẩm thành công");
@@ -132,32 +141,12 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        try {
-            $product = Product::findOrFail($id);
-            $product->delete();
-            return ApiResponse::message("Xóa sản phẩm thành công");
-        } catch (\Exception $e) {
-            throw new CustomException('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
+        $product = $this->findOrFail($id);
+        if ($product->product_atts()->exists()) {
+            return ApiResponse::message("Không thể xóa sản phẩm đang có biến thể liên kết");
         }
-    }
-
-    public function trash(Request $request)
-    {
-        $query = Product::onlyTrashed()
-            ->with('category:id,name');
-        $trash =  $this->Filters($query, $request);
-        return ApiResponse::data($trash);
-    }
-
-    public function restore($id)
-    {
-        try {
-            $product = Product::withTrashed()->findOrFail($id);
-            $product->restore();
-            return ApiResponse::message('Khôi phục sản phẩm thành công');
-        } catch (Exception $e) {
-            throw new CustomException('Sản phẩm không tồn tại', $e->getMessage());
-        }
+        $product->delete();
+        return ApiResponse::message("Xóa sản phẩm thành công");
     }
 
     private function findOrFail($id)
@@ -221,28 +210,6 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             throw new CustomException("Lỗi khi xử lý dữ liệu sản phẩm", $e->getMessage());
         }
-    }
-
-    public function checkIsActive(Request $request): JsonResponse
-    {
-        $productIds = $request->input('product_id');
-        $errors = [];
-        $products = Product::withTrashed()->whereIn('id', $productIds)->get();
-        foreach ($products as $product) {
-            if ($product->deleted_at !== null) {
-                $errors[] = "Sản phẩm {$product->name} không tồn tại.";
-            }
-        }
-        if (count($errors) > 0) {
-            return response()->json([
-                'status' => 'error',
-                'errors' => $errors
-            ], 400);
-        }
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Tất cả sản phẩm đều hợp lệ.'
-        ]);
     }
 
     protected function Filters($query, $request)

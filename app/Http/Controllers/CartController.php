@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Response\ApiResponse;
 use App\Models\Cart;
+use App\Models\ProductAtt;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -12,12 +14,12 @@ class CartController extends Controller
     {
         $size = $request->query('size');
         $userId = JWTAuth::parseToken()->authenticate()->id;
-    
+
         $carts = Cart::where('user_id', $userId)
             ->with([
                 'productAtt' => function ($query) {
                     $query->select('id', 'product_id', 'color_id', 'size_id', 'sku', 'regular_price', 'reduced_price', 'image', 'stock_quantity', 'is_active')
-                        ->with('product:id,regular_price,reduced_price');
+                        ->with('product:id,name,regular_price,reduced_price');
                 },
                 'productAtt.size:id,name',
                 'productAtt.color:id,name',
@@ -26,29 +28,23 @@ class CartController extends Controller
             ->get()
             ->map(function ($cart) {
                 $productAtt = $cart->productAtt;
-    
+
                 if (!$productAtt->regular_price) {
                     $productAtt->regular_price = $productAtt->product->regular_price;
                 }
-    
+
                 if (!$productAtt->reduced_price) {
                     $productAtt->reduced_price = $productAtt->product->reduced_price;
                 }
-    
-                unset($productAtt->product); 
-    
                 return $cart;
             });
-    
+
         if ($size) {
             $carts = $carts->slice(0, $size)->values();
         }
-    
+
         return response()->json($carts);
     }
-    
-    
-    
 
     public function store(Request $request)
     {
@@ -56,6 +52,10 @@ class CartController extends Controller
             'product_att_id' => 'required|integer|exists:product_atts,id',
             'quantity' => 'required|integer|min:1'
         ]);
+        $productAtt = ProductAtt::find($request->product_att_id);
+        if (!$productAtt || $productAtt->is_active == false) {
+            return ApiResponse::message("Sản phẩm hiện tại không khả dụng");
+        }
 
         $userId = JWTAuth::parseToken()->authenticate()->id;
 

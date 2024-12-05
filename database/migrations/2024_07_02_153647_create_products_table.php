@@ -23,7 +23,6 @@ return new class extends Migration {
             $table->decimal('reduced_price', 8, 0)->nullable();
             $table->foreignIdFor(\App\Models\Category::class)->constrained();
             $table->boolean("is_active")->default(true);
-            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
     }

@@ -8,7 +8,6 @@ class PaymentVNPayController extends Controller
 {
     public function vnpay_payment(Request $request)
     {
-
         $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
         $vnp_Returnurl = "http://localhost:2004/order-confirmation/vnpay";
         $vnp_TmnCode = "W5IEKQTH"; //Mã website tại VNPAY 
@@ -19,7 +18,7 @@ class PaymentVNPayController extends Controller
         $vnp_OrderInfo = "Thanh toán hoá đơn";
         $vnp_OrderType = "Novathread";
         //Thay tong so tien
-        $vnp_Amount = $request->total_amount * 10;
+        $vnp_Amount = $request->total_amount * 100;
         $vnp_Locale = "VN";
         $vnp_BankCode = "NCB";
         $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
@@ -39,12 +38,15 @@ class PaymentVNPayController extends Controller
             "vnp_TxnRef" => $vnp_TxnRef
         );
 
+       
+
         if (isset($vnp_BankCode) && $vnp_BankCode != "") {
             $inputData['vnp_BankCode'] = $vnp_BankCode;
         }
         if (isset($vnp_Bill_State) && $vnp_Bill_State != "") {
             $inputData['vnp_Bill_State'] = $vnp_Bill_State;
         }
+
 
         //var_dump($inputData);
         ksort($inputData);
@@ -61,6 +63,7 @@ class PaymentVNPayController extends Controller
             $query .= urlencode($key) . "=" . urlencode($value) . '&';
         }
 
+
         $vnp_Url = $vnp_Url . "?" . $query;
         if (isset($vnp_HashSecret)) {
             $vnpSecureHash =   hash_hmac('sha512', $hashdata, $vnp_HashSecret); //  
@@ -71,6 +74,7 @@ class PaymentVNPayController extends Controller
             'message' => 'success',
             'data' => $vnp_Url
         );
+        dd($returnData);
         if (isset($_POST['redirect'])) {
             header('Location: ' . $vnp_Url);
             die();

@@ -13,15 +13,15 @@ class DashboardController extends Controller
     {
         // Lấy tham số 'period' từ request (default là 'week')
         $period = $request->input('period', 'week');
-    
+
         // Nếu lọc theo tuần
         if ($period === 'week') {
             $week = $request->input('week', 'current');
-    
+
             // Khởi tạo ngày bắt đầu và kết thúc của tuần
             $startOfWeek = Carbon::now()->startOfWeek();
             $endOfWeek = Carbon::now()->endOfWeek();
-    
+
             if ($week === 'last') {
                 $startOfWeek = Carbon::now()->subWeek()->startOfWeek();
                 $endOfWeek = Carbon::now()->subWeek()->endOfWeek();
@@ -29,7 +29,7 @@ class DashboardController extends Controller
                 $startOfWeek = Carbon::now()->subWeeks($week)->startOfWeek();
                 $endOfWeek = Carbon::now()->subWeeks($week)->endOfWeek();
             }
-    
+
             // Lấy thống kê theo tuần
             $statistics = DB::table('orders')
                 ->selectRaw("
@@ -45,11 +45,11 @@ class DashboardController extends Controller
                 ->groupByRaw('weekday')
                 ->orderByRaw('weekday')
                 ->get();
-    
+
             // Tạo danh sách tất cả các ngày trong tuần (7 ngày)
             $allDays = range(1, 7);
             $statistics = $statistics->keyBy('weekday');
-    
+
             // Tên ngày trong tuần theo kiểu "Thứ 2", "Thứ 3", ..., "Chủ nhật"
             $weekdays = [
                 1 => 'Thứ 2',
@@ -60,7 +60,7 @@ class DashboardController extends Controller
                 6 => 'Thứ 7',
                 7 => 'Chủ nhật',
             ];
-    
+
             // Thêm dữ liệu cho những ngày không có đơn hàng (trả về 0)
             $statistics = collect($allDays)->map(function ($day) use ($statistics, $weekdays) {
                 // Nếu không có dữ liệu cho ngày đó, tạo dữ liệu mặc định
@@ -75,17 +75,17 @@ class DashboardController extends Controller
                 return $stat;
             });
         }
-    
+
         // Nếu lọc theo tháng
         elseif ($period === 'month') {
             // Lấy tham số tháng và năm từ request (default là tháng và năm hiện tại)
             $month = $request->input('month', Carbon::now()->month);
             $year = $request->input('year', Carbon::now()->year);
-    
+
             // Xác định tháng và năm cần lọc
             $startOfMonth = Carbon::createFromFormat('Y-m', $year . '-' . $month)->startOfMonth();
             $endOfMonth = Carbon::createFromFormat('Y-m', $year . '-' . $month)->endOfMonth();
-    
+
             // Lấy thống kê theo tháng
             $statistics = DB::table('orders')
                 ->selectRaw("
@@ -98,11 +98,11 @@ class DashboardController extends Controller
                 ->groupByRaw('DAY(created_at)')
                 ->orderByRaw('DAY(created_at)')
                 ->get();
-    
+
             // Tạo danh sách tất cả các ngày trong tháng (1 đến 31 ngày)
             $allDays = range(1, Carbon::createFromFormat('Y-m', $year . '-' . $month)->daysInMonth);
             $statistics = $statistics->keyBy('day');
-    
+
             // Thêm dữ liệu cho những ngày không có đơn hàng (trả về 0)
             $statistics = collect($allDays)->map(function ($day) use ($statistics) {
                 // Nếu không có dữ liệu cho ngày đó, tạo dữ liệu mặc định
@@ -117,7 +117,7 @@ class DashboardController extends Controller
         } else {
             return response()->json(['error' => 'Invalid period type. Use "week" or "month".'], 400);
         }
-    
+
         // Xử lý thống kê theo ngày cho cả tuần hoặc tháng
         return response()->json($statistics->map(function ($stat) {
             return [
@@ -128,10 +128,4 @@ class DashboardController extends Controller
             ];
         }));
     }
-    
-    
-    
-    
-    
-    
 }

@@ -13,8 +13,8 @@ return new class extends Migration {
         Schema::create('order_details', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(\App\Models\Order::class)->constrained();
-            $table->foreignIdFor(\App\Models\Product::class)->constrained();
-            $table->foreignIdFor(\App\Models\ProductAtt::class)->constrained();
+            $table->unsignedBigInteger('product_id');
+            $table->unsignedBigInteger('product_att_id');
             $table->integer('quantity');
             $table->string("size", 55);
             $table->string("color", 55);

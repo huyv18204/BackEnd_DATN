@@ -184,6 +184,8 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("delivery-person", [OrderController::class, 'getByDeliveryPersonLogin']);
         Route::put("on-delivery-status", [OrderController::class, 'updateManyOrderToOnDeliveryStatus']);
         Route::get("delivery-person/history", [OrderController::class, 'historyDelivered']);
+        Route::get("/user-id", [OrderController::class, 'getById']);
+
     });
 
 

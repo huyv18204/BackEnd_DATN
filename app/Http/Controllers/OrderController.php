@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\Order\OrderRequest;
+use App\Models\Cart;
 use App\Models\DeliveryPerson;
 use App\Models\District;
 use App\Models\Order;
@@ -171,6 +172,7 @@ class OrderController extends Controller
             if ($order) {
                 foreach ($data['order_details'] as $item) {
                     $item['order_id'] = $order->id;
+                    Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
                     $orderDetails = OrderDetail::query()->create($item);
                     if ($orderDetails) {
                         $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);
@@ -439,6 +441,28 @@ class OrderController extends Controller
             ]);
         } catch (\Exception $exception) {
             DB::rollBack();
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+
+    public function getById(Request $request): JsonResponse
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $sort = $request->input('sort', "ASC");
+
+            $query = Order::query()
+                ->with('user', 'order_details')
+                ->where('user_id', $user->id)
+                ->orderBy('id', $sort);
+
+            $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+
+            return response()->json($orders);
+        } catch (\Exception $exception) {
             return response()->json([
                 'message' => $exception->getMessage()
             ]);

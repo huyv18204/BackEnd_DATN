@@ -23,9 +23,21 @@ class PaymentController extends Controller
 {
     public function createPayment(OrderRequest $request): JsonResponse
     {
-        Log::info('data', ['sdasdsadasdasdasdasd']);
         $data = $request->validated();
-        Log::info('data', $data);
+
+        foreach ($data['order_details'] as $item) {
+            $productAtt = ProductAtt::query()->find($item['product_id']);
+
+            if ($productAtt->stock_quantity < $item['quantity']) {
+                $error[] = [
+                    'message' => "Không đủ số lượng cho sản phẩm " . $item['product_name']
+                ];
+            }
+        }
+        if (!empty($error)) {
+            return response()->json(['errors' => $error], 400);
+        }
+
         $orderId = OrderHepper::createOrderCode();
         $accessKey = "F8BBA842ECF85";
         $secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
@@ -66,11 +78,9 @@ class PaymentController extends Controller
     public function handlePaymentCallback(Request $request): JsonResponse
     {
         $data = json_decode($request->extraData, true);
-        Log::info($data);
         DB::beginTransaction();
         try {
             if ($request->resultCode == 0) {
-
                 $address = OrderHepper::createOrderAddress($data['shipping_address_id']);
                 $order = Order::query()->create([
                     'order_code' => $request->orderId,
@@ -101,7 +111,6 @@ class PaymentController extends Controller
                         }
                     }
                 }
-
                 OrderStatusHistory::query()->create([
                     'order_id' => $order->id,
                     'status' => OrderStatus::PENDING->value,

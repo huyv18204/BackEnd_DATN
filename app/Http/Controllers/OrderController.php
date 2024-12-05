@@ -316,7 +316,6 @@ class OrderController extends Controller
         }
     }
 
-
     // orders by delivery login (status : waiting delivery and on delivery)
     public function getByDeliveryPersonLogin(Request $request): JsonResponse
     {
@@ -447,18 +446,22 @@ class OrderController extends Controller
         }
     }
 
-
     public function getById(Request $request): JsonResponse
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $sort = $request->input('sort', "ASC");
-
+            $status  = $request->input('status');
             $query = Order::query()
                 ->with('user', 'order_details')
                 ->where('user_id', $user->id)
                 ->orderBy('id', $sort);
 
+            if($status === "completed"){
+                $query->whereIn('order_status', [OrderStatus::DELIVERED, OrderStatus::RETURN, OrderStatus::CANCELED]);
+            }else{
+                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY, OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            }
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
 
             return response()->json($orders);

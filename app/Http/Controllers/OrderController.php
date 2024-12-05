@@ -195,7 +195,7 @@ class OrderController extends Controller
             ]);
             DB::commit();
             $message = 'Đặt hàng thành công';
-            return response()->json(['message' => $message], 201);
+            return response()->json(['message' => $message, 'total_amount' => $data['total_amount'], 'order_id' => $order->id], 201);
         } catch (Exception $exception) {
             DB::rollBack();
             return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $exception->getMessage()], 400);

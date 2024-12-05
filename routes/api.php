@@ -5,12 +5,14 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryPersonController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\OrderStatusHistoryController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentVNPayController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProvinceController;
@@ -69,6 +71,12 @@ Route::prefix("v1")->group(function () {
 
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/weekly', [DashboardController::class, 'getWeeklyStatistics']);
+    });
+
+
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::get('/{id}/show', [CategoryController::class, 'show']);
@@ -223,4 +231,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 Route::prefix('v1')->group(function () {
     Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
     Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+    //VNPay
+    Route::post('/vnpay_payment', [PaymentVNPayController::class, 'vnpay_payment']);
 });

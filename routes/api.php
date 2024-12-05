@@ -12,6 +12,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\OrderStatusHistoryController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentVNPayController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProvinceController;
@@ -71,7 +72,7 @@ Route::prefix("v1")->group(function () {
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
-    Route::prefix('dashboard')->group(function (){
+    Route::prefix('dashboard')->group(function () {
         Route::get('/weekly', [DashboardController::class, 'getWeeklyStatistics']);
     });
 
@@ -228,4 +229,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 Route::prefix('v1')->group(function () {
     Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
     Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+    //VNPay
+    Route::post('/vnpay_payment', [PaymentVNPayController::class, 'vnpay_payment']);
 });

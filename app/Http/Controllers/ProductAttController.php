@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\CustomException;
 use App\Http\Requests\ProductAtts\ProductAttRequest;
 use App\Http\Response\ApiResponse;
+use App\Models\Cart;
 use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductAtt;
@@ -115,12 +116,33 @@ class ProductAttController extends Controller
     }
 
 
+    // public function destroy(int $product_id, int $product_att_id)
+    // {
+    //     if ($product_att = ProductAtt::query()->find($product_att_id)) {
+    //         $product_att->delete();
+    //         return response()->json(['message' => 'Xóa biến thể thành công'], 200);
+    //     }
+    //     return response()->json(['message' => 'Biến thể không tồn tại'], 404);
+    // }
+
     public function destroy(int $product_id, int $product_att_id)
     {
-        if ($product_att = ProductAtt::query()->find($product_att_id)) {
-            $product_att->delete();
-            return response()->json(['message' => 'Xóa biến thể thành công'], 200);
+        $product_att = ProductAtt::find($product_att_id);
+
+        if (!$product_att) {
+            return response()->json(['message' => 'Biến thể không tồn tại'], 404);
         }
-        return response()->json(['message' => 'Biến thể không tồn tại'], 404);
+
+        if ($product_att->orderDetails()->exists()) {
+            return response()->json(['message' => 'Không thể xóa biến thể vì đã tồn tại trong đơn hàng'], 400);
+        }
+
+        Cart::whereHas('productAtt', function ($query) use ($product_id) {
+            $query->where('product_id', $product_id);
+        })->delete();
+
+        $product_att->delete();
+
+        return response()->json(['message' => 'Xóa biến thể thành công'], 200);
     }
 }

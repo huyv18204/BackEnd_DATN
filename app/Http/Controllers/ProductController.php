@@ -143,7 +143,7 @@ class ProductController extends Controller
     {
         $product = $this->findOrFail($id);
         if ($product->product_atts()->exists()) {
-            return ApiResponse::message("Không thể xóa sản phẩm đang có biến thể liên kết");
+            return ApiResponse::message("Không thể xóa sản phẩm đang có biến thể liên kết", Response::HTTP_BAD_REQUEST);
         }
         $product->delete();
         return ApiResponse::message("Xóa sản phẩm thành công");

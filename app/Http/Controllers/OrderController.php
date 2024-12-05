@@ -164,7 +164,7 @@ class OrderController extends Controller
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
                 "total_amount" => $data['total_amount'],
                 "order_address" => $address,
-                "delivery_fee" => $data['delivery_fee'],
+                "delivery_fee" => 30,
                 "note" => $data['note'] ?? null,
             ]);
 

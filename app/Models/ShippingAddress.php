@@ -19,5 +19,4 @@ class ShippingAddress extends Model
         'ward_code',
         'is_default',
     ];
-
 }

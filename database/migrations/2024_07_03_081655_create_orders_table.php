@@ -17,7 +17,8 @@ return new class extends Migration {
             $table->decimal('total_amount', 10, 0);
             $table->enum('payment_method', [
                 'Thanh toán khi nhận hàng',
-                'MOMO'
+                'MOMO',
+                'VNPAY'
             ]);
             $table->enum('order_status', [
                 'Chờ xác nhận',
@@ -26,12 +27,15 @@ return new class extends Migration {
                 'Đang giao',
                 'Đã giao',
                 'Trả hàng',
-                "Đã huỷ"
+                "Đã huỷ",
+                'Đã nhận hàng',
+                'Chưa nhận hàng'
             ])->default("Chờ xác nhận");
             $table->foreignIdFor(\App\Models\DeliveryPerson::class)->nullable()->constrained()->onDelete('set null');
             $table->enum('payment_status', [
                 'Chưa thanh toán',
                 'Đã thanh toán',
+                'Thanh toán thất bại'
             ]);
             $table->string('order_address', 255);
             $table->decimal('delivery_fee', 10, 0);

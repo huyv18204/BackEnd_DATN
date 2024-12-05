@@ -152,7 +152,7 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         $data = $request->validated();
-        DB::beginTransaction();
+//        DB::beginTransaction();
         try {
             $address = OrderHepper::createOrderAddress($data['shipping_address_id']);
             $data['order_code'] = OrderHepper::createOrderCode();
@@ -189,15 +189,15 @@ class OrderController extends Controller
                 }
             }
 
-            OrderStatusHistory::query()->create([
-                'order_id' => $order->id,
-                'status' => OrderStatus::PENDING->value,
-            ]);
-            DB::commit();
+//            OrderStatusHistory::query()->create([
+//                'order_id' => $order->id,
+//                'status' => OrderStatus::PENDING->value,
+//            ]);
+//            DB::commit();
             $message = 'Đặt hàng thành công';
             return response()->json(['message' => $message], 201);
         } catch (Exception $exception) {
-            DB::rollBack();
+//            DB::rollBack();
             return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $exception->getMessage()], 400);
         }
     }
@@ -315,7 +315,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
     // orders by delivery login (status : waiting delivery and on delivery)
     public function getByDeliveryPersonLogin(Request $request): JsonResponse
@@ -446,7 +445,6 @@ class OrderController extends Controller
             ]);
         }
     }
-
 
     public function getById(Request $request): JsonResponse
     {

@@ -27,7 +27,7 @@ class ShippingAddressRequest extends FormRequest
                 'required',
                 'string',
                 'max:11',
-                'regex:/^(?:\+84|0)(1[0-9]|9[0-3]|9[0-9]|8[1-9]|7[0-9]|6[0-9]|5[0-9]|4[0-9])\d{7}$/',
+                'regex:/^0(3[2-9]|5[6-9]|7[0-9]|8[1-9]|9[0-9])\d{7}$/',
             ],
             'recipient_address' => 'required|string|max:255',
             'province.code' => 'required|string',

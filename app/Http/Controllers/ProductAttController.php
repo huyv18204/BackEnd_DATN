@@ -23,14 +23,29 @@ class ProductAttController extends Controller
     public function index(Request $request, int $productId)
     {
         $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
-
+    
         if (!$product) {
             return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
-
-        $filteredProductAtts = $this->Filters($product->product_atts()->with(['color', 'size'])->getQuery(), $request);
-
-
+    
+        $query = $product->product_atts();
+    
+        if ($request->has('size_id')) {
+            $query->where('size_id', $request->input('size_id'));
+        }
+    
+        if ($request->has('color_id')) {
+            $query->where('color_id', $request->input('color_id'));
+        }
+    
+        $size = $request->query('size');
+    
+        if ($size) {
+            $filteredProductAtts = $query->paginate($size);
+        } else {
+            $filteredProductAtts = $query->get();
+        }
+    
         $result = $filteredProductAtts->map(function ($variant) {
             return [
                 'id' => $variant->id,
@@ -49,11 +64,13 @@ class ProductAttController extends Controller
                 'updated_at' => $variant->updated_at,
             ];
         });
-
+    
+        if ($size) {
+            return ApiResponse::data($filteredProductAtts);
+        }
+    
         return ApiResponse::data($result);
     }
-
-
 
     public function store(ProductAttRequest $request, int $productId)
     {

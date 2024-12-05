@@ -451,12 +451,17 @@ class OrderController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $sort = $request->input('sort', "ASC");
-
+            $status  = $request->input('status');
             $query = Order::query()
                 ->with('user', 'order_details')
                 ->where('user_id', $user->id)
                 ->orderBy('id', $sort);
 
+            if($status === "completed"){
+                $query->whereIn('order_status', [OrderStatus::DELIVERED, OrderStatus::RETURN, OrderStatus::CANCELED]);
+            }else{
+                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY, OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            }
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
 
             return response()->json($orders);

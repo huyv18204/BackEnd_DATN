@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Category;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -152,9 +153,8 @@ class FakeDataSeeder extends Seeder
             }
         }
 
-        // Orders seeding
         $users = DB::table('users')->get();
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 100; $i++) { 
             $userId = $users->random()->id;
             DB::table('orders')->insert([
                 'order_code' => strtoupper(Str::random(10)),
@@ -166,12 +166,11 @@ class FakeDataSeeder extends Seeder
                 'order_address' => fake()->address,
                 'note' => fake()->sentence(),
                 'delivery_fee' => rand(30000, 100000),
-                'created_at' => now(),
+                'created_at' => Carbon::now()->subMonths(3)->addDays(rand(0, 90)), // Ngày ngẫu nhiên trong 3 tháng qua
                 'updated_at' => now(),
             ]);
         }
 
-        // Order details seeding
         $orders = DB::table('orders')->get();
         $productAtts = DB::table('product_atts')->get();
         foreach ($orders as $order) {
@@ -195,6 +194,8 @@ class FakeDataSeeder extends Seeder
             }
         }
     }
+
+
     protected function generateCategoryCode()
     {
         $currentDay = date('d');

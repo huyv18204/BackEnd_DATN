@@ -72,7 +72,7 @@ Route::prefix("v1")->group(function () {
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix('dashboard')->group(function (){
-        Route::get('/weekly', [DashboardController::class, 'getWeeklyStatistics']);
+        Route::get('/weekly', [DashboardController::class, 'getStatistics']);
     });
 
 

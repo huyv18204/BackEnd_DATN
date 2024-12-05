@@ -45,7 +45,6 @@ class DashboardController extends Controller
                 return $stat;
             });
         }
-        // Nếu truyền tháng
         elseif ($month !== null) {
             $startOfMonth = Carbon::createFromFormat('Y-m', "$year-$month")->startOfMonth();
             $endOfMonth = Carbon::createFromFormat('Y-m', "$year-$month")->endOfMonth();

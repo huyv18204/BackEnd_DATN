@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\Order\OrderRequest;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderStatusHistory;
@@ -22,12 +23,14 @@ class PaymentController extends Controller
 {
     public function createPayment(OrderRequest $request): JsonResponse
     {
+        Log::info('data', ['sdasdsadasdasdasdasd']);
         $data = $request->validated();
+        Log::info('data', $data);
         $orderId = OrderHepper::createOrderCode();
         $accessKey = "F8BBA842ECF85";
         $secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
         $url = "http://localhost:3000/";
-        $ipnUrl = "https://53b7-42-114-89-102.ngrok-free.app/v1/api/payment/callback";
+        $ipnUrl = "https://fc87-42-117-129-100.ngrok-free.app/api/v1/payment/callback";
         $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
         $requestId = time() . '';
         $extraData = json_encode($data);
@@ -73,16 +76,18 @@ class PaymentController extends Controller
                     'order_code' => $request->orderId,
                     'user_id' => 1,
                     'total_amount' => $request->amount,
+                    "order_status" => OrderStatus::PENDING->value,
                     'payment_method' => PaymentMethod::MOMO->value,
                     'payment_status' => PaymentStatus::PAID->value,
                     'order_address' => $address,
                     'note' => $data['note'] ?? null,
-                    "delivery_fee" => $data['delivery_fee'],
+                    "delivery_fee" => $data['delivery_fee'] ?? 0,
                 ]);
 
                 if ($order) {
                     foreach ($data['order_details'] as $item) {
                         $item['order_id'] = $order->id;
+                        Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
                         $orderDetails = OrderDetail::query()->create($item);
                         if ($orderDetails) {
                             $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);

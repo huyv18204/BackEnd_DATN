@@ -11,7 +11,8 @@ enum OrderStatus: string
     case ON_DELIVERY = 'Đang giao';
     case CANCELED = 'Đã huỷ';
     case RETURN = 'Trả hàng';
-
+    case RECEIVED = "Đã nhận hàng";
+    case NOT_RECEIVE = "Chưa nhận hàng";
 
     public static function isValidValue(string $value): bool
     {

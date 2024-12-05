@@ -6,6 +6,8 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -60,7 +62,6 @@ class FakeDataSeeder extends Seeder
                 'updated_at' => now(),
             ]
         );
-
 
 
         $categories = ['Áo khoác', 'Áo Sơ Mi', 'Áo Chống Nắng', 'Áo Nỉ', 'Váy'];
@@ -156,7 +157,7 @@ class FakeDataSeeder extends Seeder
         $users = DB::table('users')->get();
         for ($i = 1; $i <= 10; $i++) {
             $userId = $users->random()->id;
-            DB::table('orders')->insert([
+            $order = Order::query()->create([
                 'order_code' => strtoupper(Str::random(10)),
                 'user_id' => $userId,
                 'total_amount' => rand(100000, 1000000),
@@ -169,6 +170,11 @@ class FakeDataSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+            OrderStatusHistory::query()->create([
+                'order_id' => $order->id,
+                'status' => OrderStatus::PENDING->value,
+            ]);
+
         }
 
         // Order details seeding
@@ -195,6 +201,7 @@ class FakeDataSeeder extends Seeder
             }
         }
     }
+
     protected function generateCategoryCode()
     {
         $currentDay = date('d');

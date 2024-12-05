@@ -5,6 +5,7 @@ use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ColorController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryPersonController;
 use App\Http\Controllers\DistrictController;
 use App\Http\Controllers\OrderController;
@@ -69,6 +70,12 @@ Route::prefix("v1")->group(function () {
 
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
+
+    Route::prefix('dashboard')->group(function (){
+        Route::get('/weekly', [DashboardController::class, 'getWeeklyStatistics']);
+    });
+
+
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store']);
         Route::get('/{id}/show', [CategoryController::class, 'show']);

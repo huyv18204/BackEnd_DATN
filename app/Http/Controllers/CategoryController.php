@@ -70,8 +70,11 @@ class CategoryController extends Controller
             $sortField = $sortParams[0] ?? 'created_at';
             $sortDirection = strtoupper($sortParams[1] ?? 'DESC');
 
-            $query->orderBy($sortField, $sortDirection);
+            // Kiểm tra hướng sắp xếp hợp lệ
+            if (in_array($sortDirection, ['ASC', 'DESC'])) {
 
+                $query->orderBy($sortField, $sortDirection);
+            }
 
             // Phân trang hoặc lấy tất cả kết quả
             $categories = $size ? $query->paginate($size) : $query->get();

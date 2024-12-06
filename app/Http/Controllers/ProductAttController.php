@@ -23,29 +23,29 @@ class ProductAttController extends Controller
     public function index(Request $request, int $productId)
     {
         $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
-    
+
         if (!$product) {
             return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
-    
+
         $query = $product->product_atts();
-    
+
         if ($request->has('size_id')) {
             $query->where('size_id', $request->input('size_id'));
         }
-    
+
         if ($request->has('color_id')) {
             $query->where('color_id', $request->input('color_id'));
         }
-    
+
         $size = $request->query('size');
-    
+
         if ($size) {
             $filteredProductAtts = $query->paginate($size);
         } else {
             $filteredProductAtts = $query->get();
         }
-    
+
         $result = $filteredProductAtts->map(function ($variant) {
             return [
                 'id' => $variant->id,
@@ -64,11 +64,11 @@ class ProductAttController extends Controller
                 'updated_at' => $variant->updated_at,
             ];
         });
-    
+
         if ($size) {
             return ApiResponse::data($filteredProductAtts);
         }
-    
+
         return ApiResponse::data($result);
     }
 
@@ -117,6 +117,15 @@ class ProductAttController extends Controller
         }
     }
 
+    public function show($id)
+    {
+        $productAtt = ProductAtt::find($id);
+        if (!$productAtt) {
+            return ApiResponse::error("Sản phẩm không tồn tại", Response::HTTP_NOT_FOUND);
+        }
+        return $productAtt;
+    }
+
     public function update(ProductAttRequest $request, int $product_id, int $product_att_id)
     {
         $product_att = ProductAtt::find($product_att_id);
@@ -132,26 +141,12 @@ class ProductAttController extends Controller
         }
     }
 
-
-    // public function destroy(int $product_id, int $product_att_id)
-    // {
-    //     if ($product_att = ProductAtt::query()->find($product_att_id)) {
-    //         $product_att->delete();
-    //         return response()->json(['message' => 'Xóa biến thể thành công'], 200);
-    //     }
-    //     return response()->json(['message' => 'Biến thể không tồn tại'], 404);
-    // }
-
     public function destroy(int $product_id, int $product_att_id)
     {
         $product_att = ProductAtt::find($product_att_id);
 
         if (!$product_att) {
             return response()->json(['message' => 'Biến thể không tồn tại'], 404);
-        }
-
-        if ($product_att->orderDetails()->exists()) {
-            return response()->json(['message' => 'Không thể xóa biến thể vì đã tồn tại trong đơn hàng'], 400);
         }
 
         Cart::whereHas('productAtt', function ($query) use ($product_id) {

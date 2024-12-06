@@ -46,6 +46,7 @@ Route::middleware('check.campaign')->group(function () {
     Route::get("v1/products", [ProductController::class, 'index']);
     Route::get("v1/products/{slug}", [ProductController::class, 'getBySlug']);
     Route::get('v1/products/{id}/productAtts', [ProductAttController::class, 'index']);
+    Route::get('v1/productAtts/{id}', [ProductAttController::class, 'show']);
     Route::get("v1/sizes", [SizeController::class, 'index']);
     Route::get("v1/colors", [ColorController::class, 'index']);
 });

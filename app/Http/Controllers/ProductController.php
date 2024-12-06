@@ -18,11 +18,38 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ProductController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     $query = Product::with(['category:id,name']);
+    //     $products = $this->Filters($query, $request);
+    //     return ApiResponse::data($products);
+    // }
+
     public function index(Request $request)
     {
         $query = Product::with(['category:id,name']);
-        $products = $this->Filters($query, $request);
-        return ApiResponse::data($products);
+        $size = $request->query('size');
+        // Lọc các tham số từ request qua Filters
+        $query = $this->Filters($query, $request);
+
+        // Xử lý tham số 'sort'
+        $sort = $request->input('sort', 'created_at,DESCE'); // Mặc định sắp xếp theo 'created_at' tăng dần
+        $sortParams = explode(',', $sort);
+
+        // Lấy trường và hướng sắp xếp
+        $sortField = $sortParams[0] ?? 'created_at';
+        $sortDirection = strtoupper($sortParams[1] ?? 'DESC');
+
+
+        // Kiểm tra và áp dụng sắp xếp
+        if (in_array($sortDirection, ['ASC', 'DESC'])) {
+            $query->orderBy($sortField, $sortDirection);
+        }
+
+        // Truy vấn danh sách sản phẩm
+        $products = $size ? $query->paginate($size) : $query->get();
+
+        return ApiResponse::data($products, Response::HTTP_OK);
     }
 
     public function store(ProductRequest $request)

@@ -18,16 +18,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class PaymentController extends Controller
 {
     public function createPayment(OrderRequest $request): JsonResponse
     {
         $data = $request->validated();
-
+        $data['user_id'] = JWTAuth::parseToken()->authenticate()->id;
         foreach ($data['order_details'] as $item) {
-            $productAtt = ProductAtt::query()->find($item['product_id']);
-
+            $productAtt = ProductAtt::query()->find($item['product_att_id']);
             if ($productAtt->stock_quantity < $item['quantity']) {
                 $error[] = [
                     'message' => "Không đủ số lượng cho sản phẩm " . $item['product_name']
@@ -41,8 +41,8 @@ class PaymentController extends Controller
         $orderId = OrderHepper::createOrderCode();
         $accessKey = "F8BBA842ECF85";
         $secretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
-        $url = "http://localhost:3000/";
-        $ipnUrl = "https://fc87-42-117-129-100.ngrok-free.app/api/v1/payment/callback";
+        $url = env("FE_REDIRECT_URL", 'http://localhost:3000/');
+        $ipnUrl = env('NGROK_URL') . "/api/v1/payment/callback";
         $endpoint = 'https://test-payment.momo.vn/v2/gateway/api/create';
         $requestId = time() . '';
         $extraData = json_encode($data);
@@ -84,7 +84,8 @@ class PaymentController extends Controller
                 $address = OrderHepper::createOrderAddress($data['shipping_address_id']);
                 $order = Order::query()->create([
                     'order_code' => $request->orderId,
-                    'user_id' => 1,
+//                    'user_id' => $user->id  ?? 1,
+                    'user_id' => $data['user_id'],
                     'total_amount' => $request->amount,
                     "order_status" => OrderStatus::PENDING->value,
                     'payment_method' => PaymentMethod::MOMO->value,

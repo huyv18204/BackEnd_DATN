@@ -169,25 +169,67 @@ class OrderController extends Controller
                 "note" => $data['note'] ?? null,
             ]);
 
+//            if ($order) {
+//                foreach ($data['order_details'] as $item) {
+//                    $item['order_id'] = $order->id;
+//                    Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
+//                    $orderDetails = OrderDetail::query()->create($item);
+//                    if ($orderDetails) {
+//                        $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);
+//                        if ($productAtt->stock_quantity >= $item['quantity']) {
+//                            $productAtt?->update([
+//                                'stock_quantity' => $productAtt->stock_quantity - $item['quantity']
+//                            ]);
+//                        } else {
+//                            return response()->json([
+//                                'message' => 'Số lượng sản phẩm không đủ'
+//                            ], 422);
+//                        }
+//                    }
+//                }
+//            }
+
             if ($order) {
+                $outOfStockItems = [];  // Mảng để lưu các sản phẩm không đủ số lượng
+
                 foreach ($data['order_details'] as $item) {
                     $item['order_id'] = $order->id;
+
+                    // Xóa sản phẩm trong giỏ hàng
                     Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
+
+                    // Tạo mới order detail
                     $orderDetails = OrderDetail::query()->create($item);
+
                     if ($orderDetails) {
+                        // Lấy thông tin sản phẩm
                         $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);
+
+                        // Kiểm tra nếu số lượng trong kho không đủ
                         if ($productAtt->stock_quantity >= $item['quantity']) {
-                            $productAtt?->update([
+                            // Cập nhật số lượng kho
+                            $productAtt->update([
                                 'stock_quantity' => $productAtt->stock_quantity - $item['quantity']
                             ]);
                         } else {
-                            return response()->json([
-                                'message' => 'Số lượng sản phẩm không đủ'
-                            ], 422);
+                            // Nếu không đủ số lượng, thêm vào mảng outOfStockItems
+                            $outOfStockItems[] = $productAtt->product->name; // Lấy tên sản phẩm từ mối quan hệ Product
                         }
                     }
                 }
+
+                // Nếu có sản phẩm không đủ số lượng
+                if (!empty($outOfStockItems)) {
+                    // Nối các tên sản phẩm không đủ số lượng thành một chuỗi
+                    $productNames = implode(', ', $outOfStockItems);
+
+                    // Trả về thông báo
+                    return response()->json([
+                        'message' => "Sản phẩm $productNames không đủ số lượng"
+                    ], 422);
+                }
             }
+
 
             OrderStatusHistory::query()->create([
                 'order_id' => $order->id,

@@ -35,6 +35,17 @@ class FakeDataSeeder extends Seeder
         DB::table('delivery_people')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
+        $images = [
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446344/clothing_shop/jb2ayroid0lidqaoab5g.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446344/clothing_shop/i7m6envqrbowkj6rzzqf.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446343/clothing_shop/c9dcxisaaimpsqeivagz.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446343/clothing_shop/yaw6lr2aepa2btg1n5em.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446343/clothing_shop/a5rkh9godczhjjrpxvvb.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446343/clothing_shop/lfe98fan695nly5n4yxe.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446343/clothing_shop/xpayxghsrayvzxllhtxj.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446343/clothing_shop/tqsdcw1rw1ieecg7hwcr.png',
+            'https://res.cloudinary.com/dqxshljwn/image/upload/v1733446342/clothing_shop/qrofsvpk54u0oqkcnxvi.jpg'
+        ];
 
         // Users seeding
         for ($i = 1; $i <= 10; $i++) {
@@ -100,11 +111,13 @@ class FakeDataSeeder extends Seeder
         for ($i = 1; $i <= 10; $i++) {
             $categoryId = rand(1, $countCategories);
             $name = fake()->name() . $i;
+            $thumbnail = $images[array_rand($images)];
+
             DB::table('products')->insert([
                 "slug" => Str::slug($name),
                 "material" => "Vai",
                 'name' => $name,
-                "thumbnail" => fake()->imageUrl(30, 30),
+                "thumbnail" => $thumbnail,
                 'short_description' => 'Short description for product ' . $i,
                 'long_description' => 'Long description for product ' . $i,
                 "regular_price" => rand(30000, 1000000),
@@ -125,7 +138,7 @@ class FakeDataSeeder extends Seeder
                     $productCode = strtoupper(substr($product->name, 0, 2));
                     $colorCode = strtoupper(substr($color->name, 0, 2));
                     $sizeCode = strtoupper($size->name);
-
+                    $thumbnail = $images[array_rand($images)];
                     $skuBase = $productCode . $colorCode . $sizeCode;
                     $skuCode = '001';
                     do {
@@ -147,6 +160,7 @@ class FakeDataSeeder extends Seeder
                         'color_id' => $color->id,
                         'stock_quantity' => rand(1, 10),
                         'is_active' => true,
+                        'image' => $thumbnail,
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
@@ -155,7 +169,7 @@ class FakeDataSeeder extends Seeder
         }
 
         $users = DB::table('users')->get();
-        for ($i = 1; $i <= 100; $i++) { 
+        for ($i = 1; $i <= 100; $i++) {
             $userId = $users->random()->id;
             $order = Order::query()->create([
                 'order_code' => strtoupper(Str::random(10)),
@@ -179,10 +193,18 @@ class FakeDataSeeder extends Seeder
 
         $orders = DB::table('orders')->get();
         $productAtts = DB::table('product_atts')->get();
+
+// Mảng chứa các URL hình ảnh giả để chọn ngẫu nhiên
+
+
         foreach ($orders as $order) {
             foreach ($productAtts->random(rand(1, 5)) as $productAtt) {
                 $quantity = rand(1, 5);
                 $unit_price = 200000;
+
+                // Lấy một ảnh ngẫu nhiên từ mảng $images
+                $thumbnail = $images[array_rand($images)];
+
                 DB::table('order_details')->insert([
                     'order_id' => $order->id,
                     'product_id' => $productAtt->product_id,
@@ -193,12 +215,13 @@ class FakeDataSeeder extends Seeder
                     'product_name' => 'Product N + 1',
                     'unit_price' => $unit_price,
                     'total_amount' => $unit_price * $quantity,
-                    'thumbnail' => 'fake/image',
+                    'thumbnail' => $thumbnail,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
             }
         }
+
     }
 
     protected function generateCategoryCode()

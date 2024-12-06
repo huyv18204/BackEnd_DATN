@@ -20,32 +20,101 @@ class ProductAttController extends Controller
 {
     use ApplyFilters;
 
+    // public function index(Request $request, int $productId)
+    // {
+    //     $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
+
+    //     if (!$product) {
+    //         return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
+    //     }
+
+    //     $query = $product->product_atts();
+
+    //     if ($request->has('size_id')) {
+    //         $query->where('size_id', $request->input('size_id'));
+    //     }
+
+    //     if ($request->has('color_id')) {
+    //         $query->where('color_id', $request->input('color_id'));
+    //     }
+
+    //     $size = $request->query('size');
+
+    //     if ($size) {
+    //         $filteredProductAtts = $query->paginate($size);
+    //     } else {
+    //         $filteredProductAtts = $query->get();
+    //     }
+
+    //     $result = $filteredProductAtts->map(function ($variant) {
+    //         return [
+    //             'id' => $variant->id,
+    //             'product_id' => $variant->product_id,
+    //             'color_id' => $variant->color_id,
+    //             'color_name' => $variant->color->name ?? null,
+    //             'size_id' => $variant->size_id,
+    //             'size_name' => $variant->size->name ?? null,
+    //             'sku' => $variant->sku,
+    //             'regular_price' => $variant->regular_price,
+    //             'reduced_price' => $variant->reduced_price,
+    //             'image' => $variant->image,
+    //             'stock_quantity' => $variant->stock_quantity,
+    //             'is_active' => $variant->is_active,
+    //             'created_at' => $variant->created_at,
+    //             'updated_at' => $variant->updated_at,
+    //         ];
+    //     });
+
+    //     if ($size) {
+    //         return ApiResponse::data($filteredProductAtts);
+    //     }
+
+    //     return ApiResponse::data($result);
+    // }
+
     public function index(Request $request, int $productId)
     {
-        $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
+        // Lấy sản phẩm và các thuộc tính liên quan
+        $product = Product::with(['product_atts.color', 'product_atts.size'])->find($productId);
 
+        // Kiểm tra sản phẩm tồn tại
         if (!$product) {
             return ApiResponse::error('Sản phẩm không tồn tại', Response::HTTP_NOT_FOUND);
         }
 
+        // Truy vấn các thuộc tính sản phẩm
         $query = $product->product_atts();
 
-        if ($request->has('size_id')) {
+        // Lọc theo size_id nếu có
+        if ($request->filled('size_id')) {
             $query->where('size_id', $request->input('size_id'));
         }
 
-        if ($request->has('color_id')) {
+        // Lọc theo color_id nếu có
+        if ($request->filled('color_id')) {
             $query->where('color_id', $request->input('color_id'));
         }
 
-        $size = $request->query('size');
+        // Xử lý tham số 'sort'
+        $sort = $request->input('sort', 'created_at,DESC');
+        $sortParams = explode(',', $sort);
 
-        if ($size) {
-            $filteredProductAtts = $query->paginate($size);
-        } else {
-            $filteredProductAtts = $query->get();
+        // Lấy trường và hướng sắp xếp
+        $sortField = $sortParams[0] ?? 'created_at';
+        $sortDirection = strtoupper($sortParams[1] ?? 'DESC');
+
+        // Kiểm tra và áp dụng sắp xếp
+        if (in_array($sortDirection, ['ASC', 'DESC'])) {
+            $query->orderBy($sortField, $sortDirection);
         }
 
+        // Lấy số lượng bản ghi mỗi trang từ tham số `size`
+        $size = $request->query('size');
+
+        // Phân trang hoặc lấy toàn bộ dữ liệu
+        $filteredProductAtts = $size ? $query->paginate($size) : $query->get();
+
+        // Định dạng kết quả trả về
         $result = $filteredProductAtts->map(function ($variant) {
             return [
                 'id' => $variant->id,
@@ -55,6 +124,7 @@ class ProductAttController extends Controller
                 'size_id' => $variant->size_id,
                 'size_name' => $variant->size->name ?? null,
                 'sku' => $variant->sku,
+                'product_att_code' => $variant->product_att_code,
                 'regular_price' => $variant->regular_price,
                 'reduced_price' => $variant->reduced_price,
                 'image' => $variant->image,
@@ -65,12 +135,10 @@ class ProductAttController extends Controller
             ];
         });
 
-        if ($size) {
-            return ApiResponse::data($filteredProductAtts);
-        }
-
-        return ApiResponse::data($result);
+        // Trả về kết quả phân trang hoặc danh sách đã định dạng
+        return $size ? ApiResponse::data($filteredProductAtts) : ApiResponse::data($result);
     }
+
 
     public function store(ProductAttRequest $request, int $productId)
     {

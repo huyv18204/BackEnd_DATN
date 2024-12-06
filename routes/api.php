@@ -73,7 +73,7 @@ Route::prefix("v1")->group(function () {
 
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
-    Route::prefix('dashboard')->group(function (){
+    Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'getStatistics']);
     });
 
@@ -86,7 +86,8 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
 
-    Route::prefix("products")->group(function () {
+    Route::prefix("admin/products")->group(function () {
+        Route::get('/', [ProductController::class, 'indexAdmin']);
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
         Route::get("/{id}/show", [ProductController::class, 'show']);
@@ -191,7 +192,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::put("on-delivery-status", [OrderController::class, 'updateManyOrderToOnDeliveryStatus']);
         Route::get("delivery-person/history", [OrderController::class, 'historyDelivered']);
         Route::get("/user-id", [OrderController::class, 'getById']);
-
     });
 
 

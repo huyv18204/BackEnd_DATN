@@ -29,131 +29,61 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class OrderController extends Controller
 {
-    // public function index(Request $request): JsonResponse
-    // {
-    //     $size = $request->query('size');
-
-    //     $query = Order::query()
-    //         ->with([
-    //             'user' => function ($query) {
-    //                 $query->select('id', 'name', "address", "email", "phone");
-    //             },
-    //             'delivery_person.user'
-    //         ]);
-
-    //     $query->when($request->query('minPrice'), function ($query, $minPrice) {
-    //         $query->where('total_amount', '>=', $minPrice);
-    //     });
-
-    //     $query->when($request->query('maxPrice'), function ($query, $maxPrice) {
-    //         $query->where('total_amount', '<=', $maxPrice);
-    //     });
-
-    //     $query->when($request->query('paymentMethod'), function ($query, $paymentMethod) {
-    //         if (PaymentMethod::isValidValue($paymentMethod)) {
-    //             $query->where('payment_method', $paymentMethod);
-    //         }
-    //     });
-
-    //     $query->when($request->query('orderStatus'), function ($query, $order_status) {
-    //         if (OrderStatus::isValidValue($order_status)) {
-    //             $query->where('order_status', $order_status);
-    //         }
-    //     });
-
-    //     $query->when($request->query('paymentStatus'), function ($query, $payment_status) {
-    //         if (PaymentStatus::isValidValue($payment_status)) {
-    //             $query->where('payment_status', $payment_status);
-    //         }
-    //     });
-
-    //     $query->when($request->query('userId'), function ($query, $userId) {
-    //         $query->where('user_id', $userId);
-    //     });
-
-    //     $query->when($request->query('orderCode'), function ($query, $orderCode) {
-    //         $query->where('order_code', $orderCode);
-    //     });
-
-    //     $query->orderBy('id', $request->query('sort', 'ASC'));
-
-    //     $orders = $size ? $query->paginate($size) : $query->get();
-    //     return response()->json($orders);
-    // }
-
     public function index(Request $request): JsonResponse
     {
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
         $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
 
-        // Truy vấn dữ liệu đơn hàng với các mối quan hệ liên quan
-        $query = Order::query()->with([
-            'user' => function ($query) {
-                $query->select('id', 'name', 'address', 'email', 'phone');
-            },
-            'delivery_person.user'
-        ]);
+        $query = Order::query()
+            ->with([
+                'user' => function ($query) {
+                    $query->select('id', 'name', "address", "email", "phone");
+                },
+                'delivery_person.user'
+            ]);
 
-        // Lọc theo minPrice nếu có
-        if ($minPrice = $request->query('minPrice')) {
+        $query->when($request->query('minPrice'), function ($query, $minPrice) {
             $query->where('total_amount', '>=', $minPrice);
-        }
+        });
 
-        // Lọc theo maxPrice nếu có
-        if ($maxPrice = $request->query('maxPrice')) {
+        $query->when($request->query('maxPrice'), function ($query, $maxPrice) {
             $query->where('total_amount', '<=', $maxPrice);
-        }
+        });
 
-        // Lọc theo paymentMethod nếu có
-        if ($paymentMethod = $request->query('paymentMethod')) {
+        $query->when($request->query('paymentMethod'), function ($query, $paymentMethod) {
             if (PaymentMethod::isValidValue($paymentMethod)) {
                 $query->where('payment_method', $paymentMethod);
             }
-        }
+        });
 
-        // Lọc theo orderStatus nếu có
-        if ($orderStatus = $request->query('orderStatus')) {
-            if (OrderStatus::isValidValue($orderStatus)) {
-                $query->where('order_status', $orderStatus);
+        $query->when($request->query('orderStatus'), function ($query, $order_status) {
+            if (OrderStatus::isValidValue($order_status)) {
+                $query->where('order_status', $order_status);
             }
-        }
+        });
 
-        // Lọc theo paymentStatus nếu có
-        if ($paymentStatus = $request->query('paymentStatus')) {
-            if (PaymentStatus::isValidValue($paymentStatus)) {
-                $query->where('payment_status', $paymentStatus);
+        $query->when($request->query('paymentStatus'), function ($query, $payment_status) {
+            if (PaymentStatus::isValidValue($payment_status)) {
+                $query->where('payment_status', $payment_status);
             }
-        }
+        });
 
-        // Lọc theo userId nếu có
-        if ($userId = $request->query('userId')) {
+        $query->when($request->query('userId'), function ($query, $userId) {
             $query->where('user_id', $userId);
-        }
+        });
 
-        // Lọc theo orderCode nếu có
-        if ($orderCode = $request->query('orderCode')) {
+        $query->when($request->query('orderCode'), function ($query, $orderCode) {
             $query->where('order_code', $orderCode);
-        }
+        });
 
-        // Xử lý tham số sắp xếp từ tham số 'sort'
-        $sort = $request->query('sort', 'created_at,DESC'); // Mặc định sắp xếp theo 'order_code' tăng dần
+        $query->orderBy($sortField, $sortDirection);
 
-        // Tách tham số 'sort' theo dấu phẩy
-        $sortParams = explode(',', $sort);
-        $sortField = $sortParams[0] ?? 'created_at';
-        $sortDirection = strtoupper($sortParams[1]) ?? 'DESC';
-
-        // Kiểm tra hướng sắp xếp hợp lệ
-        if (in_array($sortDirection, ['ASC', 'DESC'])) {
-            // Áp dụng sắp xếp
-            $query->orderBy($sortField, $sortDirection);
-        }
-
-        // Lấy kết quả với phân trang hoặc lấy tất cả
         $orders = $size ? $query->paginate($size) : $query->get();
-
-        // Trả về kết quả dưới dạng JSON
         return response()->json($orders);
     }
+
 
     public function updateOrderStt(Request $request, $id): JsonResponse
     {

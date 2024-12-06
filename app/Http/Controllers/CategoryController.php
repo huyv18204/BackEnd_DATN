@@ -43,8 +43,10 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        $sort = $request->input('sort', 'created_at,ASC'); // Mặc định sắp xếp theo 'created_at' tăng dần
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
         $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
 
         try {
             $query = Category::query();
@@ -65,16 +67,7 @@ class CategoryController extends Controller
                 $query->where('name', 'LIKE', '%' . $name . '%');
             });
 
-            // Xử lý sắp xếp theo 'sort'
-            $sortParams = explode(',', $sort);
-            $sortField = $sortParams[0] ?? 'created_at';
-            $sortDirection = strtoupper($sortParams[1] ?? 'DESC');
-
-            // Kiểm tra hướng sắp xếp hợp lệ
-            if (in_array($sortDirection, ['ASC', 'DESC'])) {
-
-                $query->orderBy($sortField, $sortDirection);
-            }
+            $query->orderBy($sortField, $sortDirection);
 
             // Phân trang hoặc lấy tất cả kết quả
             $categories = $size ? $query->paginate($size) : $query->get();

@@ -55,7 +55,7 @@ class ProductController extends Controller
                     'color_id' => $productAtt['color_id'],
                     'image' => $productAtt['image'] ?? null,
                     'regular_price' => $productAtt['regular_price'],
-                    'reduced_price' => $productAtt['reduced_price'],
+                    'reduced_price' => $productAtt['reduced_price'] ?? null,
                     'stock_quantity' => $productAtt['stock_quantity'],
                     'created_at' => $now,
                     'updated_at' => $now,

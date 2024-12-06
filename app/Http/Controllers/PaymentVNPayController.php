@@ -74,7 +74,7 @@ class PaymentVNPayController extends Controller
             'message' => 'success',
             'data' => $vnp_Url
         );
-        dd($returnData);
+
         if (isset($_POST['redirect'])) {
             header('Location: ' . $vnp_Url);
             die();

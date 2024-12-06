@@ -42,9 +42,9 @@ class Order extends Model
     }
 
     protected $casts = [
-        'order_status' => OrderStatus::class,
-        'payment_status' => PaymentStatus::class,
-        'payment_method' => PaymentMethod::class,
+//        'order_status' => OrderStatus::class,
+//        'payment_status' => PaymentStatus::class,
+//        'payment_method' => PaymentMethod::class,
     ];
 
     public function getCreatedAtAttribute($value)

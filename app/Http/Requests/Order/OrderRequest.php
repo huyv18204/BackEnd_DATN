@@ -14,10 +14,11 @@ class OrderRequest extends FormRequest
     public function rules()
     {
         return [
+            'payment_method' => 'nullable|in:VNPAY',
             'total_amount' => 'required|integer|numeric|min:0',
             'shipping_address_id' => 'required|integer|exists:shipping_addresses,id',
             'note' => 'nullable|string',
-            // 'delivery_fee' => 'required|integer|numeric|min:0',
+            'delivery_fee' => 'required|integer|numeric|min:0',
             'order_details' => 'required|array',
             'order_details.*.product_id' => 'required|exists:products,id',
             'order_details.*.product_att_id' => 'required|exists:product_atts,id',

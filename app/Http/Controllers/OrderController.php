@@ -94,12 +94,22 @@ class OrderController extends Controller
         }
         try {
             $order = Order::query()->find($id);
+
             if (!$order) {
                 return response()->json(['message' => 'Đơn hàng không tồn tại']);
+            }
+
+            if ($request->order_status == OrderStatus::CANCELED->value) {
+                if ($order->order_status == OrderStatus::CONFIRMED->value) {
+                    return response()->json([
+                        'message' => "Huỷ đơn hàng thất bại"
+                    ], 422);
+                }
             }
             $order->update([
                 'order_status' => $request['order_status']
             ]);
+
             if ($request['order_status'] === OrderStatus::CANCELED->value) {
                 $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
                 foreach ($orderDetails as $item) {
@@ -161,7 +171,7 @@ class OrderController extends Controller
                 "order_code" => $data['order_code'],
                 "user_id" => $user_id,
                 "order_status" => OrderStatus::PENDING->value,
-                "payment_method" => PaymentMethod::CASH->value,
+                "payment_method" => $data['payment_method'] ?? PaymentMethod::CASH->value,
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
                 "total_amount" => $data['total_amount'],
                 "order_address" => $address,
@@ -169,28 +179,8 @@ class OrderController extends Controller
                 "note" => $data['note'] ?? null,
             ]);
 
-//            if ($order) {
-//                foreach ($data['order_details'] as $item) {
-//                    $item['order_id'] = $order->id;
-//                    Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
-//                    $orderDetails = OrderDetail::query()->create($item);
-//                    if ($orderDetails) {
-//                        $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);
-//                        if ($productAtt->stock_quantity >= $item['quantity']) {
-//                            $productAtt?->update([
-//                                'stock_quantity' => $productAtt->stock_quantity - $item['quantity']
-//                            ]);
-//                        } else {
-//                            return response()->json([
-//                                'message' => 'Số lượng sản phẩm không đủ'
-//                            ], 422);
-//                        }
-//                    }
-//                }
-//            }
-
             if ($order) {
-                $outOfStockItems = [];  // Mảng để lưu các sản phẩm không đủ số lượng
+                $outOfStockItems = [];
 
                 foreach ($data['order_details'] as $item) {
                     $item['order_id'] = $order->id;
@@ -493,15 +483,15 @@ class OrderController extends Controller
         try {
             $user = JWTAuth::parseToken()->authenticate();
             $sort = $request->input('sort', "ASC");
-            $status  = $request->input('status');
+            $status = $request->input('status');
             $query = Order::query()
                 ->with('user', 'order_details')
                 ->where('user_id', $user->id)
                 ->orderBy('id', $sort);
 
-            if($status === "completed"){
+            if ($status === "completed") {
                 $query->whereIn('order_status', [OrderStatus::DELIVERED, OrderStatus::RETURN, OrderStatus::CANCELED]);
-            }else{
+            } else {
                 $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY, OrderStatus::PENDING, OrderStatus::CONFIRMED]);
             }
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();

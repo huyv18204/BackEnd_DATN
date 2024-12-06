@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\Order\OrderRequest;
+use App\Models\Cart;
 use App\Models\DeliveryPerson;
 use App\Models\District;
 use App\Models\Order;
@@ -171,6 +172,7 @@ class OrderController extends Controller
             if ($order) {
                 foreach ($data['order_details'] as $item) {
                     $item['order_id'] = $order->id;
+                    Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
                     $orderDetails = OrderDetail::query()->create($item);
                     if ($orderDetails) {
                         $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);
@@ -193,7 +195,7 @@ class OrderController extends Controller
             ]);
             DB::commit();
             $message = 'Đặt hàng thành công';
-            return response()->json(['message' => $message], 201);
+            return response()->json(['message' => $message, 'total_amount' => $data['total_amount'], 'order_id' => $order->id], 201);
         } catch (Exception $exception) {
             DB::rollBack();
             return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $exception->getMessage()], 400);
@@ -313,7 +315,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
     // orders by delivery login (status : waiting delivery and on delivery)
     public function getByDeliveryPersonLogin(Request $request): JsonResponse
@@ -439,6 +440,32 @@ class OrderController extends Controller
             ]);
         } catch (\Exception $exception) {
             DB::rollBack();
+            return response()->json([
+                'message' => $exception->getMessage()
+            ]);
+        }
+    }
+
+    public function getById(Request $request): JsonResponse
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            $sort = $request->input('sort', "ASC");
+            $status  = $request->input('status');
+            $query = Order::query()
+                ->with('user', 'order_details')
+                ->where('user_id', $user->id)
+                ->orderBy('id', $sort);
+
+            if($status === "completed"){
+                $query->whereIn('order_status', [OrderStatus::DELIVERED, OrderStatus::RETURN, OrderStatus::CANCELED]);
+            }else{
+                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY, OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            }
+            $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+
+            return response()->json($orders);
+        } catch (\Exception $exception) {
             return response()->json([
                 'message' => $exception->getMessage()
             ]);

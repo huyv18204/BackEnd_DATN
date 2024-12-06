@@ -21,14 +21,4 @@ class OrderDetail extends Model
         'unit_price',
         'total_amount'
     ];
-
-    public function product_att()
-    {
-        return $this->belongsTo(ProductAtt::class);
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
 }

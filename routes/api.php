@@ -12,6 +12,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OrderDetailsController;
 use App\Http\Controllers\OrderStatusHistoryController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PaymentVNPayController;
 use App\Http\Controllers\ProductAttController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProvinceController;
@@ -188,6 +189,8 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("delivery-person", [OrderController::class, 'getByDeliveryPersonLogin']);
         Route::put("on-delivery-status", [OrderController::class, 'updateManyOrderToOnDeliveryStatus']);
         Route::get("delivery-person/history", [OrderController::class, 'historyDelivered']);
+        Route::get("/user-id", [OrderController::class, 'getById']);
+
     });
 
 
@@ -228,4 +231,6 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 Route::prefix('v1')->group(function () {
     Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
     Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
+    //VNPay
+    Route::post('/vnpay_payment', [PaymentVNPayController::class, 'vnpay_payment']);
 });

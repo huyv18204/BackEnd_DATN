@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->string('order_code', 10)->unique();
             $table->foreignId('user_id')->constrained();
             $table->decimal('total_amount', 10, 0);
+            $table->decimal('total_product_amount', 10, 0);
+
             $table->enum('payment_method', [
                 'Thanh toán khi nhận hàng',
                 'MOMO',

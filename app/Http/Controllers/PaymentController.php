@@ -84,7 +84,7 @@ class PaymentController extends Controller
                 $address = OrderHepper::createOrderAddress($data['shipping_address_id']);
                 $order = Order::query()->create([
                     'order_code' => $request->orderId,
-//                    'user_id' => $user->id  ?? 1,
+                    'total_product_amount' => $data['total_product_amount'],
                     'user_id' => $data['user_id'],
                     'total_amount' => $request->amount,
                     "order_status" => OrderStatus::PENDING->value,

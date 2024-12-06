@@ -16,6 +16,7 @@ class OrderRequest extends FormRequest
         return [
             'payment_method' => 'nullable|in:VNPAY',
             'total_amount' => 'required|integer|numeric|min:0',
+            'total_product_amount' => 'required|integer|numeric|min:0',
             'shipping_address_id' => 'required|integer|exists:shipping_addresses,id',
             'note' => 'nullable|string',
             'delivery_fee' => 'required|integer|numeric|min:0',

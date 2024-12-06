@@ -27,7 +27,8 @@ class Order extends Model
         'note',
         'order_address',
         'delivery_person_id',
-        'delivery_fee'
+        'delivery_fee',
+        'total_product_amount'
     ];
 
 

@@ -83,15 +83,23 @@ class OrderController extends Controller
 
     public function updateOrderStt(Request $request, $id): JsonResponse
     {
-        if (!$request->order_status) {
-            return response()->json([
-                'message' => "Trạng thái là bắt buộc"
-            ]);
-        }
 
-        if (!OrderStatus::isValidValue($request->order_status)) {
-            return response()->json(['message' => "Trạng thái không hợp lệ"], 422);
-        }
+        $request->validate([
+            'order_status' => 'required|in:Chờ xác nhận,Đã xác nhận,Chờ lấy hàng,Đã giao,Đang giao,Đã huỷ,Trả hàng,Đã nhận hàng,Chưa nhận hàng',
+        ], [
+            "order_status" => "Trạng thái không hợp lệ"
+        ]);
+
+//        if (!$request->order_status) {
+//            return response()->json([
+//                'message' => "Trạng thái là bắt buộc"
+//            ]);
+//        }
+
+//        if (!OrderStatus::isValidValue($request->order_status)) {
+//            return response()->json(['message' => "Trạng thái không hợp lệ"], 422);
+//        }
+
         try {
             $order = Order::query()->find($id);
 
@@ -173,9 +181,10 @@ class OrderController extends Controller
                 "order_status" => OrderStatus::PENDING->value,
                 "payment_method" => $data['payment_method'] ?? PaymentMethod::CASH->value,
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
-                "total_amount" => $data['total_amount'],
+                "total_amount" => $data['total_amount'] + $data['delivery_fee'],
                 "order_address" => $address,
-                "delivery_fee" => 30,
+                "delivery_fee" => $data['delivery_fee'],
+                "total_product_amount" => $data['total_product_amount'],
                 "note" => $data['note'] ?? null,
             ]);
 

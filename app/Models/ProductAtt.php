@@ -40,7 +40,7 @@ class ProductAtt extends Model
         static::deleting(function ($variant) {
             $product = $variant->product;
 
-            if ($product->productAtts()->count() <= 1) {
+            if ($product->product_atts()->count() <= 1) {
                 $product->update(['is_active' => false]);
             }
         });

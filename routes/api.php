@@ -87,7 +87,6 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
     });
 
     Route::prefix("products")->group(function () {
-        Route::get('/', [ProductController::class, 'indexAdmin']);
         Route::post("/", [ProductController::class, 'store']);
         Route::put("/{id}", [ProductController::class, 'update']);
         Route::get("/{id}/show", [ProductController::class, 'show']);

@@ -52,21 +52,29 @@ class CartController extends Controller
             'product_att_id' => 'required|integer|exists:product_atts,id',
             'quantity' => 'required|integer|min:1'
         ]);
+    
         $productAtt = ProductAtt::find($request->product_att_id);
-        if (!$productAtt || $productAtt->is_active == false) {
+        if (!$productAtt) {
             return ApiResponse::message("Sản phẩm hiện tại không khả dụng");
         }
-
+    
         $userId = JWTAuth::parseToken()->authenticate()->id;
-
-        $cart = Cart::query()->where('user_id', $userId)
+    
+        $cart = Cart::query()
+            ->where('user_id', $userId)
             ->where('product_att_id', $request->product_att_id)
             ->first();
-
+    
+        $newQuantity = $cart ? $cart->quantity + $request->quantity : $request->quantity;
+    
+        if ($newQuantity > $productAtt->stock_quantity) {
+            return response()->json([
+                'message' => 'Số lượng yêu cầu vượt quá số lượng tồn kho của sản phẩm'
+            ], 400);
+        }
+    
         if ($cart) {
-            Cart::query()->where('id', $cart->id)->update([
-                'quantity' => $cart->quantity + $request->quantity
-            ]);
+            $cart->update(['quantity' => $newQuantity]);
         } else {
             Cart::query()->create([
                 'product_att_id' => $request->product_att_id,
@@ -74,10 +82,12 @@ class CartController extends Controller
                 'quantity' => $request->quantity
             ]);
         }
+    
         return response()->json([
-            "message" => "Thêm sản phẩm vào giỏ hàng thành công"
+            'message' => 'Thêm sản phẩm vào giỏ hàng thành công'
         ], 201);
     }
+    
 
 
     public function destroy($id)

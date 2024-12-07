@@ -190,7 +190,7 @@ class OrderController extends Controller
                 "order_status" => OrderStatus::PENDING->value,
                 "payment_method" => $data['payment_method'] ?? PaymentMethod::CASH->value,
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
-                "total_amount" => (int)$data['total_amount'] + (int)$data['delivery_fee'],
+                "total_amount" => (int)$data['total_amount'],
                 "order_address" => $address,
                 "delivery_fee" => $data['delivery_fee'],
                 "total_product_amount" => $data['total_product_amount'],

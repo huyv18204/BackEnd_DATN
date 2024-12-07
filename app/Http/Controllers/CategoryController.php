@@ -14,30 +14,67 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CategoryController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     $sort = $request->input('sort', 'ASC');
+    //     $size = $request->query('size');
+    //     try {
+    //         $query = Category::query();
+    //         $query->when($request->query('id'), function ($query, $id) {
+    //             $query->where('id', $id);
+    //         });
+
+    //         $query->when($request->query('status') !== null, function ($query) use ($request) {
+    //             $status = filter_var($request->query('status'), FILTER_VALIDATE_BOOLEAN);
+    //             $query->where('is_active', $status);
+    //         });
+
+    //         $query->when($request->query('name'), function ($query, $name) {
+    //             $query->where('name', 'LIKE', '%' . $name . '%');
+    //         });
+
+    //         $query->orderBy('created_at', $sort);
+    //         $categories = $size ? $query->paginate($size) : $query->get();
+    //         return ApiResponse::data($categories, Response::HTTP_OK);
+    //     } catch (\Exception $e) {
+    //         throw new CustomException("Lỗi khi truy xuất danh mục",  $e->getMessage());
+    //     }
+    // }
+
     public function index(Request $request)
     {
-        $sort = $request->input('sort', 'ASC');
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
         $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
+
         try {
             $query = Category::query();
+
+            // Lọc theo ID
             $query->when($request->query('id'), function ($query, $id) {
                 $query->where('id', $id);
             });
 
+            // Lọc theo trạng thái (is_active)
             $query->when($request->query('status') !== null, function ($query) use ($request) {
                 $status = filter_var($request->query('status'), FILTER_VALIDATE_BOOLEAN);
                 $query->where('is_active', $status);
             });
 
+            // Lọc theo tên (name)
             $query->when($request->query('name'), function ($query, $name) {
                 $query->where('name', 'LIKE', '%' . $name . '%');
             });
 
-            $query->orderBy('created_at', $sort);
+            $query->orderBy($sortField, $sortDirection);
+
+            // Phân trang hoặc lấy tất cả kết quả
             $categories = $size ? $query->paginate($size) : $query->get();
+
             return ApiResponse::data($categories, Response::HTTP_OK);
         } catch (\Exception $e) {
-            throw new CustomException("Lỗi khi truy xuất danh mục",  $e->getMessage());
+            throw new CustomException("Lỗi khi truy xuất danh mục", $e->getMessage());
         }
     }
 

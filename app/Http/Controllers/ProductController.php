@@ -25,6 +25,7 @@ class ProductController extends Controller
         return ApiResponse::data($products);
     }
 
+
     public function store(ProductRequest $request)
     {
         $dataProduct = $request->except(['product_att']);
@@ -239,9 +240,13 @@ class ProductController extends Controller
         $query->when($request->query('minPrice'), fn($q, $minPrice) => $q->where('regular_price', '>=', $minPrice));
         $query->when($request->query('maxPrice'), fn($q, $maxPrice) => $q->where('regular_price', '<=', $maxPrice));
 
-        $query->orderBy('created_at', $request->query('sort', 'ASC'));
-
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
         $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
+
+        $query->orderBy($sortField, $sortDirection);
+
         return $size ? $query->paginate($size) : $query->get();
     }
 }

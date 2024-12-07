@@ -22,6 +22,11 @@ class ProductAttController extends Controller
 
     public function index(Request $request, int $productId)
     {
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
+        $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
+
         $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
 
         if (!$product) {
@@ -38,7 +43,7 @@ class ProductAttController extends Controller
             $query->where('color_id', $request->input('color_id'));
         }
 
-        $size = $request->query('size');
+        $query->orderBy($sortField, $sortDirection);
 
         if ($size) {
             $filteredProductAtts = $query->paginate($size);

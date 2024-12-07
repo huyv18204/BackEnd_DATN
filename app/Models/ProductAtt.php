@@ -35,6 +35,17 @@ class ProductAtt extends Model
         return $this->belongsTo(Product::class);
     }
 
+    protected static function booted()
+    {
+        static::deleting(function ($variant) {
+            $product = $variant->product;
+
+            if ($product->productAtts()->count() <= 1) {
+                $product->update(['is_active' => false]);
+            }
+        });
+    }
+
     public function color()
     {
         return $this->belongsTo(Color::class, 'color_id');

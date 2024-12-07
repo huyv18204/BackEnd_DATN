@@ -237,8 +237,18 @@ class ProductController extends Controller
                 $subQuery->where('color_id', $colorId)
             )
         );
-        $query->when($request->query('minPrice'), fn($q, $minPrice) => $q->where('regular_price', '>=', $minPrice));
-        $query->when($request->query('maxPrice'), fn($q, $maxPrice) => $q->where('regular_price', '<=', $maxPrice));
+
+        $query->when(
+            $request->query('minPrice'),
+            fn($q, $minPrice) =>
+            $q->whereRaw('COALESCE(reduced_price, regular_price) >= ?', [$minPrice])
+        );
+
+        $query->when(
+            $request->query('maxPrice'),
+            fn($q, $maxPrice) =>
+            $q->whereRaw('COALESCE(reduced_price, regular_price) <= ?', [$maxPrice])
+        );
 
         //Sort
         $sortField = $request->input('sortField', 'created_at');

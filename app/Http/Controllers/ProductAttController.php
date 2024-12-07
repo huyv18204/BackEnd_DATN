@@ -149,17 +149,16 @@ class ProductAttController extends Controller
     public function destroy(int $product_id, int $product_att_id)
     {
         $product_att = ProductAtt::find($product_att_id);
-
+    
         if (!$product_att) {
             return response()->json(['message' => 'Biến thể không tồn tại'], 404);
         }
-
-        Cart::whereHas('productAtt', function ($query) use ($product_id) {
-            $query->where('product_id', $product_id);
-        })->delete();
-
+    
+        Cart::where('product_att_id', $product_att_id)->delete();
+    
         $product_att->delete();
-
+    
         return response()->json(['message' => 'Xóa biến thể thành công'], 200);
     }
+    
 }

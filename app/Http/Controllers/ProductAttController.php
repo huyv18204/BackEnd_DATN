@@ -22,6 +22,11 @@ class ProductAttController extends Controller
 
     public function index(Request $request, int $productId)
     {
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
+        $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
+
         $product = Product::with('product_atts.color', 'product_atts.size')->find($productId);
 
         if (!$product) {
@@ -38,7 +43,7 @@ class ProductAttController extends Controller
             $query->where('color_id', $request->input('color_id'));
         }
 
-        $size = $request->query('size');
+        $query->orderBy($sortField, $sortDirection);
 
         if ($size) {
             $filteredProductAtts = $query->paginate($size);
@@ -144,17 +149,16 @@ class ProductAttController extends Controller
     public function destroy(int $product_id, int $product_att_id)
     {
         $product_att = ProductAtt::find($product_att_id);
-
+    
         if (!$product_att) {
             return response()->json(['message' => 'Biến thể không tồn tại'], 404);
         }
-
-        Cart::whereHas('productAtt', function ($query) use ($product_id) {
-            $query->where('product_id', $product_id);
-        })->delete();
-
+    
+        Cart::where('product_att_id', $product_att_id)->delete();
+    
         $product_att->delete();
-
+    
         return response()->json(['message' => 'Xóa biến thể thành công'], 200);
     }
+    
 }

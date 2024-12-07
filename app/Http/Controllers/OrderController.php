@@ -31,7 +31,10 @@ class OrderController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        //Sort
+        $sortField = $request->input('sortField', 'created_at');
         $size = $request->query('size');
+        $sortDirection = $request->query('sort', 'DESC');
 
         $query = Order::query()
             ->with([
@@ -75,11 +78,12 @@ class OrderController extends Controller
             $query->where('order_code', $orderCode);
         });
 
-        $query->orderBy('id', $request->query('sort', 'ASC'));
+        $query->orderBy($sortField, $sortDirection);
 
         $orders = $size ? $query->paginate($size) : $query->get();
         return response()->json($orders);
     }
+
 
     public function updateOrderStt(Request $request, $id): JsonResponse
     {

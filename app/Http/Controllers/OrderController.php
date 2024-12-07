@@ -118,6 +118,11 @@ class OrderController extends Controller
                 'order_status' => $request['order_status']
             ]);
 
+            if ($request->order_status == OrderStatus::DELIVERED->value) {
+                $order->update([
+                    'payment_status' => PaymentStatus::PAID->value
+                ]);
+            }
             if ($request['order_status'] === OrderStatus::CANCELED->value) {
                 $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
                 foreach ($orderDetails as $item) {
@@ -181,7 +186,7 @@ class OrderController extends Controller
                 "order_status" => OrderStatus::PENDING->value,
                 "payment_method" => $data['payment_method'] ?? PaymentMethod::CASH->value,
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
-                "total_amount" => $data['total_amount'] + $data['delivery_fee'],
+                "total_amount" => (int)$data['total_amount'] + (int)$data['delivery_fee'],
                 "order_address" => $address,
                 "delivery_fee" => $data['delivery_fee'],
                 "total_product_amount" => $data['total_product_amount'],

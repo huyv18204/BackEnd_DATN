@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Http\Requests\Order\OrderRequest;
+use App\Jobs\SendOrderInfo;
 use App\Models\Cart;
 use App\Models\DeliveryPerson;
 use App\Models\District;
@@ -14,6 +15,7 @@ use App\Models\OrderDetail;
 use App\Models\OrderStatusHistory;
 use App\Models\ProductAtt;
 use App\Models\ShippingAddress;
+use App\Models\User;
 use App\Models\Ward;
 use App\Services\OrderHepper;
 use DateTime;
@@ -84,43 +86,57 @@ class OrderController extends Controller
         return response()->json($orders);
     }
 
-
     public function updateOrderStt(Request $request, $id): JsonResponse
     {
 
-        $request->validate([
-            'order_status' => 'required|in:Chờ xác nhận,Đã xác nhận,Chờ lấy hàng,Đã giao,Đang giao,Đã huỷ,Trả hàng,Đã nhận hàng,Chưa nhận hàng',
-        ], [
-            "order_status" => "Trạng thái không hợp lệ"
-        ]);
+        if (!$request->order_status) {
+            return response()->json([
+                'message' => "Trạng thái là bắt buộc"
+            ], 422);
+        }
 
-//        if (!$request->order_status) {
-//            return response()->json([
-//                'message' => "Trạng thái là bắt buộc"
-//            ]);
-//        }
-
-//        if (!OrderStatus::isValidValue($request->order_status)) {
-//            return response()->json(['message' => "Trạng thái không hợp lệ"], 422);
-//        }
+        if (!OrderStatus::isValidValue($request->order_status)) {
+            return response()->json(['message' => "Trạng thái không hợp lệ"], 422);
+        }
 
         try {
             $order = Order::query()->find($id);
 
             if (!$order) {
-                return response()->json(['message' => 'Đơn hàng không tồn tại']);
+                return response()->json(['message' => 'Đơn hàng không tồn tại'], 404);
             }
 
-            if ($request->order_status == OrderStatus::CANCELED->value) {
-                if ($order->order_status == OrderStatus::CONFIRMED->value) {
+            if ($order->order_status === OrderStatus::CANCELED->value) {
+                return response()->json([
+                    "message" => "Đơn hàng đã bị huỷ trước đó"
+                ], 422);
+            }
+
+            if ($order->order_status === OrderStatus::ON_DELIVERY->value ||
+                $order->order_status === OrderStatus::DELIVERED->value ||
+                $order->order_status === OrderStatus::RECEIVED->value ||
+                $order->order_status === OrderStatus::NOT_RECEIVE->value ||
+                $order->order_status === OrderStatus::RETURN->value) {
+                if ($request->order_status === OrderStatus::CANCELED->value) {
                     return response()->json([
-                        'message' => "Huỷ đơn hàng thất bại"
+                        "message" => "Không thể huỷ đơn hàng"
                     ], 422);
                 }
             }
+
             $order->update([
                 'order_status' => $request['order_status']
             ]);
+
+            $user = User::query()->find($order->user_id);
+
+            if ($request->order_status === OrderStatus::CANCELED->value ||
+                $request->order_status === OrderStatus::DELIVERED->value ||
+                $request->order_status === OrderStatus::ON_DELIVERY->value ||
+                $request->order_status === OrderStatus::CONFIRMED->value
+            ) {
+                SendOrderInfo::dispatch($user->email, $request->order_status, $order);
+            }
 
             if ($request->order_status == OrderStatus::DELIVERED->value) {
                 $order->update([
@@ -150,43 +166,45 @@ class OrderController extends Controller
         }
     }
 
-    public function updatePaymentStt(Request $request, $id): JsonResponse
-    {
-        $validatedData = $request->validate([
-            'payment_status' => [
-                'required',
-                new \Illuminate\Validation\Rules\Enum(PaymentStatus::class)
-            ],
-        ]);
-        try {
-            $order = Order::query()->find($id);
-            if (!$order) {
-                return response()->json('Đơn hàng không tồn tại');
-            }
-            $order->update([
-                'payment_status' => $validatedData['payment_status']
-            ]);
-            return response()->json([
-                'message' => 'Cập nhật trạng thái thanh toán thành công'
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
-
     public function store(OrderRequest $request): JsonResponse
     {
         $data = $request->validated();
         DB::beginTransaction();
         try {
+            $errors = [];
+            $outOfStockItems = [];
+            $productAtts = ProductAtt::query()
+                ->whereIn('id', array_column($data['order_details'], 'product_att_id'))
+                ->get()
+                ->keyBy('id');
+            foreach ($data['order_details'] as $item) {
+                $productAtt = $productAtts->get($item['product_att_id']);
+                if ($productAtt->reduced_price && $productAtt->reduced_price != (int)$item['unit_price']) {
+                    $errors[] = "{$item['product_name']}";
+                } elseif (!$productAtt->reduced_price && $productAtt->regular_price != (int)$item['unit_price']) {
+                    $errors[] = "{$item['product_name']}";
+                }
+                if ($productAtt->stock_quantity < $item['quantity']) {
+                    $outOfStockItems[] = $productAtt->product->name;
+                }
+            }
+            if (!empty($errors)) {
+                $string = implode(', ', $errors);
+                return response()->json(['message' => 'Giá sản phẩm ' . $string . " đã bị thay đổi"], 422);
+            }
+
+            if (!empty($outOfStockItems)) {
+                $string = implode(', ', $outOfStockItems);
+                return response()->json(['message' => 'Sản phẩm ' . $string . ' không đủ số lượng'], 422);
+            }
+
             $address = OrderHepper::createOrderAddress($data['shipping_address_id']);
             $data['order_code'] = OrderHepper::createOrderCode();
-            $user_id = JWTAuth::parseToken()->authenticate()->id;
+            $user = JWTAuth::parseToken()->authenticate();
+
             $order = Order::query()->create([
                 "order_code" => $data['order_code'],
-                "user_id" => $user_id,
+                "user_id" => $user->id,
                 "order_status" => OrderStatus::PENDING->value,
                 "payment_method" => $data['payment_method'] ?? PaymentMethod::CASH->value,
                 "payment_status" => PaymentStatus::NOT_YET_PAID->value,
@@ -197,58 +215,29 @@ class OrderController extends Controller
                 "note" => $data['note'] ?? null,
             ]);
 
-            if ($order) {
-                $outOfStockItems = [];
+            foreach ($data['order_details'] as $item) {
+                $item['order_id'] = $order->id;
+                Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
+                OrderDetail::query()->create($item);
 
-                foreach ($data['order_details'] as $item) {
-                    $item['order_id'] = $order->id;
-
-                    // Xóa sản phẩm trong giỏ hàng
-                    Cart::query()->where('product_att_id', $item['product_att_id'])->delete();
-
-                    // Tạo mới order detail
-                    $orderDetails = OrderDetail::query()->create($item);
-
-                    if ($orderDetails) {
-                        // Lấy thông tin sản phẩm
-                        $productAtt = ProductAtt::query()->find($orderDetails->product_att_id);
-
-                        // Kiểm tra nếu số lượng trong kho không đủ
-                        if ($productAtt->stock_quantity >= $item['quantity']) {
-                            // Cập nhật số lượng kho
-                            $productAtt->update([
-                                'stock_quantity' => $productAtt->stock_quantity - $item['quantity']
-                            ]);
-                        } else {
-                            // Nếu không đủ số lượng, thêm vào mảng outOfStockItems
-                            $outOfStockItems[] = $productAtt->product->name; // Lấy tên sản phẩm từ mối quan hệ Product
-                        }
-                    }
-                }
-
-                // Nếu có sản phẩm không đủ số lượng
-                if (!empty($outOfStockItems)) {
-                    // Nối các tên sản phẩm không đủ số lượng thành một chuỗi
-                    $productNames = implode(', ', $outOfStockItems);
-
-                    // Trả về thông báo
-                    return response()->json([
-                        'message' => "Sản phẩm $productNames không đủ số lượng"
-                    ], 422);
+                $productAtt = $productAtts->get($item['product_att_id']);
+                if (!$productAtt->update(['stock_quantity' => $productAtt->stock_quantity - $item['quantity']])) {
+                    throw new Exception("Không thể cập nhật tồn kho");
                 }
             }
-
-
             OrderStatusHistory::query()->create([
                 'order_id' => $order->id,
                 'status' => OrderStatus::PENDING->value,
             ]);
+
+            SendOrderInfo::dispatch($user->email, "Chờ xác nhận", $order);
+
+
             DB::commit();
-            $message = 'Đặt hàng thành công';
-            return response()->json(['message' => $message, 'total_amount' => $data['total_amount'], 'order_id' => $order->id], 201);
-        } catch (Exception $exception) {
+            return response()->json(['message' => 'Đặt hàng thành công'], 201);
+        } catch (Exception $e) {
             DB::rollBack();
-            return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $exception->getMessage()], 400);
+            return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $e->getMessage()], 400);
         }
     }
 

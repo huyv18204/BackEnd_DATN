@@ -21,6 +21,7 @@ use App\Http\Controllers\ShipmentDetailController;
 use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,7 @@ Route::middleware(['check.campaign', 'throttle:60,1'])->group(function () {
     Route::get('v1/productAtts/{id}', [ProductAttController::class, 'show']);
     Route::get("v1/sizes", [SizeController::class, 'index']);
     Route::get("v1/colors", [ColorController::class, 'index']);
+    Route::get("v1/vouchers/client", [VoucherController::class, 'getAllVouchers']);
 });
 
 
@@ -117,6 +119,11 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
 
+    Route::prefix("vouchers")->group(function () {
+        Route::get("/", [VoucherController::class, 'index']);
+        Route::post("/", [VoucherController::class, 'store']);
+        Route::put("/{id}", [VoucherController::class, 'update']);
+    });
     Route::prefix("orders")->group(function () {
         Route::get("/", [OrderController::class, 'index']);
         Route::get("{id}/delivery-person", [OrderController::class, 'getByDeliveryPersonId']);

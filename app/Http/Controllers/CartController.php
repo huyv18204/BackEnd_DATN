@@ -88,8 +88,6 @@ class CartController extends Controller
         ], 201);
     }
     
-
-
     public function destroy($id)
     {
         $cart = Cart::query()->find($id);

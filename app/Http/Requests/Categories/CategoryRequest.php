@@ -25,14 +25,14 @@ class CategoryRequest extends FormRequest
     
         if ($this->isMethod('PUT')) {
             return [
-                'name' => 'required|string|max:255|unique:categories,name,' . $id,
+                'name' => 'required|string|max:100|unique:categories,name,' . $id,
                 'image' => 'nullable',
                 'is_active' => 'boolean',
             ];
         }
     
         return [
-            'name' => 'required|string|max:255|unique:categories,name',
+            'name' => 'required|string|max:100|unique:categories,name',
             'image' => 'nullable',
             'is_active' => 'boolean',
         ];

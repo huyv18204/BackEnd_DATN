@@ -24,7 +24,7 @@ class ProductRequest extends FormRequest
         $productId = $this->route('id');
         $rules =  [
             'material' => 'nullable|string|max:255',
-            'name' => 'required|string|max:55|unique:products,name',
+            'name' => 'required|string|min:3|max:100|unique:products,name',
             'thumbnail' => 'required|max:255',
             'short_description' => 'nullable|string',
             'long_description' => 'nullable|string',

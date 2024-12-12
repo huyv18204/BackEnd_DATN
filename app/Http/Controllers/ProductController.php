@@ -25,7 +25,6 @@ class ProductController extends Controller
         return ApiResponse::data($products);
     }
 
-
     public function store(ProductRequest $request)
     {
         $dataProduct = $request->except(['product_att']);

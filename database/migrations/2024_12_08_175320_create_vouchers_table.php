@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamp('start_date')->nullable();
             $table->timestamp('end_date')->nullable();
-            $table->string('status')->default('Chưa bắt đầu');
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }

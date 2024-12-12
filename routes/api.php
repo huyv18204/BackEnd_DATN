@@ -122,6 +122,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
     Route::prefix("vouchers")->group(function () {
         Route::get("/", [VoucherController::class, 'index']);
         Route::post("/", [VoucherController::class, 'store']);
+        Route::get("/{id}", [VoucherController::class, 'show']);
         Route::put("/{id}", [VoucherController::class, 'update']);
     });
     Route::prefix("orders")->group(function () {

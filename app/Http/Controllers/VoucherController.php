@@ -15,7 +15,7 @@ class VoucherController extends Controller
     {
         $query = Voucher::query();
         $size = $request->query('size');
-        return $size ? ApiResponse::data($query->paginate($size)) : ApiResponse::data($query->get());;
+        return $size ? ApiResponse::data($query->paginate($size)) : ApiResponse::data($query->get());
     }
 
     public function store(VoucherRequest $request)
@@ -25,13 +25,19 @@ class VoucherController extends Controller
 
             $currentDate = now();
             if ($currentDate->between($data['start_date'], $data['end_date'])) {
-                $data['status'] = 'Đang diễn ra';
+                $data['status'] = 'active';
             }
             Voucher::create($data);
             return ApiResponse::message("Thêm mới mã giảm giá thành công", Response::HTTP_CREATED);
         } catch (\Exception $e) {
             throw new CustomException("Lỗi khi thêm voucher", $e->getMessage());
         }
+    }
+
+    public function show(string $id)
+    {
+        $voucher = $this->findOrFail($id);
+        return ApiResponse::data($voucher);
     }
 
 
@@ -41,7 +47,7 @@ class VoucherController extends Controller
         $voucher = $this->findOrFail($id);
         $currentDate = now();
         if ($currentDate->between($data['start_date'], $data['end_date'])) {
-            $data['status'] = 'Đang diễn ra';
+            $data['status'] = 'active';
         }
         try {
             $voucher->update($data);
@@ -53,8 +59,18 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $voucher = Voucher::where('status', 'Đang diễn ra');
+        $voucher = Voucher::where('status', 'active');
         return ApiResponse::data($voucher);
+    }
+
+    public function destroy(string $id)
+    {
+        $voucher = $this->findOrFail($id);
+        if ($voucher->status == 'active') {
+            return ApiResponse::error("Không thể xóa mã giảm giá đang hoạt động");
+        }
+        $voucher->delete();
+        return ApiResponse::message("Xóa mã giảm giá thành công");
     }
 
     public function findOrFail($id)

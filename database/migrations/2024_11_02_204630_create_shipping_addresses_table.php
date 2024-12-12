@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('recipient_name',55);
             $table->string('recipient_phone',11);
             $table->string('recipient_address',255);
-            $table->string('province_code');
+            $table->string('province_code', 20);
             $table->foreign('province_code')->references('code')->on('provinces')->cascadeOnDelete();
-            $table->string('district_code');
+            $table->string('district_code', 20);
             $table->foreign('district_code')->references('code')->on('districts')->cascadeOnDelete();
-            $table->string('ward_code');
+            $table->string('ward_code', 20);
             $table->foreign('ward_code')->references('code')->on('wards')->cascadeOnDelete();
 
             $table->timestamps();

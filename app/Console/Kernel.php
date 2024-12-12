@@ -12,8 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // Đặt lịch chạy job mỗi phút
         $schedule->job(new \App\Jobs\CheckOrderStatusJob)->everyMinute();
+        $schedule->command('orders:update-status')->everyMinute();
     }
 
     /**

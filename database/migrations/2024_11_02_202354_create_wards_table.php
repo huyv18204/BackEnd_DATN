@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('wards', function (Blueprint $table) {
             $table->id();
-            $table->string('code')->unique();
-            $table->string('name');
+            $table->string('code', 20)->unique();
+            $table->string('name', 55);
             $table->string('district_code', 10);
             $table->foreign('district_code')
                 ->references('code')

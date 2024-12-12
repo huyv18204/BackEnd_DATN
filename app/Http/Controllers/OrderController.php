@@ -143,7 +143,12 @@ class OrderController extends Controller
                     'payment_status' => PaymentStatus::PAID->value
                 ]);
             }
-            if ($request['order_status'] === OrderStatus::CANCELED->value) {
+            if ($request->order_status === OrderStatus::CANCELED->value) {
+                OrderStatusHistory::query()->where('order_id', $id)->where('status', '!=', OrderStatus::PENDING->value)->delete();
+                OrderStatusHistory::query()->where('order_id', $id)->where('status', OrderStatus::PENDING->value)->update([
+                    'note' => $request->note,
+                ]);
+
                 $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
                 foreach ($orderDetails as $item) {
                     $productAtt = ProductAtt::query()->find($item->product_att_id);
@@ -151,11 +156,25 @@ class OrderController extends Controller
                         'stock_quantity' => $productAtt->stock_quantity + $item->quantity
                     ]);
                 }
+            } elseif ($request->order_status === OrderStatus::DELIVERED->value) {
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => $request->order_status,
+                    'image' => $request->image,
+                ]);
+            } elseif ($request->order_status === OrderStatus::RETURN->value) {
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => $request->order_status,
+                    'note' => $request->note
+                ]);
+            } else {
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => $request->order_status,
+                ]);
             }
-            OrderStatusHistory::query()->create([
-                'order_id' => $id,
-                'status' => $request['order_status'],
-            ]);
+
             return response()->json([
                 'message' => 'Cập nhật trạng thái đơn hàng thành công'
             ]);

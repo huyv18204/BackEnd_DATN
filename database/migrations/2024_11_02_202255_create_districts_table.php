@@ -12,12 +12,12 @@ return new class extends Migration {
     {
         Schema::create('districts', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('province_code');
+            $table->string('name', 55);
+            $table->string('province_code', 20);
             $table->foreign('province_code')
                 ->references('code')
                 ->on('provinces');
-            $table->string('code')->unique();
+            $table->string('code', 20)->unique();
             $table->decimal('shipping_fee', 8, 0)->nullable();
             $table->timestamps();
         });

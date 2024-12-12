@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-            $table->string("name")->unique();
+            $table->string("name", 55)->unique();
             $table->string('category_code', 55)->unique();
             $table->string('slug', 255)->unique();
             $table->boolean("is_active")->default(true);

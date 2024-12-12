@@ -59,7 +59,7 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $voucher = Voucher::where('status', 'active');
+        $voucher = Voucher::where('status', 'active')->get();
         return ApiResponse::data($voucher);
     }
 

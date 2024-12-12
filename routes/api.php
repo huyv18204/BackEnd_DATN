@@ -41,7 +41,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // client
-Route::middleware(['check.campaign', 'throttle:60,1'])->group(function () {
+Route::middleware(['check.voucher', 'throttle:60,1'])->group(function () {
     Route::get('v1/categories/', [CategoryController::class, 'index']);
     Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
     Route::get("v1/products", [ProductController::class, 'index']);

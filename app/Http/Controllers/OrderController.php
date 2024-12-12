@@ -515,10 +515,16 @@ class OrderController extends Controller
                 ->where('user_id', $user->id)
                 ->orderBy('id', $sort);
 
-            if ($status === "completed") {
-                $query->whereIn('order_status', [OrderStatus::DELIVERED, OrderStatus::RETURN, OrderStatus::CANCELED]);
-            } else {
-                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY, OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            if ($status === "confirm") {
+                $query->whereIn('order_status', [OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            } elseif ($status === "delivery") {
+                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY]);
+            }
+            if ($status === "delivered") {
+                $query->whereIn('order_status', [OrderStatus::DELIVERED]);
+            }
+            if ($status === "history"){
+                $query->whereIn('order_status', [OrderStatus::RECEIVED, OrderStatus::RETURN, OrderStatus::CANCELED, OrderStatus::NOT_RECEIVE]);
             }
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
 

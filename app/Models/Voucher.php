@@ -23,4 +23,9 @@ class Voucher extends Model
         'end_date',
         'status',
     ];
+
+    public function voucher_users()
+    {
+        return $this->hasMany(VoucherUser::class);
+    }
 }

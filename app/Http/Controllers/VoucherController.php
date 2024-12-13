@@ -61,8 +61,15 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $voucher = Voucher::where('status', 'active')->get();
-        return ApiResponse::data($voucher);
+        $user = JWTAuth::parseToken()->authenticate();
+    
+        $vouchers = Voucher::where('status', 'active')
+            ->whereDoesntHave('voucher_users', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->get();
+    
+        return ApiResponse::data($vouchers);
     }
 
     public function toggleStatus(string $id)

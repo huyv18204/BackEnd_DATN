@@ -21,6 +21,7 @@ use App\Http\Controllers\ShipmentDetailController;
 use App\Http\Controllers\ShippingAddressController;
 use App\Http\Controllers\SizeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VoucherController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,7 +41,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // client
-Route::middleware(['check.campaign', 'throttle:60,1'])->group(function () {
+Route::middleware(['check.voucher', 'throttle:60,1'])->group(function () {
     Route::get('v1/categories/', [CategoryController::class, 'index']);
     Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
     Route::get("v1/products", [ProductController::class, 'index']);
@@ -49,6 +50,8 @@ Route::middleware(['check.campaign', 'throttle:60,1'])->group(function () {
     Route::get('v1/productAtts/{id}', [ProductAttController::class, 'show']);
     Route::get("v1/sizes", [SizeController::class, 'index']);
     Route::get("v1/colors", [ColorController::class, 'index']);
+    Route::get("v1/vouchers/client", [VoucherController::class, 'getAllVouchers']);
+    Route::post("v1/vouchers/apply", [VoucherController::class, 'applyVoucher']);
 });
 
 
@@ -115,6 +118,14 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
         Route::put("/{id}", [SizeController::class, 'update']);
         Route::put('/{id}/toggle-status', [SizeController::class, 'toggleStatus']);
         Route::delete("/{id}", [SizeController::class, 'destroy']);
+    });
+
+    Route::prefix("vouchers")->middleware('check.voucher')->group(function () {
+        Route::get("/", [VoucherController::class, 'index']);
+        Route::post("/", [VoucherController::class, 'store']);
+        Route::get("/{id}", [VoucherController::class, 'show']);
+        Route::put("/{id}", [VoucherController::class, 'update']);
+        Route::put("/{id}/toggle-status", [VoucherController::class, 'toggleStatus']);
     });
 
     Route::prefix("orders")->group(function () {

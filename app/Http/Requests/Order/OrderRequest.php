@@ -14,6 +14,7 @@ class OrderRequest extends FormRequest
     public function rules()
     {
         return [
+            'voucher_code' => 'nullable|exists:vouchers,voucher_code',
             'payment_method' => 'nullable|in:VNPAY',
             'total_amount' => 'required|integer|numeric|min:0',
             'total_product_amount' => 'required|integer|numeric|min:0',

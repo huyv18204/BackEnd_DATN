@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('voucher_products', function (Blueprint $table) {
+        Schema::create('voucher_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\App\Models\Voucher::class)->constrained();
-            $table->foreignIdFor(\App\Models\Product::class)->constrained();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('voucher_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            $table->unique(['user_id', 'voucher_id']);
         });
     }
 
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('voucher_products');
+        Schema::dropIfExists('user_voucher');
     }
 };

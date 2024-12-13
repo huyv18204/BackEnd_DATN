@@ -217,7 +217,7 @@ class ProductController extends Controller
         $query->when($request->query('id'), fn($q, $id) => $q->where('id', $id));
         $query->when($request->query('categoryId'), fn($q, $categoryId) => $q->where('category_id', $categoryId));
         $query->when($request->query('name'), fn($q, $name) => $q->where('name', 'like', '%' . $name . '%'));
-
+        $query->when($request->query('is_active'),fn($q, $isActive) => $q->where('is_active', $isActive));
         $query->when(
             $request->query('sizeId'),
             fn($q, $sizeId) =>
@@ -248,6 +248,8 @@ class ProductController extends Controller
             fn($q, $maxPrice) =>
             $q->whereRaw('COALESCE(reduced_price, regular_price) <= ?', [$maxPrice])
         );
+
+    
 
         //Sort
         $sortField = $request->input('sortField', 'created_at');

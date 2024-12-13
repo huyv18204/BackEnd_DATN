@@ -51,6 +51,7 @@ Route::middleware(['check.voucher', 'throttle:60,1'])->group(function () {
     Route::get("v1/sizes", [SizeController::class, 'index']);
     Route::get("v1/colors", [ColorController::class, 'index']);
     Route::get("v1/vouchers/client", [VoucherController::class, 'getAllVouchers']);
+    Route::post("v1/vouchers/apply", [VoucherController::class, 'applyVoucher']);
 });
 
 

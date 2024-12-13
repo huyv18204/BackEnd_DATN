@@ -21,6 +21,14 @@ class VoucherRequest extends FormRequest
      */
     public function rules()
     {
+        $url = $this->url();
+        if (str_contains($url, 'apply')) {
+            return [
+                'voucher_code' => 'required|string',
+                'order_total'  => 'required|numeric|min:0',
+            ];
+        }
+
         if ($this->isMethod('put')) {
             return [
                 'voucher_code' => 'nullable|string|unique:vouchers,voucher_code,' . $this->route('id'),
@@ -62,7 +70,6 @@ class VoucherRequest extends FormRequest
             'start_date.after_or_equal' => 'Thời gian bắt đầu phải lớn hơn hoặc bằng thời gian hiện tại',
             'end_date.after' => 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu',
         ];
-
     }
     public function attributes()
     {
@@ -80,6 +87,8 @@ class VoucherRequest extends FormRequest
             'start_date' => 'Ngày bắt đầu',
             'end_date' => 'Ngày kết thúc',
             'status' => 'Trạng thái',
+            'voucher_code' => 'Mã giảm giá',
+            'order_total' => 'Tổng tiền',
         ];
     }
 }

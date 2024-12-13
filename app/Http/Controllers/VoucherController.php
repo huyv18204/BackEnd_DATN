@@ -6,9 +6,11 @@ use App\Exceptions\CustomException;
 use App\Http\Requests\VoucherRequest;
 use App\Http\Response\ApiResponse;
 use App\Models\Voucher;
+use App\Models\VoucherUser;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class VoucherController extends Controller
 {
@@ -46,6 +48,9 @@ class VoucherController extends Controller
     {
         $data = $request->validated();
         $voucher = $this->findOrFail($id);
+        if ($voucher->status != 'pending') {
+            return ApiResponse::error("Chỉ có thể sửa mã giảm giá ở trạng thái chưa bắt đầu");
+        }
         try {
             $voucher->update($data);
             return ApiResponse::message("Sửa mã giảm giá thành công");
@@ -69,6 +74,52 @@ class VoucherController extends Controller
         $voucher->status = $voucher->status === 'active' ? 'pause' : 'active';
         $voucher->save();
         return ApiResponse::message("Thay đổi mã giảm giá thành công");
+    }
+
+    public function applyVoucher(VoucherRequest $request)
+    {
+        $voucherCode = $request->voucher_code;
+        $totalOrder = $request->order_total;
+        $userId = JWTAuth::parseToken()->authenticate()->id;
+        $voucher = Voucher::where('voucher_code', $voucherCode)->first();
+
+        if (!$voucher) {
+            return ApiResponse::error('Mã giảm giá không tồn tại', Response::HTTP_NOT_FOUND);
+        }
+
+        if ($voucher->status != 'active') {
+            return ApiResponse::error("Mã giảm giá đã không còn hoạt động", Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($voucher->used_count > $voucher->usage_limit) {
+            return ApiResponse::error("Rất tiếc mã giảm giá đã đạt đến giới hạn lượt sử dụng");
+        }
+
+        if (VoucherUser::where('user_id', $userId)->where('voucher_id', $voucher->id)->exists()) {
+            return ApiResponse::error("Bạn đã sử dụng mã giảm giá này rồi", Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($voucher->min_order_value && $voucher->min_order_value > $totalOrder) {
+            return ApiResponse::error("Mã giảm giá này chỉ có thể áp dụng cho đơn hàng có giá trị từ $voucher->min_order_value trở lên", Response::HTTP_BAD_REQUEST);
+        }
+
+        $discountPrice = 0;
+        if ($voucher->discount_type == 'percentage') {
+            $discountPrice = $totalOrder * ($voucher->discount_value / 100);
+            if ($voucher->max_discount) {
+                $discountPrice = min($discountPrice, $voucher->max_discount);
+            }
+        } elseif ($voucher->discount_type == 'fixed_amount') {
+            $discountPrice = min($voucher->discount_value, $totalOrder);
+            if ($voucher->max_discount) {
+                $discountPrice = min($discountPrice, $voucher->max_discount);
+            }
+        }
+        $finalTotal = $totalOrder - $discountPrice;
+        return response()->json([
+            "discountPrice" => $discountPrice,
+            "totalOrder" => $finalTotal,
+        ]);
     }
 
     public function destroy(string $id)

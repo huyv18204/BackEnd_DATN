@@ -16,6 +16,8 @@ use App\Models\OrderStatusHistory;
 use App\Models\ProductAtt;
 use App\Models\ShippingAddress;
 use App\Models\User;
+use App\Models\Voucher;
+use App\Models\VoucherUser;
 use App\Models\Ward;
 use App\Services\OrderHepper;
 use DateTime;
@@ -112,11 +114,13 @@ class OrderController extends Controller
                 ], 422);
             }
 
-            if ($order->order_status === OrderStatus::ON_DELIVERY->value ||
+            if (
+                $order->order_status === OrderStatus::ON_DELIVERY->value ||
                 $order->order_status === OrderStatus::DELIVERED->value ||
                 $order->order_status === OrderStatus::RECEIVED->value ||
                 $order->order_status === OrderStatus::NOT_RECEIVE->value ||
-                $order->order_status === OrderStatus::RETURN->value) {
+                $order->order_status === OrderStatus::RETURN->value
+            ) {
                 if ($request->order_status === OrderStatus::CANCELED->value) {
                     return response()->json([
                         "message" => "Không thể huỷ đơn hàng"
@@ -130,7 +134,8 @@ class OrderController extends Controller
 
             $user = User::query()->find($order->user_id);
 
-            if ($request->order_status === OrderStatus::CANCELED->value ||
+            if (
+                $request->order_status === OrderStatus::CANCELED->value ||
                 $request->order_status === OrderStatus::DELIVERED->value ||
                 $request->order_status === OrderStatus::ON_DELIVERY->value ||
                 $request->order_status === OrderStatus::CONFIRMED->value
@@ -169,8 +174,18 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $user = JWTAuth::parseToken()->authenticate();
         DB::beginTransaction();
         try {
+            if ($data['voucher_code']) {
+                $voucher = Voucher::where('voucher_code', $data['voucher_code'])->first();
+                VoucherUser::create([
+                    'user_id' => $user->id,
+                    'voucher_id' => $voucher->id,
+                ]);
+                $voucher->increment('used_count');
+            }
+
             $errors = [];
             $outOfStockItems = [];
             $productAtts = ProductAtt::query()
@@ -200,7 +215,7 @@ class OrderController extends Controller
 
             $address = OrderHepper::createOrderAddress($data['shipping_address_id']);
             $data['order_code'] = OrderHepper::createOrderCode();
-            $user = JWTAuth::parseToken()->authenticate();
+
 
             $order = Order::query()->create([
                 "order_code" => $data['order_code'],
@@ -231,7 +246,6 @@ class OrderController extends Controller
             ]);
 
             SendOrderInfo::dispatch($user->email, "Chờ xác nhận", $order);
-
 
             DB::commit();
             return response()->json(['message' => 'Đặt hàng thành công'], 201);

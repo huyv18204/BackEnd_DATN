@@ -23,7 +23,7 @@ class VoucherRequest extends FormRequest
     {
         if ($this->isMethod('put')) {
             return [
-                'voucher_code' => 'required|string|unique:vouchers,voucher_code,' . $this->route('id'),
+                'voucher_code' => 'nullable|string|unique:vouchers,voucher_code,' . $this->route('id'),
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'discount_type' => 'required|in:percentage,fixed_amount',
@@ -40,7 +40,7 @@ class VoucherRequest extends FormRequest
         }
 
         return [
-            'voucher_code' => 'required|string|unique:vouchers,voucher_code',
+            'voucher_code' => 'nullable|string|unique:vouchers,voucher_code',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'discount_type' => 'required|in:percentage,fixed_amount',
@@ -56,6 +56,14 @@ class VoucherRequest extends FormRequest
         ];
     }
 
+    public function messages()
+    {
+        return [
+            'start_date.after_or_equal' => 'Thời gian bắt đầu phải lớn hơn hoặc bằng thời gian hiện tại',
+            'end_date.after' => 'Thời gian kết thúc phải lớn hơn thời gian bắt đầu',
+        ];
+
+    }
     public function attributes()
     {
         return [

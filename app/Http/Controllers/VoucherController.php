@@ -8,6 +8,7 @@ use App\Http\Response\ApiResponse;
 use App\Models\Voucher;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Str;
 
 class VoucherController extends Controller
 {
@@ -22,10 +23,10 @@ class VoucherController extends Controller
     {
         try {
             $data = $request->validated();
-
-            $currentDate = now();
-            if ($currentDate->between($data['start_date'], $data['end_date'])) {
-                $data['status'] = 'active';
+            if (empty($data['voucher_code'])) {
+                do {
+                    $code = 'VC' . strtoupper(Str::random(6));
+                } while (Voucher::where('voucher_code', $code)->exists());
             }
             Voucher::create($data);
             return ApiResponse::message("Thêm mới mã giảm giá thành công", Response::HTTP_CREATED);
@@ -45,10 +46,6 @@ class VoucherController extends Controller
     {
         $data = $request->validated();
         $voucher = $this->findOrFail($id);
-        $currentDate = now();
-        if ($currentDate->between($data['start_date'], $data['end_date'])) {
-            $data['status'] = 'active';
-        }
         try {
             $voucher->update($data);
             return ApiResponse::message("Sửa mã giảm giá thành công");
@@ -61,6 +58,17 @@ class VoucherController extends Controller
     {
         $voucher = Voucher::where('status', 'active')->get();
         return ApiResponse::data($voucher);
+    }
+
+    public function toggleStatus(string $id)
+    {
+        $voucher = $this->findOrFail($id);
+        if ($voucher->status == 'pending' || $voucher->status == 'complete') {
+            return ApiResponse::error("Chỉ có thể thay đổi trạng thái mã giảm giá đang hoạt động", Response::HTTP_BAD_REQUEST);
+        }
+        $voucher->status = $voucher->status === 'active' ? 'pause' : 'active';
+        $voucher->save();
+        return ApiResponse::message("Thay đổi mã giảm giá thành công");
     }
 
     public function destroy(string $id)

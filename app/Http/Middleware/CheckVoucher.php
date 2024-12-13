@@ -17,22 +17,21 @@ class CheckVoucher
      */
     public function handle(Request $request, Closure $next): Response
     {
-             $now = Carbon::now();
+        $now = Carbon::now();
 
-             $vouchers = Voucher::whereIn('status', ['pending', 'active'])->get();
-             foreach ($vouchers as $voucher) {
-                 if ($voucher->status === 'pending' && $voucher->start_date && $now->greaterThanOrEqualTo($voucher->start_date)) {
-                     $voucher->status = 'active';
-                     $voucher->save();
-                 }
-     
-                 if ($voucher->status === 'active' && $voucher->end_date && $now->greaterThan($voucher->end_date)) {
-                     $voucher->status = 'complete';
-                     $voucher->save();
-                 }
-             }
-     
-             return $next($request);
-     
+        $vouchers = Voucher::whereIn('status', ['pending', 'active', 'pause'])->get();
+        foreach ($vouchers as $voucher) {
+            if ($voucher->status === 'pending' && $voucher->start_date && $now->greaterThanOrEqualTo($voucher->start_date)) {
+                $voucher->status = 'active';
+                $voucher->save();
+            }
+
+            if (($voucher->status === 'active' || $voucher->status === 'pause')  && $voucher->end_date && $now->greaterThan($voucher->end_date)) {
+                $voucher->status = 'complete';
+                $voucher->save();
+            }
+        }
+
+        return $next($request);
     }
 }

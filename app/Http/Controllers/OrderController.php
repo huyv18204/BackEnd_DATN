@@ -143,7 +143,12 @@ class OrderController extends Controller
                     'payment_status' => PaymentStatus::PAID->value
                 ]);
             }
-            if ($request['order_status'] === OrderStatus::CANCELED->value) {
+            if ($request->order_status === OrderStatus::CANCELED->value) {
+                OrderStatusHistory::query()->where('order_id', $id)->where('status', '!=', OrderStatus::PENDING->value)->delete();
+                OrderStatusHistory::query()->where('order_id', $id)->where('status', OrderStatus::PENDING->value)->update([
+                    'note' => $request->note,
+                ]);
+
                 $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
                 foreach ($orderDetails as $item) {
                     $productAtt = ProductAtt::query()->find($item->product_att_id);
@@ -151,11 +156,25 @@ class OrderController extends Controller
                         'stock_quantity' => $productAtt->stock_quantity + $item->quantity
                     ]);
                 }
+            } elseif ($request->order_status === OrderStatus::DELIVERED->value) {
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => $request->order_status,
+                    'image' => $request->image,
+                ]);
+            } elseif ($request->order_status === OrderStatus::RETURN->value) {
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => $request->order_status,
+                    'note' => $request->note
+                ]);
+            } else {
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => $request->order_status,
+                ]);
             }
-            OrderStatusHistory::query()->create([
-                'order_id' => $id,
-                'status' => $request['order_status'],
-            ]);
+
             return response()->json([
                 'message' => 'Cập nhật trạng thái đơn hàng thành công'
             ]);
@@ -496,10 +515,16 @@ class OrderController extends Controller
                 ->where('user_id', $user->id)
                 ->orderBy('id', $sort);
 
-            if ($status === "completed") {
-                $query->whereIn('order_status', [OrderStatus::DELIVERED, OrderStatus::RETURN, OrderStatus::CANCELED]);
-            } else {
-                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY, OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            if ($status === "confirm") {
+                $query->whereIn('order_status', [OrderStatus::PENDING, OrderStatus::CONFIRMED]);
+            } elseif ($status === "delivery") {
+                $query->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY]);
+            }
+            if ($status === "delivered") {
+                $query->whereIn('order_status', [OrderStatus::DELIVERED]);
+            }
+            if ($status === "history"){
+                $query->whereIn('order_status', [OrderStatus::RECEIVED, OrderStatus::RETURN, OrderStatus::CANCELED, OrderStatus::NOT_RECEIVE]);
             }
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
 

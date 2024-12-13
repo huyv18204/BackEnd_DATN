@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('vehicles', function (Blueprint $table) {
             $table->id();
-            $table ->string('vehicle_name');
-            $table ->string('license_plate')->unique();
+            $table ->string('vehicle_name', 55);
+            $table ->string('license_plate', 55)->unique();
             $table->timestamps();
         });
     }

@@ -14,6 +14,8 @@ class OrderStatusHistory extends Model
     protected $fillable = [
         'order_id',
         'status',
+        'note',
+        'image'
     ];
 
     protected $casts = [

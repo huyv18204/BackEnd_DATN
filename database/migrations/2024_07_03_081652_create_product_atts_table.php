@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\Product::class)->constrained();
             $table->foreignIdFor(\App\Models\Color::class)->constrained();
             $table->foreignIdFor(\App\Models\Size::class)->constrained();
-            $table->string("sku")->unique();
+            $table->string("sku", 20)->unique();
             $table->decimal('regular_price', 8, 0)->nullable();
             $table->decimal('reduced_price', 8, 0)->nullable();
             $table->string("image", 255)->nullable();

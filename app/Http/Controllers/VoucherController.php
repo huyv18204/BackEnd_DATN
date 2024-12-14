@@ -25,11 +25,12 @@ class VoucherController extends Controller
     {
         try {
             $data = $request->validated();
-            if (empty($data['voucher_code'])) {
+            if (!$data['voucher_code']) {
                 do {
-                    $code = 'VC' . strtoupper(Str::random(6));
-                } while (Voucher::where('voucher_code', $code)->exists());
+                    $data['voucher_code'] = 'VC' . strtoupper(Str::random(6));
+                } while (Voucher::where('voucher_code', $data['voucher_code'])->exists());
             }
+
             Voucher::create($data);
             return ApiResponse::message("Thêm mới mã giảm giá thành công", Response::HTTP_CREATED);
         } catch (\Exception $e) {

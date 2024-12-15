@@ -41,7 +41,7 @@ class VoucherRequest extends FormRequest
                 'usage_limit' => 'nullable|integer|min:0',
                 'used_count' => 'nullable|integer|min:0',
                 'is_active' => 'nullable|boolean',
-                'start_date' => 'nullable|date|after_or_equal:' . now(),
+                'start_date' => 'nullable|date',
                 'end_date' => 'nullable|date|after:start_date',
                 'status' => 'nullable|string|max:255',
             ];
@@ -60,7 +60,6 @@ class VoucherRequest extends FormRequest
             'is_active' => 'nullable|boolean',
             'start_date' => 'nullable|date|after_or_equal:' . now(),
             'end_date' => 'nullable|date|after:start_date',
-            'status' => 'nullable|string|max:255',
         ];
     }
 

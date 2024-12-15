@@ -150,8 +150,10 @@ class OrderController extends Controller
             }
             if ($request->order_status === OrderStatus::CANCELED->value) {
                 OrderStatusHistory::query()->where('order_id', $id)->where('status', '!=', OrderStatus::PENDING->value)->delete();
-                OrderStatusHistory::query()->where('order_id', $id)->where('status', OrderStatus::PENDING->value)->update([
-                    'note' => $request->note,
+                OrderStatusHistory::query()->create([
+                    'order_id' => $id,
+                    'status' => OrderStatus::CANCELED->value,
+                    $request->note,
                 ]);
 
                 $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
@@ -186,6 +188,26 @@ class OrderController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function updatePaymentStt(Request $request, $id): JsonResponse
+    {
+        $validate = $request->validate([
+            'payment_status' => 'required|in:Chưa thanh toán, Đã thanh toán, Thanh toán thất bại',
+        ]);
+
+        try {
+            Order::query()->find($id)->update([
+                'payment_status' => $validate['payment_status']
+            ]);
+            return response()->json([
+                'message' => "Cập nhật trạng thái thành công"
+            ]);
+        } catch (\Exception $exception) {
+            return response()->json([
+                'message' => $exception->getMessage()
             ]);
         }
     }
@@ -267,7 +289,8 @@ class OrderController extends Controller
             SendOrderInfo::dispatch($user->email, "Chờ xác nhận", $order);
 
             DB::commit();
-            return response()->json(['message' => 'Đặt hàng thành công'], 201);
+            return response()->json(['message' => 'Đặt hàng thành công', 'total_amount' => $data['total_amount'], 'order_id' => $order->id], 201);
+
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $e->getMessage()], 400);
@@ -277,7 +300,7 @@ class OrderController extends Controller
     public function show($id): JsonResponse
     {
         $order = Order::query()->with(['user', 'delivery_person.user', 'order_status_histories' => function ($query) {
-            $query->select('status', 'created_at', 'order_id');
+            $query->select('status', 'created_at', 'order_id', 'note', 'image');
         }])->find($id);
         if (!$order) {
             return response()->json("Đơn hàng không tồn tại");
@@ -537,7 +560,7 @@ class OrderController extends Controller
             if ($status === "delivered") {
                 $query->whereIn('order_status', [OrderStatus::DELIVERED]);
             }
-            if ($status === "history"){
+            if ($status === "history") {
                 $query->whereIn('order_status', [OrderStatus::RECEIVED, OrderStatus::RETURN, OrderStatus::CANCELED, OrderStatus::NOT_RECEIVE]);
             }
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();

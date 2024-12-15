@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -27,13 +28,19 @@ class UpdateOrderStatus extends Command
      */
     public function handle()
     {
-        $orders = Order::where('order_status', 'Chờ lấy hàng')
+        $orders = Order::where('order_status', 'Đã giao')
             ->where('updated_at', '<', Carbon::now()->subMinutes(1))
             ->get();
 
         foreach ($orders as $order) {
-            $order->update(['order_status' => 'Đã xác nhận']);
-            $this->info("Order ID {$order->id} đã được chuyển trạng thái thành 'confirmed'");
+            $order->update([
+                'order_status' => 'Đã nhận hàng',
+            ]);
+            OrderStatusHistory::query()->create([
+                'order_id' => $order->id,
+                'order_status' => "Đã nhận hàng",
+            ]);
+            $this->info("Order ID {$order->id} đã được chuyển trạng thái thành 'Đã nhận hàng'");
         }
     }
 }

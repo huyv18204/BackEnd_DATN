@@ -33,6 +33,7 @@ class FakeDataSeeder extends Seeder
         DB::table('users')->truncate();
         DB::table('vehicles')->truncate();
         DB::table('delivery_people')->truncate();
+        DB::table('order_status_histories')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $images = [

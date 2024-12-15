@@ -13,7 +13,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->job(new \App\Jobs\CheckOrderStatusJob)->everyMinute();
-        $schedule->command('orders:update-status')->everyMinute();
+        $schedule->command('orders:update-cancel-command')->everyMinute();
+        $schedule->command('orders:update-delivered-command')->everyMinute();
     }
 
     /**

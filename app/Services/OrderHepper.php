@@ -20,7 +20,6 @@ class OrderHepper
 
     }
 
-
     public static function createOrderAddress($shipping_address_id): string
     {
         $shippingAddress = ShippingAddress::query()->find($shipping_address_id);
@@ -28,6 +27,4 @@ class OrderHepper
         $ward = Ward::query()->where("code", $shippingAddress->ward_code)->first();
         return $shippingAddress->recipient_address . ", " . $ward->name . ", Quận " . $district->name . ", Thành phố Hà Nội";
     }
-
-
 }

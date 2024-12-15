@@ -275,7 +275,6 @@ class DeliveryPersonController extends Controller
             ]);
         }
     }
-
     //Viet them
     public function toggleStatusForShipper(Request $request): JsonResponse
     {

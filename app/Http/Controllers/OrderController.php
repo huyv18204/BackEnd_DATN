@@ -175,6 +175,13 @@ class OrderController extends Controller
                     'status' => $request->order_status,
                     'note' => $request->note
                 ]);
+                $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
+                foreach ($orderDetails as $item) {
+                    $productAtt = ProductAtt::query()->find($item->product_att_id);
+                    $productAtt->update([
+                        'stock_quantity' => $productAtt->stock_quantity + $item->quantity
+                    ]);
+                }
             } else {
                 OrderStatusHistory::query()->create([
                     'order_id' => $id,

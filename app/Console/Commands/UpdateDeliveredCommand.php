@@ -7,14 +7,14 @@ use App\Models\OrderStatusHistory;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
-class UpdateOrderStatus extends Command
+class UpdateDeliveredCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'orders:update-status';
+    protected $signature = 'orders:update-delivered-command';
 
     /**
      * The console command description.

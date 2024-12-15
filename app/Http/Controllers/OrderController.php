@@ -195,7 +195,7 @@ class OrderController extends Controller
     public function updatePaymentStt(Request $request, $id): JsonResponse
     {
         $validate = $request->validate([
-            'payment_status' => 'required|in:Chưa thanh toán, Đã thanh toán, Thanh toán thất bại',
+            'payment_status' => 'required|in:Chưa thanh toán,Đã thanh toán,Thanh toán thất bại',
         ]);
 
         try {

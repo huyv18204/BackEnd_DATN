@@ -10,6 +10,7 @@ use App\Models\VoucherUser;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class VoucherController extends Controller
@@ -51,7 +52,7 @@ class VoucherController extends Controller
         $data['status'] = 'pending';
         $voucher = $this->findOrFail($id);
         try {
-            if($voucher->status == 'complete'){
+            if ($voucher->status == 'complete') {
                 $data['used_count'] = 0;
             }
             $voucher->update($data);
@@ -63,13 +64,21 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $user = JWTAuth::parseToken()->authenticate();
-    
-        $vouchers = Voucher::where('status', 'active')
-            ->whereDoesntHave('voucher_users', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->get();
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (JWTException $e) {
+            $user = null;
+        }
+        
+        if ($user) {
+            $vouchers = Voucher::where('status', 'active')
+                ->whereDoesntHave('voucher_users', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->get();
+        } else {
+            $vouchers = Voucher::where('status', 'active')->get();
+        }
         return ApiResponse::data($vouchers);
     }
 

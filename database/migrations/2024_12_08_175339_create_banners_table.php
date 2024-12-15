@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title',55)->nullable();
             $table->text('description')->nullable();
             $table->string('image');
-            $table->integer('display_order')->default(0);
+            $table->integer('priority')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamp('start_date')->nullable();
             $table->timestamp('end_date')->nullable();

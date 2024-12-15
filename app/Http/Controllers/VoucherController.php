@@ -10,6 +10,7 @@ use App\Models\VoucherUser;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class VoucherController extends Controller
@@ -48,11 +49,12 @@ class VoucherController extends Controller
     public function update(VoucherRequest $request, string $id)
     {
         $data = $request->validated();
+        $data['status'] = 'pending';
         $voucher = $this->findOrFail($id);
-        if ($voucher->status != 'pending') {
-            return ApiResponse::error("Chỉ có thể sửa mã giảm giá ở trạng thái chưa bắt đầu");
-        }
         try {
+            if ($voucher->status == 'complete') {
+                $data['used_count'] = 0;
+            }
             $voucher->update($data);
             return ApiResponse::message("Sửa mã giảm giá thành công");
         } catch (\Exception $e) {
@@ -62,26 +64,22 @@ class VoucherController extends Controller
 
     public function getAllVouchers()
     {
-        $user = JWTAuth::parseToken()->authenticate();
-    
-        $vouchers = Voucher::where('status', 'active')
-            ->whereDoesntHave('voucher_users', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->get();
-    
-        return ApiResponse::data($vouchers);
-    }
-
-    public function toggleStatus(string $id)
-    {
-        $voucher = $this->findOrFail($id);
-        if ($voucher->status == 'pending' || $voucher->status == 'complete') {
-            return ApiResponse::error("Chỉ có thể thay đổi trạng thái mã giảm giá đang hoạt động", Response::HTTP_BAD_REQUEST);
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+        } catch (JWTException $e) {
+            $user = null;
         }
-        $voucher->status = $voucher->status === 'active' ? 'pause' : 'active';
-        $voucher->save();
-        return ApiResponse::message("Thay đổi mã giảm giá thành công");
+        
+        if ($user) {
+            $vouchers = Voucher::where('status', 'active')
+                ->whereDoesntHave('voucher_users', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->get();
+        } else {
+            $vouchers = Voucher::where('status', 'active')->get();
+        }
+        return ApiResponse::data($vouchers);
     }
 
     public function applyVoucher(VoucherRequest $request)
@@ -130,15 +128,15 @@ class VoucherController extends Controller
         ]);
     }
 
-    public function destroy(string $id)
-    {
-        $voucher = $this->findOrFail($id);
-        if ($voucher->status == 'active') {
-            return ApiResponse::error("Không thể xóa mã giảm giá đang hoạt động");
-        }
-        $voucher->delete();
-        return ApiResponse::message("Xóa mã giảm giá thành công");
-    }
+    // public function destroy(string $id)
+    // {
+    //     $voucher = $this->findOrFail($id);
+    //     if ($voucher->status == 'active') {
+    //         return ApiResponse::error("Không thể xóa mã giảm giá đang hoạt động");
+    //     }
+    //     $voucher->delete();
+    //     return ApiResponse::message("Xóa mã giảm giá thành công");
+    // }
 
     public function findOrFail($id)
     {

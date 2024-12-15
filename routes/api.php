@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BannerController;
 use App\Http\Controllers\CampaignController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -105,6 +106,15 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
         Route::delete('/{id}', [ProductAttController::class, 'destroy']);
     });
 
+    Route::prefix("banners")->group(function () {
+        Route::get('/', [BannerController::class, 'index']);
+        Route::post('/', [BannerController::class, 'store']);
+        Route::get('/{id}', [BannerController::class, 'show']);
+        Route::put('/{id}', [BannerController::class, 'update']);
+        Route::put('/{id}/toggle-status', [BannerController::class, 'toggleStatus']);
+        Route::delete('/{id}', [BannerController::class, 'destroy']);
+    });
+
 
     Route::prefix("colors")->group(function () {
         Route::post("/", [ColorController::class, 'store']);
@@ -125,7 +135,6 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
         Route::post("/", [VoucherController::class, 'store']);
         Route::get("/{id}", [VoucherController::class, 'show']);
         Route::put("/{id}", [VoucherController::class, 'update']);
-        Route::put("/{id}/toggle-status", [VoucherController::class, 'toggleStatus']);
     });
 
     Route::prefix("orders")->group(function () {

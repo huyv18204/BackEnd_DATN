@@ -327,8 +327,9 @@ class OrderController extends Controller
 
         try {
             $order = Order::query()->find($id);
-            $count = Order::query()->where('delivery_person_id', $validate['delivery_person_id'])->count();
-            if ($count > 10) {
+            $count = Order::query()->where('delivery_person_id', $validate['delivery_person_id'])
+                ->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY])->count();
+            if ($count >= 10) {
                 return response()->json(['message' => "Người vận chuyển đã đạt số lượng tối đa đơn hàng"]);
             }
             if (!$order) {
@@ -368,42 +369,27 @@ class OrderController extends Controller
             'integer' => "Dữ liệu không hợp lệ",
             'order_id.*.exists' => "Đơn hàng không tồi tại"
         ]);
+        $count = Order::query()->where('delivery_person_id', $validate['delivery_person_id'])
+            ->whereIn('order_status', [OrderStatus::WAITING_DELIVERY, OrderStatus::ON_DELIVERY])->count();
 
+        if (count($validate['order_id']) + $count > 10) {
+            return response()->json([
+                "message" => "Người vận chuyển đã đạt số lượng tối đa đơn hàng"
+            ], 422);
+        }
         try {
-            $errors = [];
             DB::beginTransaction();
 
             foreach ($validate['order_id'] as $id) {
                 $order = Order::query()->find($id);
-                $count = Order::query()->where('delivery_person_id', $validate['delivery_person_id'])->count();
-                if ($count > 10) {
-                    $errors[$id] = "Người vận chuyển đã đạt số lượng tối đa đơn hàng";
-                    continue;
-                }
-                if (!$order) {
-                    $errors[$id] = "Đơn hàng không tồn tại";
-                    continue;
-                }
+                $order->update([
+                    'delivery_person_id' => $validate['delivery_person_id'],
+                    'order_status' => OrderStatus::WAITING_DELIVERY
+                ]);
                 OrderStatusHistory::query()->create([
                     'order_id' => $id,
                     'status' => OrderStatus::WAITING_DELIVERY
                 ]);
-                try {
-                    $order->update([
-                        'delivery_person_id' => $validate['delivery_person_id'],
-                        'order_status' => OrderStatus::WAITING_DELIVERY
-
-                    ]);
-                } catch (\Exception $e) {
-                    $errors[$id] = "Không thể gán đơn hàng: " . $e->getMessage();
-                }
-            }
-            if (!empty($errors)) {
-                DB::rollBack();
-                return response()->json([
-                    'message' => "Có lỗi xảy ra trong quá trình gán đơn hàng",
-                    'errors' => $errors
-                ], 422);
             }
             DB::commit();
 
@@ -413,7 +399,7 @@ class OrderController extends Controller
         } catch (\Exception $exception) {
             DB::rollBack();
             return response()->json([
-                'message' => "Đã xảy ra lỗi hệ thống: " . $exception->getMessage()
+                'message' => "Gán đơn hàng không thành công: " . $exception->getMessage()
             ], 500);
         }
     }

@@ -145,10 +145,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
 
     Route::prefix("users")->group(function () {
         Route::get('/', [UserController::class, 'index']);
-        Route::post('/', [UserController::class, 'store']);
-        Route::put('/{id}/role', [UserController::class, 'updateRole']);
-        Route::get('/blacklist', [UserController::class, 'blackList']);
-        Route::put('/{id}/toggle-blacklist', [UserController::class, 'toggleBlackList']);
+        Route::put('/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     });
 
     Route::prefix("campaigns")->middleware('check.campaign')->group(function () {

@@ -80,6 +80,9 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
 
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'getStatistics']);
+        Route::get('/timeline', [DashboardController::class, 'getTimelineData']);
+        Route::get('/orders', [DashboardController::class, 'getOrders']);
+        Route::get('/trending-products', [DashboardController::class, 'getTrendingProducts']);
     });
 
 

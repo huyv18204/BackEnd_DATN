@@ -42,11 +42,11 @@ class UserController extends Controller
         }
     
         if (!$user->hasVerifiedEmail()) {
-            return response()->json(['message' => 'Tài khoản này chưa được xác thực'], 403);
+            return response()->json(['message' => 'Tài khoản này chưa được xác thực']);
         }
     
         if ($user->role == 'admin') {
-            return response()->json(['message' => 'Bạn không có quyền khóa tài khoản người dùng này'], 403);
+            return response()->json(['message' => 'Bạn không có quyền khóa tài khoản người dùng này']);
         }
     
         $user->is_blocked = !$user->is_blocked;

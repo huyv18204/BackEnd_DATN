@@ -109,7 +109,7 @@ class FakeDataSeeder extends Seeder
 
         // Products seeding
         $countCategories = DB::table('categories')->count("id");
-        for ($i = 1; $i <= 10; $i++) {
+        for ($i = 1; $i <= 100; $i++) {
             $categoryId = rand(1, $countCategories);
             $name = fake()->name() . $i;
             $thumbnail = $images[array_rand($images)];

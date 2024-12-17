@@ -416,7 +416,7 @@ class OrderController extends Controller
                 ]);
             }
             //Viet them : lay danh sach theo status
-            $sort = $request->input('sort', "ASC");
+            $sort = $request->input('sort', "DESC");
             $status = $request->input('status');
 
             $query = Order::query()
@@ -426,7 +426,7 @@ class OrderController extends Controller
                     return $query->where('order_status', $status);
                 })
                 ->whereIn('order_status', [OrderStatus::WAITING_DELIVERY->value, OrderStatus::ON_DELIVERY->value])
-                ->orderBy('id', $sort);
+                ->orderBy('updated_at', $sort);
 
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
 
@@ -474,9 +474,11 @@ class OrderController extends Controller
                     'message' => "Người giao hàng không tồn tại"
                 ], 404);
             }
-            $sort = $request->input('sort', "ASC");
-            $query = Order::query()->where('delivery_person_id', $id)->orderBy('id', $sort);
+            $sort = $request->input('sort', "DESC");
+            $query = Order::query()->where('delivery_person_id', $id)->orderBy('updated_at', $sort);
+//            $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
+
             return response()->json($orders);
         } catch (\Exception $exception) {
             return response()->json([

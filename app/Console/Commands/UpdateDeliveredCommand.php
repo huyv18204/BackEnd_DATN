@@ -38,9 +38,8 @@ class UpdateDeliveredCommand extends Command
             ]);
             OrderStatusHistory::query()->create([
                 'order_id' => $order->id,
-                'order_status' => "Đã nhận hàng",
+                'status' => "Đã nhận hàng",
             ]);
-            $this->info("Order ID {$order->id} đã được chuyển trạng thái thành 'Đã nhận hàng'");
         }
     }
 }

@@ -27,6 +27,8 @@ class StoreRequest extends FormRequest
             'personal.phone_number' => [
                 'required',
                 'regex:/^(?:\+84|0)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])\d{7}$/',
+                'unique:users,phone'
+
             ],
             'personal.address' => 'required|string|max:255',
 
@@ -45,6 +47,8 @@ class StoreRequest extends FormRequest
             'personal.email.required' => 'Email là bắt buộc.',
             'personal.email.email' => 'Email phải là định dạng hợp lệ.',
             'personal.phone_number.required' => 'Số điện thoại là bắt buộc.',
+            'personal.phone_number.unique' => 'Số điện thoại đã tồn tại.',
+
             'personal.phone_number.regex' => 'Số điện thoại không hợp lệ.',
             'personal.address.required' => 'Địa chỉ là bắt buộc.',
             'personal.email.unique' => "Email đã tồn tại",

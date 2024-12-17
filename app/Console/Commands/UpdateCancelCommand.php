@@ -30,7 +30,7 @@ class UpdateCancelCommand extends Command
     {
         $orders = Order::where('order_status', 'Chờ xác nhận')
             ->where('payment_status', 'Thanh toán thất bại')
-            ->where('updated_at', '<', Carbon::now()->subDays(1))
+            ->where('updated_at', '<', Carbon::now()->subMinutes(1))
             ->get();
 
         foreach ($orders as $order) {

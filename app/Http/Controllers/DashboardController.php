@@ -105,28 +105,51 @@ class DashboardController extends Controller
             ")
             ->orderBy('created_at', 'desc')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'status' => $order->order_status,
+                    'id' =>  str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                    'time' => $order->time_diff,
+                    'color' => $order->color,
+                ];
+            });
 
         return response()->json($timelineData);
     }
+
 
 
     public function getOrders()
     {
         $orders = DB::table('orders')
             ->join('users', 'orders.user_id', '=', 'users.id')
+            ->join('order_details', 'order_details.order_id', '=', 'orders.id')
             ->select(
                 'orders.id',
+                'orders.order_code',
                 'users.name as customer_name',
                 'orders.order_address as address',
-                'orders.total_amount as total'
+                'orders.total_amount as total',
+                DB::raw("GROUP_CONCAT(CONCAT(order_details.product_name, ' x', order_details.quantity) SEPARATOR ', ') as items")
             )
+            ->groupBy('orders.id', 'orders.order_code', 'users.name', 'orders.order_address', 'orders.total_amount')
             ->orderBy('orders.created_at', 'desc')
             ->limit(10)
-            ->get();
+            ->get()
+            ->map(function ($order) {
+                return [
+                    'id' => $order->order_code,
+                    'name' => $order->customer_name,
+                    'address' => $order->address,
+                    'items' => explode(', ', $order->items),
+                    'total' => '$' . number_format($order->total, 2),
+                ];
+            });
 
         return response()->json($orders);
     }
+
 
     public function getTrendingProducts()
     {

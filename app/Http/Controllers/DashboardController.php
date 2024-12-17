@@ -131,14 +131,12 @@ class DashboardController extends Controller
     public function getTrendingProducts()
     {
         $trendingProducts = DB::table('order_details')
-            ->join('orders', 'order_details.order_id', '=', 'orders.id')
-            ->where('orders.order_status', 'Đã giao')
             ->selectRaw('
-                order_details.product_name as name,
-                COUNT(*) as orders,
-                SUM(order_details.total_amount) as revenue
-            ')
-            ->groupBy('order_details.product_name')
+            product_name as name,
+            COUNT(*) as orders,
+            SUM(total_amount) as revenue
+        ')
+            ->groupBy('product_name')
             ->orderByDesc('orders')
             ->limit(5)
             ->get()

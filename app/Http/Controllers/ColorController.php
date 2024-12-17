@@ -57,18 +57,6 @@ class ColorController extends Controller
         }
     }
 
-    public function toggleStatus($id)
-    {
-        $color = $this->findOrFail($id);
-        try {
-            $color->is_active = !$color->is_active;
-            $color->save();
-            return ApiResponse::message('Thay đổi trạng thái thành công', Response::HTTP_OK);
-        } catch (\Exception $e) {
-            throw new CustomException('Thay đổi trạng thái màu sắc thất bại', $e->getMessage());
-        }
-    }
-
     public function destroy($id)
     {
         $color = $this->findOrFail($id);

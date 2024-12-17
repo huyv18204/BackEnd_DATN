@@ -122,16 +122,21 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
     Route::prefix("colors")->group(function () {
         Route::post("/", [ColorController::class, 'store']);
         Route::put("/{id}", [ColorController::class, 'update']);
-        Route::put('/{id}/toggle-status', [ColorController::class, 'toggleStatus']);
         Route::delete("/{id}", [ColorController::class, 'destroy']);
     });
 
     Route::prefix("sizes")->group(function () {
         Route::post("/", [SizeController::class, 'store']);
         Route::put("/{id}", [SizeController::class, 'update']);
-        Route::put('/{id}/toggle-status', [SizeController::class, 'toggleStatus']);
         Route::delete("/{id}", [SizeController::class, 'destroy']);
     });
+
+    Route::prefix("users")->group(function () {
+        Route::get('/', [UserController::class, 'index']);
+        Route::put('/{id}/toggle-blacklist', [UserController::class, 'toggleStatus']);
+        Route::get('/blacklist', [UserController::class, 'blackList']);
+    });
+
 
     Route::prefix("vouchers")->middleware('check.voucher')->group(function () {
         Route::get("/", [VoucherController::class, 'index']);
@@ -144,11 +149,6 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
         Route::get("/", [OrderController::class, 'index']);
         Route::get("{id}/delivery-person", [OrderController::class, 'getByDeliveryPersonId']);
         Route::get("{id}/delivery-person/history", [OrderController::class, 'historyDeliveredById']);
-    });
-
-    Route::prefix("users")->group(function () {
-        Route::get('/', [UserController::class, 'index']);
-        Route::put('/{id}/toggle-status', [UserController::class, 'toggleStatus']);
     });
 
     Route::prefix("campaigns")->middleware('check.campaign')->group(function () {

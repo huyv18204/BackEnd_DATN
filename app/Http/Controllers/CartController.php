@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Response\ApiResponse;
 use App\Models\Cart;
+use App\Models\Product;
 use App\Models\ProductAtt;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
@@ -52,27 +53,33 @@ class CartController extends Controller
             'product_att_id' => 'required|integer|exists:product_atts,id',
             'quantity' => 'required|integer|min:1'
         ]);
-    
-        $productAtt = ProductAtt::find($request->product_att_id);
+
+        $productAtt = ProductAtt::with('product')
+            ->whereHas('product', function ($query) {
+                $query->where('is_active', true);
+            })
+            ->find($request->product_att_id);
+
         if (!$productAtt) {
             return ApiResponse::message("Sản phẩm hiện tại không khả dụng");
         }
-    
+
+
         $userId = JWTAuth::parseToken()->authenticate()->id;
-    
+
         $cart = Cart::query()
             ->where('user_id', $userId)
             ->where('product_att_id', $request->product_att_id)
             ->first();
-    
+
         $newQuantity = $cart ? $cart->quantity + $request->quantity : $request->quantity;
-    
+
         if ($newQuantity > $productAtt->stock_quantity) {
             return response()->json([
                 'message' => 'Số lượng yêu cầu vượt quá số lượng tồn kho của sản phẩm'
             ], 400);
         }
-    
+
         if ($cart) {
             $cart->update(['quantity' => $newQuantity]);
         } else {
@@ -82,12 +89,12 @@ class CartController extends Controller
                 'quantity' => $request->quantity
             ]);
         }
-    
+
         return response()->json([
             'message' => 'Thêm sản phẩm vào giỏ hàng thành công'
         ], 201);
     }
-    
+
     public function destroy($id)
     {
         $cart = Cart::query()->find($id);

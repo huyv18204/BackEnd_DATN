@@ -453,8 +453,8 @@ class OrderController extends Controller
             $sort = $request->input('sort', "ASC");
             $query = Order::query()->with('user', 'order_details')
                 ->where('delivery_person_id', $deliveryPerson->id)
-                ->whereIn('order_status', [OrderStatus::DELIVERED->value, OrderStatus::RETURN->value])
-                ->orderBy('id', $sort);
+                ->whereIn('order_status', [OrderStatus::DELIVERED->value, OrderStatus::RETURN->value, OrderStatus::RECEIVED, OrderStatus::NOT_RECEIVE])
+                ->orderBy('updated_at', $sort);
             $orders = $request->input('size') ? $query->paginate($request->input('size')) : $query->get();
             return response()->json($orders);
         } catch (\Exception $exception) {
@@ -545,7 +545,7 @@ class OrderController extends Controller
             $query = Order::query()
                 ->with('user', 'order_details')
                 ->where('user_id', $user->id)
-                ->orderBy('id', $sort);
+                ->orderBy('updated_at', $sort);
 
             if ($status === "confirm") {
                 $query->whereIn('order_status', [OrderStatus::PENDING, OrderStatus::CONFIRMED]);

@@ -108,8 +108,9 @@ class DashboardController extends Controller
             ->get(25)
             ->map(function ($order) {
                 return [
+                    'id' => $order->id,
+                    'order_code' => $order->order_code,
                     'status' => $order->order_status,
-                    'id' => $order->order_code,
                     'time' => $order->time_diff,
                     'color' => $order->color,
                 ];
@@ -139,7 +140,8 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($order) {
                 return [
-                    'id' => $order->order_code,
+                    'id' => $order->id,
+                    'order_code' => $order->order_code,
                     'name' => $order->customer_name,
                     'address' => $order->address,
                     'items' => explode(', ', $order->items),
@@ -155,11 +157,12 @@ class DashboardController extends Controller
     {
         $trendingProducts = DB::table('order_details')
             ->selectRaw('
-            product_name as name,
-            COUNT(*) as orders,
-            SUM(total_amount) as revenue
-        ')
-            ->groupBy('product_name')
+                product_id,
+                product_name as name,
+                COUNT(*) as orders,
+                SUM(total_amount) as revenue
+            ')
+            ->groupBy('product_id', 'product_name') 
             ->orderByDesc('orders')
             ->limit(5)
             ->get()
@@ -168,7 +171,8 @@ class DashboardController extends Controller
                 $product->revenue = number_format($product->revenue, 2);
                 return $product;
             });
-
+    
         return response()->json($trendingProducts);
     }
+    
 }

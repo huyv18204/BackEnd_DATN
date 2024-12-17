@@ -124,7 +124,7 @@ class ProductAttController extends Controller
 
     public function show($id)
     {
-        $productAtt = ProductAtt::find($id);
+        $productAtt = ProductAtt::find($id)->where('');
         if (!$productAtt) {
             return ApiResponse::error("Sản phẩm không tồn tại", Response::HTTP_NOT_FOUND);
         }

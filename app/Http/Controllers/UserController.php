@@ -14,7 +14,7 @@ class UserController extends Controller
 
         $size = $request->query('size');
 
-        $query = User::query()->where('id' <> 1)-> whereNot('role','shipper');
+        $query = User::query()->whereNotIn('role', ['shipper','admin']);
 
         if ($name = $request->query('name')) {
             $query->where('name', 'LIKE', '%' . $name . '%');

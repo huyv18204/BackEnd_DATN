@@ -46,13 +46,13 @@ class Product extends Model
 
     public static function generateUniqueSKU($productName, $colorName, $sizeName)
     {
-        $productCode = strtoupper(substr($productName, 0, 2));
-        $colorCode = strtoupper(substr($colorName, 0, 2));
-        $sizeCode = strtoupper($sizeName);
-
-        $skuBase = $productCode . $colorCode . $sizeCode;
-
-        return $skuBase;
+        $removeAccents = fn($string) => iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+    
+        $productCode = strtoupper(substr($removeAccents($productName), 0, 2));
+        $colorCode = strtoupper(substr($removeAccents($colorName), 0, 2));
+        $sizeCode = strtoupper($removeAccents($sizeName));
+    
+        return $productCode . $colorCode . $sizeCode;
     }
 
     public static function checkAndResolveDuplicateSKUs(array $productAtts)

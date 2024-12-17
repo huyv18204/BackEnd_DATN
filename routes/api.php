@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 // client
-Route::middleware(['check.voucher', 'throttle:60,1'])->group(function () {
+Route::middleware(['check.voucher'])->group(function () {
     Route::get('v1/categories/', [CategoryController::class, 'index']);
     Route::get('v1/categories/{slug}', [CategoryController::class, 'getProductByCategory']);
     Route::get("v1/products", [ProductController::class, 'index']);
@@ -56,8 +56,8 @@ Route::middleware(['check.voucher', 'throttle:60,1'])->group(function () {
 });
 
 
-Route::prefix("v1")->middleware('throttle:60,1')->group(function () {
-    Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+Route::prefix("v1")->group(function () {
+    Route::post('login', [AuthController::class, 'login']);
     Route::post('register', [AuthController::class, 'register']);
     Route::get('/email/verify/{id}', [AuthController::class, 'verify'])->name('verification.verify');
     Route::post('refresh', [AuthController::class, 'refresh']);
@@ -76,7 +76,7 @@ Route::prefix("v1")->middleware('throttle:60,1')->group(function () {
 });
 
 
-Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->group(function () {
+Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'getStatistics']);
@@ -182,7 +182,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin', 'throttle:60,1'])->gr
     });
 });
 
-Route::prefix("v1")->middleware(['auth.jwt', 'throttle:60,1'])->group(function () {
+Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
 
     Route::prefix("carts")->group(function () {
         Route::get("/", [CartController::class, 'show']);
@@ -249,7 +249,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'throttle:60,1'])->group(function (
     });
 });
 
-Route::prefix('v1')->middleware('throttle:30,1')->group(function () {
+Route::prefix('v1')->group(function () {
     Route::post('/momo/payment', [PaymentController::class, 'createPayment']);
     Route::post('/payment/callback', [PaymentController::class, 'handlePaymentCallback']);
     //VNPay

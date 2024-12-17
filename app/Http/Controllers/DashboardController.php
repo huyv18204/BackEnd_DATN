@@ -93,6 +93,7 @@ class DashboardController extends Controller
         $timelineData = DB::table('orders')
             ->selectRaw("
                 order_status,
+                order_code,
                 id,
                 TIMESTAMPDIFF(HOUR, created_at, NOW()) as time_diff,
                 CASE 
@@ -104,17 +105,16 @@ class DashboardController extends Controller
                 END as color
             ")
             ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get()
+            ->get(25)
             ->map(function ($order) {
                 return [
                     'status' => $order->order_status,
-                    'id' =>  str_pad($order->id, 6, '0', STR_PAD_LEFT),
+                    'id' => $order->order_code,
                     'time' => $order->time_diff,
                     'color' => $order->color,
                 ];
             });
-
+    
         return response()->json($timelineData);
     }
 
@@ -135,7 +135,7 @@ class DashboardController extends Controller
             )
             ->groupBy('orders.id', 'orders.order_code', 'users.name', 'orders.order_address', 'orders.total_amount')
             ->orderBy('orders.created_at', 'desc')
-            ->limit(10)
+            ->limit(25)
             ->get()
             ->map(function ($order) {
                 return [
@@ -143,7 +143,7 @@ class DashboardController extends Controller
                     'name' => $order->customer_name,
                     'address' => $order->address,
                     'items' => explode(', ', $order->items),
-                    'total' => '$' . number_format($order->total, 2),
+                    'total' => number_format($order->total, 2),
                 ];
             });
 
@@ -165,7 +165,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($product, $index) {
                 $product->rank = $index + 1;
-                $product->revenue = '$' . number_format($product->revenue, 2);
+                $product->revenue = number_format($product->revenue, 2);
                 return $product;
             });
 

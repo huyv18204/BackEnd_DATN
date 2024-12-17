@@ -49,10 +49,13 @@ class VoucherController extends Controller
     public function update(VoucherRequest $request, string $id)
     {
         $data = $request->validated();
-        $data['status'] = 'pending';
         $voucher = $this->findOrFail($id);
+        if ($voucher->status == 'active') {
+            return ApiResponse::message('Không thể sửa mã giảm giá ở trạng thái đang hoạt động');
+        }
         try {
-            if ($voucher->status == 'complete') {
+            $data['status'] = 'pending';
+            if ($voucher->status == 'expired') {
                 $data['used_count'] = 0;
             }
             $voucher->update($data);
@@ -62,6 +65,15 @@ class VoucherController extends Controller
         }
     }
 
+    public function toggleStatus($id)
+    {
+        $voucher = $this->findOrFail($id);
+        if ($voucher->status != 'active') {
+            return ApiResponse::message('Lỗi chỉ có thể thu hồi mã giảm giá đang hoạt động', Response::HTTP_BAD_REQUEST);
+        }
+        $voucher->status = 'cancel';
+    }
+
     public function getAllVouchers()
     {
         try {
@@ -69,7 +81,7 @@ class VoucherController extends Controller
         } catch (JWTException $e) {
             $user = null;
         }
-        
+
         if ($user) {
             $vouchers = Voucher::where('status', 'active')
                 ->whereDoesntHave('voucher_users', function ($query) use ($user) {
@@ -127,16 +139,6 @@ class VoucherController extends Controller
             "totalOrder" => $finalTotal,
         ]);
     }
-
-    // public function destroy(string $id)
-    // {
-    //     $voucher = $this->findOrFail($id);
-    //     if ($voucher->status == 'active') {
-    //         return ApiResponse::error("Không thể xóa mã giảm giá đang hoạt động");
-    //     }
-    //     $voucher->delete();
-    //     return ApiResponse::message("Xóa mã giảm giá thành công");
-    // }
 
     public function findOrFail($id)
     {

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
-   
+
     use HasFactory;
     protected $fillable = [
         'slug',
@@ -44,14 +44,25 @@ class Product extends Model
         return $this->hasMany(ProductAtt::class);
     }
 
+    // public static function generateUniqueSKU($productName, $colorName, $sizeName)
+    // {
+    //     $removeAccents = fn($string) => iconv('UTF-8', 'ASCII//TRANSLIT', $string);
+
+    //     $productCode = strtoupper(substr($removeAccents($productName), 0, 2));
+    //     $colorCode = strtoupper(substr($removeAccents($colorName), 0, 2));
+    //     $sizeCode = strtoupper($removeAccents($sizeName));
+
+    //     return $productCode . $colorCode . $sizeCode;
+    // }
+
     public static function generateUniqueSKU($productName, $colorName, $sizeName)
     {
-        $removeAccents = fn($string) => iconv('UTF-8', 'ASCII//TRANSLIT', $string);
-    
+        $removeAccents = fn($string) => transliterator_transliterate('Any-Latin; Latin-ASCII; Lower()', $string);
+
         $productCode = strtoupper(substr($removeAccents($productName), 0, 2));
         $colorCode = strtoupper(substr($removeAccents($colorName), 0, 2));
         $sizeCode = strtoupper($removeAccents($sizeName));
-    
+
         return $productCode . $colorCode . $sizeCode;
     }
 

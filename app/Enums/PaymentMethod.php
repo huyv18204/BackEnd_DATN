@@ -4,8 +4,6 @@ namespace App\Enums;
 
 enum  PaymentMethod : string{
     case CASH = 'Thanh toán khi nhận hàng';
-    case MOMO = 'MOMO';
-
     case VNPAY = 'VNPAY';
 
     public static function isValidValue(string $value): bool

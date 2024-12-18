@@ -71,7 +71,7 @@ class VoucherController extends Controller
         if ($voucher->status != 'active') {
             return ApiResponse::message('Lỗi chỉ có thể thu hồi mã giảm giá đang hoạt động', Response::HTTP_BAD_REQUEST);
         }
-        $voucher->status = 'used';
+        $voucher->status = 'cancel';
     }
 
     public function getAllVouchers()
@@ -109,7 +109,9 @@ class VoucherController extends Controller
             return ApiResponse::error("Mã giảm giá đã không còn hoạt động", Response::HTTP_BAD_REQUEST);
         }
 
-        if ($voucher->used_count > $voucher->usage_limit) {
+        if ($voucher->used_count >= $voucher->usage_limit) {
+            $voucher->status = 'used';
+            $voucher->save();
             return ApiResponse::error("Rất tiếc mã giảm giá đã đạt đến giới hạn lượt sử dụng");
         }
 

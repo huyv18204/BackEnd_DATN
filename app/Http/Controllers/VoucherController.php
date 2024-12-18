@@ -50,7 +50,7 @@ class VoucherController extends Controller
     {
         $data = $request->validated();
         $voucher = $this->findOrFail($id);
-        if ($voucher->status == 'pending') {
+        if ($voucher->status !== 'pending') {
             return ApiResponse::message('Chỉ có thể sửa mã giảm giá ở trạng thái chờ');
         }
         try {

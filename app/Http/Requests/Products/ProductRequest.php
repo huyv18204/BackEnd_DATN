@@ -38,7 +38,7 @@ class ProductRequest extends FormRequest
             'product_att.*.color_id' => 'nullable|exists:colors,id',
             'product_att.*.image' => 'nullable',
             'product_att.*.regular_price' => 'nullable|numeric|min:0',
-            'product_att.*.reduced_price' => 'nullable|numeric|min:0|lt:regular_price',
+            'product_att.*.reduced_price' => 'nullable|numeric|min:0',
             'product_att.*.stock_quantity' => 'required|integer|min:0',
         ];
 

@@ -83,7 +83,7 @@ class FakeDataSeeder extends Seeder
                 'name' => $category,
                 'slug' => Str::slug($category),
                 'category_code' => $this->generateCategoryCode(),
-                'is_active' => true,
+                // 'is_active' => true,
             ]);
         }
 

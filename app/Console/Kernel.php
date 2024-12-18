@@ -10,9 +10,11 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      */
-    protected function schedule(Schedule $schedule): void
+    protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->job(new \App\Jobs\CheckOrderStatusJob)->everyMinute();
+        $schedule->command('orders:update-cancel-command')->everyMinute();
+        $schedule->command('orders:update-delivered-command')->everyMinute();
     }
 
     /**
@@ -20,7 +22,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }

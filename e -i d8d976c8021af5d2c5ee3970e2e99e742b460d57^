@@ -1,0 +1,285 @@
+[33mcommit 1f0d8d755c90badcd5aa8dee2864f55e2cbaf386[m[33m ([m[1;36mHEAD -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m)[m
+Merge: 7c37a43 eb0b7c3
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Sat Dec 7 12:44:04 2024 +0700
+
+    fix, refactor
+
+[33mcommit 7c37a439054fb6de4801b07fef26575d15057178[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Sat Dec 7 12:29:07 2024 +0700
+
+    fix: update order status
+
+[33mcommit eb0b7c37c4d463ea0dd1fc09dca4436d0910f8c8[m
+Author: anhvtlph33330 <anhvtlph33330@fpt.edu.vn>
+Date:   Sat Dec 7 11:35:12 2024 +0700
+
+    fix/api
+
+[33mcommit d8d976c8021af5d2c5ee3970e2e99e742b460d57[m
+Author: anhvtlph33330 <anhvtlph33330@fpt.edu.vn>
+Date:   Sat Dec 7 11:04:43 2024 +0700
+
+    fix/cart
+
+[33mcommit 4287badfb29d4819862a10d7dd94db6c1b68346d[m
+Author: anhvtlph33330 <anhvtlph33330@fpt.edu.vn>
+Date:   Sat Dec 7 10:25:01 2024 +0700
+
+    fix/api
+
+[33mcommit 65159126e0a0409f153aa8f3dc993cf329ef0dd7[m
+Author: anhvtlph33330 <anhvtlph33330@fpt.edu.vn>
+Date:   Sat Dec 7 10:20:05 2024 +0700
+
+    fix/productatt
+
+[33mcommit 5d603ff73f51cd3a406e9a30182bdeee7b83db1b[m
+Merge: d241a96 50f1e5d
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Sat Dec 7 09:36:10 2024 +0700
+
+    Merge pull request #40 from huyv18204/Feat/sort
+    
+    Feat/sort
+
+[33mcommit d241a968918d759177a1c1ec5c2714fc11767733[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Sat Dec 7 00:29:01 2024 +0700
+
+    fix: order db
+
+[33mcommit 50f1e5d5620c8bacd8e8b147be4e38cbbf291ff8[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 23:35:55 2024 +0700
+
+    Fix sort
+
+[33mcommit 93d5c634fb8784aa52a6b73b72233f09baefa31b[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Fri Dec 6 23:23:53 2024 +0700
+
+    fix: Fake data
+
+[33mcommit 51712acb7f229d394671fc0511fc556870f20832[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Fri Dec 6 22:48:47 2024 +0700
+
+    fix order
+
+[33mcommit 1916f1344b1ac82a3da2a32d3fdb93a61ee9eb0e[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Fri Dec 6 21:46:42 2024 +0700
+
+    fix order
+
+[33mcommit e6432b10fd66e91d20c0becd886987b2771988b6[m[33m ([m[1;31morigin/Feat/sort[m[33m, [m[1;32mFeat/sort[m[33m)[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 16:59:03 2024 +0700
+
+    Feat/sort: Add sorting for order
+
+[33mcommit 64500b94c62ff26feefd26f0f2a0fc4e94f1f3b1[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 16:46:34 2024 +0700
+
+    Feat/sort: Add sort for product att
+
+[33mcommit fb4f92823f44af93db93f29e4ee3b5ad8fd5faab[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 16:36:16 2024 +0700
+
+    Feat/sort: Sorting for product
+
+[33mcommit 76893c5792df6e18469034aff647c5990eef44a8[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 16:18:42 2024 +0700
+
+    Feat/sort: add sort for category
+
+[33mcommit 835d8800134d5cc0d0d4bd7564154bb7ebf540bc[m
+Merge: aa3c17a 2c2eb58
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Fri Dec 6 13:31:26 2024 +0700
+
+    Merge pull request #39 from huyv18204/fix/order
+    
+    fix: payment momo
+
+[33mcommit 2c2eb583722f7e6449913d3c0e8a3ec09be26d6d[m[33m ([m[1;31morigin/fix/order[m[33m)[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Fri Dec 6 13:30:34 2024 +0700
+
+    fix: payment momo
+
+[33mcommit aa3c17a064c0cf32c5ca98a53b260e07db9dc9a3[m
+Author: anhvtlph33330 <anhvtlph33330@fpt.edu.vn>
+Date:   Fri Dec 6 13:14:58 2024 +0700
+
+    add api show att
+
+[33mcommit 4a389fa760ee36e7a0195dc602354d14d1eb4feb[m
+Merge: 1b71e39 5b7db65
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 11:24:11 2024 +0700
+
+    Add job to check payment status of vnpay
+
+[33mcommit 1b71e39a44992112dec04062e5b5eb5e1c417fb2[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 11:21:39 2024 +0700
+
+    Add job check status payment of vnpay
+
+[33mcommit 5b7db652723fd636ca878f6487a6a0d1f3cb342f[m
+Merge: e5c29ce 1d745c1
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Fri Dec 6 08:49:43 2024 +0700
+
+    Merge pull request #38 from huyv18204/feature/dashboard
+    
+    Feature/dashboard
+
+[33mcommit 1d745c1eabd9dc4fdc338c76c8c0440cfc867b79[m[33m ([m[1;31morigin/feature/dashboard[m[33m)[m
+Merge: 904e6fb e5c29ce
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Fri Dec 6 08:49:32 2024 +0700
+
+    Merge branch 'develop' into feature/dashboard
+
+[33mcommit e5c29ce5f8e533a04434a75c66e2446f0b37065e[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 01:10:50 2024 +0700
+
+    Fix price input vnpay
+
+[33mcommit 03d36a3badca32aa811cc9d769e1b03df59e8494[m
+Merge: 5a33531 5bda79f
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Fri Dec 6 00:27:14 2024 +0700
+
+    Merge pull request #37 from huyv18204/vnpay
+    
+    Vnpay
+
+[33mcommit 5bda79f4a7d86a7e88f894d1e9b5db43a7b45917[m[33m ([m[1;31morigin/vnpay[m[33m)[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Fri Dec 6 00:24:47 2024 +0700
+
+    Feat(vnpay): add vnpay
+
+[33mcommit 904e6fb7f6b5563ee671ac286f714654f6758d81[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Fri Dec 6 00:24:18 2024 +0700
+
+    feature/dashoard
+
+[33mcommit 5a33531dca6bdf68511ed0a8e78a217a7e78ee7b[m
+Merge: fa9f0a0 ebdccfe
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Thu Dec 5 23:45:44 2024 +0700
+
+    Merge pull request #36 from huyv18204/fix/order
+    
+    fix: seeder, order status
+
+[33mcommit ebdccfeb0b598695e786f4611ed903305faf5145[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Thu Dec 5 23:45:01 2024 +0700
+
+    fix: seeder, order status
+
+[33mcommit 51000e9ba5a8eaa12b4c30873fdd9e525cc00e05[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Thu Dec 5 23:39:06 2024 +0700
+
+    feature/dashoard
+
+[33mcommit 096c3db7138d2da342f7b0262b02e1bf7b1f719f[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Thu Dec 5 22:33:20 2024 +0700
+
+    feature/dashoard
+
+[33mcommit fa9f0a007780366a5547dcb760319cf08f79efa6[m
+Merge: 47138a0 9da0fe7
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Thu Dec 5 22:22:21 2024 +0700
+
+    Merge pull request #35 from huyv18204/fix/order
+    
+    Fix/order
+
+[33mcommit 9da0fe734609c6464e63a626054cd50f57aab0eb[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Thu Dec 5 22:21:52 2024 +0700
+
+    fix: order
+
+[33mcommit 1ddca36853c0df52ad238eabb9f88ae2d472ef03[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Thu Dec 5 22:19:45 2024 +0700
+
+    fix order
+
+[33mcommit 1878702c274e985520fd95932036bbde9f02c7a7[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Thu Dec 5 22:17:50 2024 +0700
+
+    feature/dashoard
+
+[33mcommit 1f1e9012b1933b93ca9c3da39cf5960fbe11d840[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Thu Dec 5 22:05:57 2024 +0700
+
+    fix : payment momo
+
+[33mcommit 47138a017ef5c57729695ac1e3f02bb336a02f92[m
+Merge: 0d1cffe 91cbf20
+Author: Quốc Huy <134080297+huyv18204@users.noreply.github.com>
+Date:   Thu Dec 5 21:45:38 2024 +0700
+
+    Merge pull request #34 from huyv18204/fix/order
+    
+    fix/order
+
+[33mcommit 91cbf20253f5ec12e0b49bb04fa6dd9543d5025c[m
+Author: VU QUOC HUY <vqh8124@gmail.com>
+Date:   Thu Dec 5 21:27:51 2024 +0700
+
+    fix/order
+
+[33mcommit 0a8fbc6aaecfae6f0c359369337c93abd046413d[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Thu Dec 5 20:39:07 2024 +0700
+
+    feature/dashboard
+
+[33mcommit 0d1cffee44ebed6de3264058480ce329999203c0[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Thu Dec 5 15:18:38 2024 +0700
+
+    fix productAtt
+
+[33mcommit 53d9f9c9ce6d10250f5952a156943a3e30fbdccf[m
+Author: Lucas-0911 <phuclq0911@gmail.com>
+Date:   Thu Dec 5 15:05:49 2024 +0700
+
+    Fix product att, gia ship, order
+
+[33mcommit 622787466691e00e4ef724d1b409a2f8b25abb7a[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Thu Dec 5 13:28:37 2024 +0700
+
+    fix/product/cart
+
+[33mcommit 16c9c339d4f99213b495608f027418902a212fcb[m
+Author: quanlhph39312 <quanlhph39312@fpt.edu.vn>
+Date:   Wed Dec 4 23:55:40 2024 +0700
+
+    fix/cart
+
+[33mcommit 7839d6443632e1f11063270eb55bf7f678019503[m
+Merge: e5ae2d9 1a2b6b1
+Autho

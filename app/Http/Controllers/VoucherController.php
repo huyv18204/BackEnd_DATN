@@ -109,7 +109,7 @@ class VoucherController extends Controller
             return ApiResponse::error("Mã giảm giá đã không còn hoạt động", Response::HTTP_BAD_REQUEST);
         }
 
-        if ($voucher->used_count > $voucher->usage_limit) {
+        if ($voucher->used_count = $voucher->usage_limit) {
             return ApiResponse::error("Rất tiếc mã giảm giá đã đạt đến giới hạn lượt sử dụng");
         }
 

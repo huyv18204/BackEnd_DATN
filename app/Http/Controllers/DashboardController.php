@@ -29,7 +29,7 @@ class DashboardController extends Controller
                     COUNT(id) as orders,
                     COUNT(DISTINCT user_id) as customers
                 ")
-                ->where('order_status', 'Đã giao')
+                ->whereIn('order_status', ['Đã giao','Đã nhận hàng'])
                 ->whereBetween('created_at', [$startOfWeek, $endOfWeek])
                 ->groupByRaw('weekday')
                 ->orderByRaw('weekday')
@@ -56,7 +56,7 @@ class DashboardController extends Controller
                     COUNT(id) as orders,
                     COUNT(DISTINCT user_id) as customers
                 ")
-                ->where('order_status', 'Đã giao')
+                ->whereIn('order_status', ['Đã giao','Đã nhận hàng'])
                 ->whereBetween('created_at', [$startOfMonth, $endOfMonth])
                 ->groupByRaw('DAY(created_at)')
                 ->orderByRaw('DAY(created_at)')
@@ -96,7 +96,7 @@ class DashboardController extends Controller
                 order_code,
                 id,
                 TIMESTAMPDIFF(HOUR, created_at, NOW()) as time_diff,
-                CASE 
+                CASE
                     WHEN order_status = 'Chờ xác nhận' THEN 'orange'
                     WHEN order_status = 'Đã xác nhận' THEN 'yellow'
                     WHEN order_status = 'Chờ lấy hàng' THEN 'purple'

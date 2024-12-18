@@ -72,6 +72,8 @@ class VoucherController extends Controller
             return ApiResponse::message('Lỗi chỉ có thể thu hồi mã giảm giá đang hoạt động', Response::HTTP_BAD_REQUEST);
         }
         $voucher->status = 'cancel';
+        $voucher->save();
+        return ApiResponse::message('Mã giảm giá đã được thu hồi thành công', Response::HTTP_OK);
     }
 
     public function getAllVouchers()

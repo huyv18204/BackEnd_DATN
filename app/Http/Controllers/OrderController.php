@@ -227,6 +227,17 @@ class OrderController extends Controller
         try {
             if ($data['voucher_code']) {
                 $voucher = Voucher::where('voucher_code', $data['voucher_code'])->first();
+                if (!$voucher) {
+                    return response()->json(['message' => 'Voucher không hợp lệ'], 422);
+                }
+
+                if ($voucher->status !== 'active') {
+                    return response()->json(['message' => 'Voucher không còn hiệu lực'], 422);
+                }
+
+                if ($voucher->expiration_date && $voucher->expiration_date < now()) {
+                    return response()->json(['message' => 'Voucher đã hết hạn'], 422);
+                }
                 VoucherUser::create([
                     'user_id' => $user->id,
                     'voucher_id' => $voucher->id,
@@ -297,7 +308,6 @@ class OrderController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'Đặt hàng thành công', 'total_amount' => $data['total_amount'], 'order_id' => $order->id], 201);
-
         } catch (Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Đặt hàng thất bại', 'error' => $e->getMessage()], 400);
@@ -574,15 +584,15 @@ class OrderController extends Controller
             'order_id.*' => ['required', 'integer', 'exists:orders,id'],
         ]);
 
-//        $orders = Order::whereIn('id', $validated['order_id'])->get();
-//
-//        $uniqueStatuses = $orders->pluck('status')->unique();
-//
-//        if ($uniqueStatuses->count() > 1) {
-//            return response()->json([
-//                'message' => 'Dữ liệu không hợp lệ.',
-//            ], 422);
-//        }
+        //        $orders = Order::whereIn('id', $validated['order_id'])->get();
+        //
+        //        $uniqueStatuses = $orders->pluck('status')->unique();
+        //
+        //        if ($uniqueStatuses->count() > 1) {
+        //            return response()->json([
+        //                'message' => 'Dữ liệu không hợp lệ.',
+        //            ], 422);
+        //        }
 
         try {
             foreach ($validated['order_id'] as $id) {
@@ -635,5 +645,4 @@ class OrderController extends Controller
             ]);
         }
     }
-
 }

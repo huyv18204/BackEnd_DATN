@@ -121,23 +121,24 @@ class DashboardController extends Controller
                     'color' => $order->color,
                 ];
             });
-    
+
         return response()->json($timelineData);
     }
-    
+
 
     public function getOrders()
     {
         $orders = DB::table('orders')
             ->join('users', 'orders.user_id', '=', 'users.id')
             ->join('order_details', 'order_details.order_id', '=', 'orders.id')
+            ->join('products', 'order_details.product_id', '=', 'products.id')
             ->select(
                 'orders.id',
                 'orders.order_code',
                 'users.name as customer_name',
                 'orders.order_address as address',
                 'orders.total_amount as total',
-                DB::raw("GROUP_CONCAT(CONCAT(order_details.product_name, ' x', order_details.quantity) SEPARATOR ', ') as items")
+                DB::raw("GROUP_CONCAT(CONCAT(products.name, ' x', order_details.quantity) SEPARATOR ', ') as items")
             )
             ->groupBy('orders.id', 'orders.order_code', 'users.name', 'orders.order_address', 'orders.total_amount')
             ->orderBy('orders.created_at', 'desc')
@@ -150,7 +151,7 @@ class DashboardController extends Controller
                     'name' => $order->customer_name,
                     'address' => $order->address,
                     'items' => explode(', ', $order->items),
-                    'total' =>  intval($order->total),
+                    'total' => intval($order->total),
                 ];
             });
 
@@ -160,13 +161,14 @@ class DashboardController extends Controller
     public function getTrendingProducts()
     {
         $trendingProducts = DB::table('order_details')
+            ->join('products', 'order_details.product_id', '=', 'products.id')
             ->selectRaw('
-                product_id,
-                product_name as name,
+                order_details.product_id,
+                products.name as name,
                 COUNT(*) as orders,
-                SUM(total_amount) as revenue
+                SUM(order_details.total_amount) as revenue
             ')
-            ->groupBy('product_id', 'product_name') 
+            ->groupBy('order_details.product_id', 'products.name')
             ->orderByDesc('orders')
             ->limit(5)
             ->get()
@@ -175,8 +177,7 @@ class DashboardController extends Controller
                 $product->revenue = intval($product->revenue);
                 return $product;
             });
-    
+
         return response()->json($trendingProducts);
     }
-    
 }

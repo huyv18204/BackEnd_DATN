@@ -75,7 +75,7 @@ Route::prefix("v1")->group(function () {
     });
 });
 
-
+// admin
 Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
 
     Route::prefix('dashboard')->group(function () {
@@ -143,6 +143,7 @@ Route::prefix("v1")->middleware(['auth.jwt', 'auth.admin'])->group(function () {
         Route::post("/", [VoucherController::class, 'store']);
         Route::get("/{id}", [VoucherController::class, 'show']);
         Route::put("/{id}", [VoucherController::class, 'update']);
+        Route::put("/{id}/toggle-status", [VoucherController::class, 'toggleStatus']);
     });
 
     Route::prefix("orders")->group(function () {

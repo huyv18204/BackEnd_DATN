@@ -27,7 +27,7 @@ class CheckVoucher
             }
 
             if (($voucher->status === 'active' || $voucher->status === 'cancel')  && $voucher->end_date && $now->greaterThan($voucher->end_date)) {
-                $voucher->status = 'complete';
+                $voucher->status = 'expired';
                 $voucher->save();
             }
         }

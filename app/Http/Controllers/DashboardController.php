@@ -98,14 +98,20 @@ class DashboardController extends Controller
                 TIMESTAMPDIFF(HOUR, created_at, NOW()) as time_diff,
                 CASE 
                     WHEN order_status = 'Chờ xác nhận' THEN 'orange'
+                    WHEN order_status = 'Đã xác nhận' THEN 'yellow'
+                    WHEN order_status = 'Chờ lấy hàng' THEN 'purple'
                     WHEN order_status = 'Đã giao' THEN 'green'
                     WHEN order_status = 'Đang giao' THEN 'blue'
                     WHEN order_status = 'Đã huỷ' THEN 'red'
+                    WHEN order_status = 'Trả hàng' THEN 'brown'
+                    WHEN order_status = 'Đã nhận hàng' THEN 'darkgreen'
+                    WHEN order_status = 'Chưa nhận hàng' THEN 'darkred'
                     ELSE 'gray'
                 END as color
             ")
             ->orderBy('created_at', 'desc')
-            ->get(25)
+            ->limit(25)
+            ->get()
             ->map(function ($order) {
                 return [
                     'id' => $order->id,
@@ -118,8 +124,7 @@ class DashboardController extends Controller
     
         return response()->json($timelineData);
     }
-
-
+    
 
     public function getOrders()
     {
@@ -145,13 +150,12 @@ class DashboardController extends Controller
                     'name' => $order->customer_name,
                     'address' => $order->address,
                     'items' => explode(', ', $order->items),
-                    'total' => number_format($order->total, 2),
+                    'total' =>  intval($order->total),
                 ];
             });
 
         return response()->json($orders);
     }
-
 
     public function getTrendingProducts()
     {
@@ -168,7 +172,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($product, $index) {
                 $product->rank = $index + 1;
-                $product->revenue = number_format($product->revenue, 2);
+                $product->revenue = intval($product->revenue);
                 return $product;
             });
     

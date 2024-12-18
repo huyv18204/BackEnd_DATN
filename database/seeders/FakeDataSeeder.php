@@ -170,47 +170,54 @@ class FakeDataSeeder extends Seeder
         }
 
         $users = DB::table('users')->get();
-        for ($i = 1; $i <= 10; $i++) {
-            $userId = $users->random()->id;
-            $order = Order::query()->create([
-                'order_code' => strtoupper(Str::random(10)),
-                'user_id' => $userId,
-                'total_amount' => rand(100000, 1000000),
-                'total_product_amount' => rand(100000, 1000000),
-                'payment_method' => PaymentMethod::cases()[array_rand(PaymentMethod::cases())]->value,
-                'order_status' => OrderStatus::DELIVERED->value,
-                'payment_status' => PaymentStatus::PAID->value,
-                'order_address' => fake()->address,
-                'note' => fake()->sentence(),
-                'delivery_fee' => rand(30000, 100000),
-                'created_at' => Carbon::now()->subMonths(3)->addDays(rand(0, 90)), // Ngày ngẫu nhiên trong 3 tháng qua
-                'updated_at' => now(),
-            ]);
+        for ($day = 0; $day < 345; $day++) {
+            $createdAt = Carbon::now()->startOfYear()->addDays($day);
 
-            $statusArray = [
-                "Chờ xác nhận",
-                "Đã xác nhận",
-                "Chờ lấy hàng",
-                "Đang giao",
-                "Đã giao",
-                "Đã nhận hàng"
-            ];
+            $numOrders = rand(10, 30);
 
-            foreach ($statusArray as $status) {
-                OrderStatusHistory::query()->create([
-                    'order_id' => $order->id,
-                    'status' => $status,
-                    'image' => "https://res.cloudinary.com/dqxshljwn/image/upload/v1733446344/clothing_shop/jb2ayroid0lidqaoab5g.png"
+            for ($i = 0; $i < $numOrders; $i++) {
+                $userId = $users->random()->id;
+
+                // Tạo đơn hàng
+                $order = Order::query()->create([
+                    'order_code' => strtoupper(Str::random(10)),
+                    'user_id' => $userId,
+                    'total_amount' => rand(100000, 1000000),
+                    'total_product_amount' => rand(100000, 1000000),
+                    'payment_method' => PaymentMethod::cases()[array_rand(PaymentMethod::cases())]->value,
+                    'order_status' => OrderStatus::DELIVERED->value,
+                    'payment_status' => PaymentStatus::PAID->value,
+                    'order_address' => fake()->address,
+                    'note' => fake()->sentence(),
+                    'delivery_fee' => rand(30000, 100000),
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt,
                 ]);
+
+                // Tạo lịch sử trạng thái cho từng đơn hàng
+                $statusArray = [
+                    "Chờ xác nhận",
+                    "Đã xác nhận",
+                    "Chờ lấy hàng",
+                    "Đang giao",
+                    "Đã giao",
+                    "Đã nhận hàng"
+                ];
+
+                foreach ($statusArray as $status) {
+                    OrderStatusHistory::query()->create([
+                        'order_id' => $order->id,
+                        'status' => $status,
+                        'image' => "https://res.cloudinary.com/dqxshljwn/image/upload/v1733446344/clothing_shop/jb2ayroid0lidqaoab5g.png"
+                    ]);
+                }
             }
-
-
         }
 
         $orders = DB::table('orders')->get();
         $productAtts = DB::table('product_atts')->get();
 
-// Mảng chứa các URL hình ảnh giả để chọn ngẫu nhiên
+        // Mảng chứa các URL hình ảnh giả để chọn ngẫu nhiên
 
 
         foreach ($orders as $order) {
@@ -237,7 +244,6 @@ class FakeDataSeeder extends Seeder
                 ]);
             }
         }
-
     }
 
     protected function generateCategoryCode()

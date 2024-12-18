@@ -565,4 +565,75 @@ class OrderController extends Controller
             ]);
         }
     }
+
+    public function updateManyOrderStt(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'order_status' => ['required', 'in:Đã huỷ,Đã xác nhận'],
+            'order_id' => ['required', 'array'],
+            'order_id.*' => ['required', 'integer', 'exists:orders,id'],
+        ]);
+
+//        $orders = Order::whereIn('id', $validated['order_id'])->get();
+//
+//        $uniqueStatuses = $orders->pluck('status')->unique();
+//
+//        if ($uniqueStatuses->count() > 1) {
+//            return response()->json([
+//                'message' => 'Dữ liệu không hợp lệ.',
+//            ], 422);
+//        }
+
+        try {
+            foreach ($validated['order_id'] as $id) {
+                $order = Order::query()->find($id);
+                if (!$order) {
+                    return response()->json(['message' => 'Đơn hàng không tồn tại'], 404);
+                }
+
+                if ($order->order_status === OrderStatus::CANCELED->value) {
+                    return response()->json([
+                        "message" => "Đơn hàng đã bị huỷ trước đó"
+                    ], 422);
+                }
+
+                $order->update([
+                    'order_status' => $request['order_status']
+                ]);
+                $user = User::query()->find($order->user_id);
+
+                SendOrderInfo::dispatch($user->email, $request->order_status, $order);
+
+                if ($request->order_status === OrderStatus::CANCELED->value) {
+                    OrderStatusHistory::query()->where('order_id', $id)->where('status', '!=', OrderStatus::PENDING->value)->delete();
+                    OrderStatusHistory::query()->create([
+                        'order_id' => $id,
+                        'status' => OrderStatus::CANCELED->value,
+                        $request->note,
+                    ]);
+
+                    $orderDetails = OrderDetail::query()->where('order_id', $id)->get();
+                    foreach ($orderDetails as $item) {
+                        $productAtt = ProductAtt::query()->find($item->product_att_id);
+                        $productAtt->update([
+                            'stock_quantity' => $productAtt->stock_quantity + $item->quantity
+                        ]);
+                    }
+                } else {
+                    OrderStatusHistory::query()->create([
+                        'order_id' => $id,
+                        'status' => $request->order_status,
+                    ]);
+                }
+            }
+            return response()->json([
+                'message' => 'Cập nhật trạng thái đơn hàng thành công'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
 }

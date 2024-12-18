@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
+
     case PENDING = 'Chờ xác nhận';
     case CONFIRMED = 'Đã xác nhận';
     case WAITING_DELIVERY = 'Chờ lấy hàng';

@@ -206,6 +206,7 @@ Route::prefix("v1")->middleware(['auth.jwt'])->group(function () {
         Route::get("/{id}", [OrderController::class, 'show'])->where("id", "[0-9]+");
         Route::get('/{id}/products', [OrderDetailsController::class, 'show']);
         Route::put("/{id}/order-status", [OrderController::class, 'updateOrderStt']);
+        Route::put("/order-status", [OrderController::class, 'updateManyOrderStt']);
         Route::put("/{id}/payment-status", [OrderController::class, 'updatePaymentStt']);
         Route::put("{id}/assign-delivery-person", [OrderController::class, 'assignToDeliveryPerson']);
         Route::put("/assign-many-delivery-person", [OrderController::class, 'assignManyToDeliveryPerson']);

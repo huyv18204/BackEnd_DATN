@@ -14,69 +14,38 @@ class ColorController extends Controller
 {
     public function index(Request $request)
     {
-        $size = $request->query('size');
-        $name = $request->query('name');
-        $sort = $request->query('sort', "ASC");
-
-        try {
-            $colors = Color::query();
-
-            if ($name) {
-                $colors->where('name', 'like', "%$name%");
-            }
-
-            $colors->orderBy('id', $sort);
-            $colors = $size ? $colors->paginate($size) : $colors->get();
-
-            return ApiResponse::data($colors, Response::HTTP_OK);
-        } catch (\Exception $e) {
-            throw new CustomException('Lỗi khi truy xuất danh sách màu sắc', $e->getMessage());
-        }
+        $colors = Color::all();
+        return ApiResponse::data($colors);
     }
 
     public function store(ColorRequest $request)
     {
         $data = $request->validated();
-        try {
-            Color::create($data);
-            return ApiResponse::message('Thêm mới màu sắc thành công', Response::HTTP_CREATED);
-        } catch (\Exception $e) {
-            throw new CustomException('Thêm mới màu sắc thất bại', $e->getMessage());
-        }
+        Color::create($data);
+        return ApiResponse::message('Thêm mới màu sắc thành công', 201);
     }
 
     public function update(ColorRequest $request, $id)
     {
-        $color = $this->findOrFail($id);
-        $data = $request->validated();
-        try {
-            $color->update($data);
-            return ApiResponse::message('Cập nhật màu sắc thành công', Response::HTTP_OK);
-        } catch (\Exception $e) {
-            throw new CustomException('Cập nhật màu sắc thất bại, vui lòng thử lại sau.', $e->getMessage());
+        $color = Color::find($id);
+        if (!$color) {
+            return ApiResponse::error('Màu sắc Không tồn tại', 404);
         }
+        $data = $request->validated();
+        $color->update($data);
+        return ApiResponse::message('Cập nhật màu sắc thành công');
     }
 
     public function destroy($id)
     {
-        $color = $this->findOrFail($id);
-        if ($color->product_atts()->exists()) {
-            return ApiResponse::error('Không thể xóa vì màu này đang được sử dụng', Response::HTTP_BAD_REQUEST);
-        }
-        try {
-            $color->delete();
-            return ApiResponse::message('Xóa màu sắc thành công', Response::HTTP_OK);
-        } catch (\Exception $e) {
-            throw new CustomException('Xóa màu sắc thất bại', $e->getMessage());
-        }
-    }
-
-    public function findOrFail($id)
-    {
-        $color = Color::query()->find($id);
+        $color = Color::find($id);
         if (!$color) {
-            throw new CustomException('Màu sắc Không tồn tại', Response::HTTP_NOT_FOUND);
+            return ApiResponse::error('Màu sắc Không tồn tại', 404);
         }
-        return $color;
+        if ($color->product_atts()->exists()) {
+            return ApiResponse::error('Không thể xóa vì màu này đang được sử dụng', 400);
+        }
+        $color->delete();
+        return ApiResponse::message('Xóa màu sắc thành công');
     }
 }

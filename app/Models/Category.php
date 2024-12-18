@@ -13,10 +13,8 @@ class Category extends Model
         "name",
         "slug",
         "category_code",
-        "is_active"
     ];
     protected $casts = [
-        'is_active' => "boolean",
         'created_at' => ConvertDatetime::class,
         'updated_at' => ConvertDatetime::class,
     ];

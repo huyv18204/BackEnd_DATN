@@ -16,8 +16,6 @@ return new class extends Migration
             $table->string("name", 55)->unique();
             $table->string('category_code', 55)->unique();
             $table->string('slug', 255)->unique();
-            $table->boolean("is_active")->default(true);
-            $table->timestamp('deleted_at')->nullable();
             $table->timestamps();
         });
     }

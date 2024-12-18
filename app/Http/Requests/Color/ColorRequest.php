@@ -23,8 +23,6 @@ class ColorRequest extends FormRequest
     {
         $rules = [
             'name' => 'required|string|max:55|unique:colors,name', // Đảm bảo name là duy nhất khi tạo
-            'code' => 'nullable|string|max:10',
-            'is_active' => 'boolean',
         ];
 
         if ($this->isMethod('put')) {

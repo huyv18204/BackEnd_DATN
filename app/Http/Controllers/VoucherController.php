@@ -50,8 +50,8 @@ class VoucherController extends Controller
     {
         $data = $request->validated();
         $voucher = $this->findOrFail($id);
-        if ($voucher->status == 'active') {
-            return ApiResponse::message('Không thể sửa mã giảm giá ở trạng thái đang hoạt động');
+        if ($voucher->status == 'pending') {
+            return ApiResponse::message('Chỉ có thể sửa mã giảm giá ở trạng thái chờ');
         }
         try {
             $data['status'] = 'pending';
@@ -71,7 +71,7 @@ class VoucherController extends Controller
         if ($voucher->status != 'active') {
             return ApiResponse::message('Lỗi chỉ có thể thu hồi mã giảm giá đang hoạt động', Response::HTTP_BAD_REQUEST);
         }
-        $voucher->status = 'cancel';
+        $voucher->status = 'used';
     }
 
     public function getAllVouchers()

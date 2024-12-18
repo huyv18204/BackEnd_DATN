@@ -56,18 +56,6 @@ class SizeController extends Controller
         }
     }
 
-    public function toggleStatus($id)
-    {
-        $size = $this->findOrFail($id);
-        try {
-            $size->is_active = !$size->is_active;
-            $size->save();
-            return ApiResponse::message('Thay đổi trạng thái thành công', Response::HTTP_OK);
-        } catch (\Exception $e) {
-            throw new CustomException('Thay đổi trạng thái kích cỡ thất bại', $e->getMessage());
-        }
-    }
-
     public function destroy($id)
     {
         $size = $this->findOrFail($id);

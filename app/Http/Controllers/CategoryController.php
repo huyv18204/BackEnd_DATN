@@ -43,7 +43,6 @@ class CategoryController extends Controller
 
     public function index(Request $request)
     {
-        //Sort
         $sortField = $request->input('sortField', 'created_at');
         $size = $request->query('size');
         $sortDirection = $request->query('sort', 'DESC');

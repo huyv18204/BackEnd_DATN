@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\ConvertDatetime;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,4 +29,9 @@ class Voucher extends Model
     {
         return $this->hasMany(VoucherUser::class);
     }
+
+    protected $casts = [
+        'created_at' => ConvertDatetime::class,
+        'updated_at' => ConvertDatetime::class,
+    ];
 }

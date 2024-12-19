@@ -21,11 +21,10 @@ class CheckOrderStatusJob implements ShouldQueue
      */
     public function handle()
     {
-        // Lấy thời gian trước
-        $minute = Carbon::now()->subMinutes(16);
+        $minute = Carbon::now()->subMinutes(1);
 
         // Tìm các đơn hàng chưa thanh toán và quá hạn
-        $orders = Order::whereIn('payment_method', ['VNPAY'])
+        $orders = Order::where('payment_method', 'VNPAY')
             ->where('payment_status', 'Chưa thanh toán')
             ->where('created_at', '<=', $minute)
             ->get();

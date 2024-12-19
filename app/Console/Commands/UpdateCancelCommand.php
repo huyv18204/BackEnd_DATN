@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderStatusHistory;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class UpdateCancelCommand extends Command
 {
@@ -30,18 +31,17 @@ class UpdateCancelCommand extends Command
     {
         $orders = Order::where('order_status', 'Chờ xác nhận')
             ->where('payment_status', 'Thanh toán thất bại')
-            ->where('updated_at', '<', Carbon::now()->subDays(1))
+            ->where('updated_at', '<', Carbon::now()->subMinutes(1))
             ->get();
-
+        Log::info("orders", $orders->toArray());
         foreach ($orders as $order) {
             $order->update([
                 'order_status' => 'Đã huỷ',
             ]);
             OrderStatusHistory::query()->create([
                 'order_id' => $order->id,
-                'order_status' => "Đã huỷ",
+                'status' => "Đã huỷ",
             ]);
-            $this->info("Order ID {$order->id} đã được chuyển trạng thái thành 'Đã huỷ'");
         }
     }
 }

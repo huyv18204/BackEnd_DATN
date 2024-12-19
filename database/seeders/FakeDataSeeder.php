@@ -217,8 +217,6 @@ class FakeDataSeeder extends Seeder
         $orders = DB::table('orders')->get();
         $productAtts = DB::table('product_atts')->get();
 
-        // Mảng chứa các URL hình ảnh giả để chọn ngẫu nhiên
-
 
         foreach ($orders as $order) {
             foreach ($productAtts->random(rand(1, 5)) as $productAtt) {

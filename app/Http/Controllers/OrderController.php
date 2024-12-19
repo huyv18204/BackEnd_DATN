@@ -36,7 +36,7 @@ class OrderController extends Controller
     public function index(Request $request): JsonResponse
     {
         //Sort
-        $sortField = $request->input('sortField', 'created_at');
+        $sortField = $request->input('sortField', 'id');
         $size = $request->query('size');
         $sortDirection = $request->query('sort', 'DESC');
 
